@@ -2,6 +2,7 @@
 
 import type { ReactNode, CSSProperties } from "react";
 import { Play } from "lucide-react";
+import EngineeringDecision from "@/components/EngineeringDecision";
 import type { SolutionData, DiagramStep, SolutionTechCard } from "@/data/content";
 
 const ORANGE = "#E07B39";
@@ -436,36 +437,6 @@ function WorkflowPart({ data }: { data: SolutionData["part2"] }) {
   );
 }
 
-// ── Engineering decision ──────────────────────────────────────
-
-function EngineeringPart({ data }: { data: SolutionData["part3"] }) {
-  return (
-    <div>
-      <p className="font-mono text-xs tracking-widest text-gray-400 mb-4">{data.subLabel}</p>
-      <div style={{ border: `1px solid ${CARD_BORDER}`, borderRadius: 4, overflow: "hidden" }}>
-        {data.rows.map((row, i) => (
-          <div
-            key={row.label}
-            style={{
-              borderBottom: i < data.rows.length - 1 ? `1px solid ${CARD_BORDER}` : "none",
-              padding: "12px 16px",
-            }}
-          >
-            <span
-              className="font-mono"
-              style={{ fontSize: 10, color: "#999", display: "block", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}
-            >
-              {row.label}
-            </span>
-            <p className="text-sm text-gray-400" style={{ margin: 0 }}>
-              {row.placeholder}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ── Main export ───────────────────────────────────────────────
 
@@ -478,7 +449,10 @@ export default function SolutionSection({ data }: { data: SolutionData }) {
       <div className="flex flex-col gap-10">
         <VideoPart data={data.part1} />
         <WorkflowPart data={data.part2} />
-        <EngineeringPart data={data.part3} />
+        <section className="border-t border-gray-200 pt-6">
+          <p className="font-mono text-xs tracking-widest text-gray-400 mb-6">{data.part3.subLabel}</p>
+          <EngineeringDecision data={data.part3} />
+        </section>
       </div>
     </section>
   );

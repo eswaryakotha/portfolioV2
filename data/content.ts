@@ -162,6 +162,32 @@ export type DiagramStep = {
 
 export type SolutionInsightCard = { title: string; body: string };
 
+export type EngineeringDecisionData = {
+  subLabel: string;
+  headline: string;
+  decision: { label: string; body: string };
+  tradeoff: { label: string; items: string[]; closing: string };
+  reasoning: {
+    label: string;
+    phrase1: string;
+    phrase2: string;
+    ariaDescription: string;
+  };
+  challenge: { label: string; body: string };
+  whatWasBuilt: {
+    label: string;
+    boxes: Array<{ heading: string; body: string }>;
+  };
+  whatImproved: {
+    label: string;
+    caption: string;
+    before: { count: number; total: number };
+    after: { count: number; total: number };
+    annotation: string;
+    ariaLabel: string;
+  };
+};
+
 export type SolutionData = {
   sectionLabel: string;
   part1: { subLabel: string; videoUrl?: string; videoPoster?: string };
@@ -177,7 +203,7 @@ export type SolutionData = {
     whatSetsApart: { title: string; subtitle: string; cards: SolutionInsightCard[] };
     aroundTheBuild: { title: string; subtitle: string; cards: SolutionInsightCard[] };
   };
-  part3: { subLabel: string; rows: Array<{ label: string; placeholder: string }> };
+  part3: EngineeringDecisionData;
 };
 
 export type AiSolutionSubsectionData = {
@@ -523,12 +549,48 @@ export const caseStudies: Record<string, CaseStudy> = {
       },
       part3: {
         subLabel: "03. One key engineering decision",
-        rows: [
-          { label: "THE DECISION", placeholder: "[Add your content here]" },
-          { label: "WHY", placeholder: "[Add your content here]" },
-          { label: "THE TRADE-OFF", placeholder: "[Add your content here]" },
-          { label: "WHAT CHANGED", placeholder: "[Add your content here]" },
-        ],
+        headline: "Treat AI output as untrusted",
+        decision: {
+          label: "Decision",
+          body: "Every analysis the model returns is checked before the app uses it. Small errors are repaired, failures are retried with the error fed back, and a basic reading is the last resort. The validated analysis is stored once, so coaching and Hear example build on the same output.",
+        },
+        tradeoff: {
+          label: "Trade-off",
+          items: [
+            "More code than trusting the response.",
+            "A failed first attempt can mean a second model call. The cost and delay of that were not measured.",
+            "The fallback gives a plainer reading than a full analysis.",
+          ],
+          closing: "Reliability was chosen over richness.",
+        },
+        reasoning: {
+          label: "Reasoning",
+          phrase1: "One bad field breaks every feature.",
+          phrase2: "Authors can't debug a bad response.",
+          ariaDescription: "Coaching, Hear example and narration all read the same chapter analysis, so one malformed field breaks all of them. First-time authors cannot debug a bad response, so the product has to keep working.",
+        },
+        challenge: {
+          label: "The challenge",
+          body: "On real manuscripts, Claude sometimes returned structured output with tags embedded inside fields. Downstream features could not read it.",
+        },
+        whatWasBuilt: {
+          label: "What was built",
+          boxes: [
+            { heading: "Validate and repair", body: "A structured-output check, plus a repair step for minor errors." },
+            { heading: "Retry with the error", body: "Up to two attempts per chapter, with the specific validation error fed into the retry." },
+            { heading: "Fail gracefully", body: "A basic-reading fallback if both attempts fail." },
+            { heading: "Prompt fix", body: "A worked example of the expected structure, and an explicit ban on tags or XML inside fields." },
+            { heading: "Reuse", body: "Chapter analyses are stored so every feature builds on the same output." },
+          ],
+        },
+        whatImproved: {
+          label: "What improved",
+          caption: "First-attempt validity, six real excerpts, 3 runs each",
+          before: { count: 9, total: 18 },
+          after: { count: 18, total: 18 },
+          annotation: "after the prompt fix",
+          ariaLabel: "First attempt validity before: 9 of 18 runs valid, 50 percent. After: 18 of 18 runs valid, 100 percent.",
+        },
       },
     },
     currentProcessFlow: {

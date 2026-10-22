@@ -1,6 +1,6 @@
 const ORANGE = "#E07B39";
 
-export default function DecorativeQuote({ text }: { text: string }) {
+export default function DecorativeQuote({ text, fontSize = 16 }: { text: string; fontSize?: number }) {
   return (
     <div style={{
       position: "relative",
@@ -23,7 +23,7 @@ export default function DecorativeQuote({ text }: { text: string }) {
       <p style={{
         margin: 0,
         textAlign: "center",
-        fontSize: 16,
+        fontSize,
         lineHeight: 1.65,
         color: "#111",
         fontFamily: "var(--font-advercase), Georgia, 'Times New Roman', serif",
