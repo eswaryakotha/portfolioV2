@@ -43,9 +43,10 @@ export default function MarketResearchTable({
     return () => ro.disconnect();
   }, [measure]);
 
-  // Arrow: from right edge of rect, sweeping left-down toward annotation
+  // Short dotted curve: starts just below bottom-right of rect,
+  // bows 20px outward to the right, lands ~58px below rect bottom
   const arrowPath = box
-    ? `M ${box.width - 6} ${box.top + box.height * 0.55} Q ${box.width * 0.82} ${box.top + box.height + 36} ${box.width * 0.22} ${box.top + box.height + 54}`
+    ? `M ${box.width - 6} ${box.top + box.height + 2} Q ${box.width + 20} ${box.top + box.height + 36} ${box.width - 28} ${box.top + box.height + 58}`
     : "";
 
   return (
@@ -59,7 +60,7 @@ export default function MarketResearchTable({
                 <th key={i} style={{
                   textAlign: "left",
                   fontFamily: "'Courier New', monospace",
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: "#6B7280",
                   letterSpacing: "0.06em",
@@ -95,7 +96,7 @@ export default function MarketResearchTable({
         </table>
       </div>
 
-      {/* SVG overlay: dashed orange rect around rows 4–5 + curved arrow toward annotation */}
+      {/* SVG overlay: dashed orange rect + short dotted curved arrow */}
       {box && (
         <svg
           aria-hidden="true"
@@ -110,11 +111,11 @@ export default function MarketResearchTable({
           }}
         >
           <defs>
-            <marker id="tbl-head" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
-              <path d="M 0,0 L 7,3 L 0,6 Z" fill={ORANGE} />
+            <marker id="tbl-head" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+              <path d="M 0,0 L 6,2.5 L 0,5 Z" fill={ORANGE} />
             </marker>
           </defs>
-          {/* Highlight rectangle — dashed for hand-drawn feel */}
+          {/* Highlight rectangle */}
           <rect
             x={2}
             y={box.top}
@@ -126,22 +127,22 @@ export default function MarketResearchTable({
             rx={5}
             strokeDasharray="6 3"
           />
-          {/* Curved arrow from right edge of rect down to annotation */}
+          {/* Short dotted curved arrow — round dots, solid arrowhead */}
           <path
             d={arrowPath}
             stroke={ORANGE}
             strokeWidth={1.5}
             fill="none"
             strokeLinecap="round"
+            strokeDasharray="1 6"
             markerEnd="url(#tbl-head)"
           />
         </svg>
       )}
 
-      {/* Handwritten annotation below table */}
-      <div style={{ marginTop: 64, paddingLeft: 4 }}>
+      {/* Handwritten annotation — right-aligned, max 320px, right edge flush with table */}
+      <div style={{ marginTop: 64, marginLeft: "auto", maxWidth: 320, textAlign: "right" }}>
         <span
-          aria-hidden="true"
           style={{
             display: "inline-block",
             color: ORANGE,
@@ -149,7 +150,7 @@ export default function MarketResearchTable({
             fontSize: 20,
             lineHeight: 1.2,
             transform: "rotate(-2deg)",
-            transformOrigin: "left center",
+            transformOrigin: "right center",
           }}
         >
           {annotationLine1}
@@ -161,7 +162,6 @@ export default function MarketResearchTable({
             fontSize: 15,
             lineHeight: 1.4,
             marginTop: 4,
-            maxWidth: 380,
           }}
         >
           {annotationLine2}

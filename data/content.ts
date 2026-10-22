@@ -95,6 +95,44 @@ export type ProductTableRow = {
   useInProduction: string;
 };
 
+export type CalloutTarget = { x: number; y: number; w: number; h: number }; // % of image
+
+export type AnnotatedCallout = {
+  text: string;
+  side: "left" | "right" | "top" | "bottom";
+  target: CalloutTarget;
+};
+
+export type ScreenHeader = {
+  jtbd?: string;  // e.g. "JTBD #1" — shown in monospace orange above the title
+  title: string;
+};
+
+export type AnnotatedScreenData = {
+  image: string; // path from /public/, e.g. "/wireframes/Dolby_SB6.png"
+  alt: string;
+  header?: ScreenHeader;
+  callouts: AnnotatedCallout[];
+};
+
+export type WireframesData = {
+  subLabel: string;
+  screens: AnnotatedScreenData[];
+};
+
+export type JtbdRow = {
+  marker: string;
+  jtbd: string;
+  feature: string;
+};
+
+export type KeyFeaturesData = {
+  subLabel: string;
+  introLine: string;
+  headers: [string, string];
+  rows: JtbdRow[];
+};
+
 export type ProductStrategyData = {
   subLabel: string;
   introPrefix: string;
@@ -103,9 +141,44 @@ export type ProductStrategyData = {
   tableRows: ProductTableRow[];
   annotationLine1: string;
   annotationLine2: string;
+  keyFeatures?: KeyFeaturesData;
+  wireframes?: WireframesData;
 };
 
 export type WorkflowStep = { label: string; icon: string };
+
+export type SolutionTechCard = {
+  name: string;
+  description: string;
+  isAI?: boolean;
+};
+
+export type DiagramStep = {
+  number: number;
+  title: string;
+  description: string;
+  cards: SolutionTechCard[];
+};
+
+export type SolutionInsightCard = { title: string; body: string };
+
+export type SolutionData = {
+  sectionLabel: string;
+  part1: { subLabel: string; videoUrl?: string; videoPoster?: string };
+  part2: {
+    subLabel: string;
+    introLine: string;
+    steps: DiagramStep[];
+    underTheHoodTitle: string;
+    underTheHoodSubtitle: string;
+    legendLabel: string;
+    showMoreLabel: string;
+    showLessLabel: string;
+    whatSetsApart: { title: string; subtitle: string; cards: SolutionInsightCard[] };
+    aroundTheBuild: { title: string; subtitle: string; cards: SolutionInsightCard[] };
+  };
+  part3: { subLabel: string; rows: Array<{ label: string; placeholder: string }> };
+};
 
 export type AiSolutionSubsectionData = {
   subLabel: string;
@@ -142,6 +215,7 @@ export type CaseStudy = {
   aiSubsection?: AiSubsectionData;
   aiSolutionSubsection?: AiSolutionSubsectionData;
   productStrategy?: ProductStrategyData;
+  solutionSection?: SolutionData;
   overview: string;
   problem: string;
   myRole: string;
@@ -247,8 +321,64 @@ export const caseStudies: Record<string, CaseStudy> = {
         { tool: "Auphonic", coreFeature: "Audio Restoration & Leveling (automatic mastering, noise reduction)", useInProduction: "Balance audio levels and finalize polished tracks" },
         { tool: "Descript", coreFeature: "Audio/Speech-to-Text & Editing (transcription + text-based edits)", useInProduction: "Edit narration quickly and correct mistakes efficiently" },
       ],
+      wireframes: {
+        subLabel: "03. Wireframes",
+        screens: [
+          {
+            image: "/wireframes/Dolby_SB6.png",
+            alt: "AI Annotation Guide screen: chapter list on the left, script text in the center with an orange-highlighted phrase and dotted-underlined word, and an AI Recommendations panel on the right showing Pronunciation Struggle, Character Entry, Tone & Emotion, and Narrator's Guide cards.",
+            header: { jtbd: "JTBD #1", title: "AI Annotation Guide" },
+            callouts: [],
+          },
+          {
+            image: "/wireframes/Dolby_R1.png",
+            alt: "Recording Status screen: chapter list with completion indicators on the left, script text in the center, empty right panel, and a playback toolbar at the bottom with Record and Review buttons.",
+            header: { title: "Voice Recording" },
+            callouts: [],
+          },
+          {
+            image: "/wireframes/Dolby_R6.png",
+            alt: "Tracking screen: chapter list on the left, script text in the center, a Tone & Emotion card in the right panel, and a waveform timeline at the bottom with color-coded issue markers.",
+            header: { jtbd: "JTBD 2", title: "Teleprompter-Guided Audiobook Recording" },
+            callouts: [],
+          },
+          {
+            image: "/wireframes/Dolby_S1.png",
+            alt: "Vocal Studio screen: multi-track audio editor with a waveform timeline showing color-coded issue highlights, and a right panel with Enhancements and Insights sections listing detected delivery and script deviation errors.",
+            header: { jtbd: "JTBD 3 and 4", title: "A Punch and Roll Narration and AI Vocal Studio" },
+            callouts: [],
+          },
+        ],
+      },
       annotationLine1: "Biggest design influences",
       annotationLine2: "Descript and Auphonic shaped our design choices more than any other AI tool we analyzed.",
+      keyFeatures: {
+        subLabel: "02. Key Features",
+        introLine: "Drawing from the workflow of professional audiobook narrators, these are the features a UGC audiobook creator would need to easily produce high-quality audiobooks:",
+        headers: ["JTBD", "Feature"],
+        rows: [
+          {
+            marker: "#1",
+            jtbd: "- When preparing to narrate a new audiobook, I want to create and organize detailed character and narration notes so I can stay consistent and confidently experiment with suggested interpretations before recording.",
+            feature: "AI Annotation Guide [voice, expressions, nuances, pronunciation, tone, and pacing]",
+          },
+          {
+            marker: "#2",
+            jtbd: "- When narrating the audiobook line by line, I want to view my character and performance notes alongside the script while recording and replaying takes.",
+            feature: "Teleprompter-guided audiobook recording",
+          },
+          {
+            marker: "#3",
+            jtbd: "- When recording narration, I want to quickly spot mistakes or weak performances and re-record only the affected lines, so I can improve quality efficiently.",
+            feature: "Punch & roll narration",
+          },
+          {
+            marker: "#4",
+            jtbd: "- When producing an audiobook without a professional studio, I want my recordings to sound studio-quality automatically, so I can meet professional standards without expensive equipment.",
+            feature: "AI Vocal Studio",
+          },
+        ],
+      },
     },
     aiSolutionSubsection: {
       subLabel: "03. Now, what if AI supported the creator instead?",
@@ -263,6 +393,143 @@ export const caseStudies: Record<string, CaseStudy> = {
       ],
       closingPrefix: "The goal:",
       closingRest: " Make audiobook production easier while helping authors keep in control.",
+    },
+    solutionSection: {
+      sectionLabel: "SOLUTION: BUILDING THE AI PROTOTYPE",
+      part1: {
+        subLabel: "01. See it in action",
+        videoUrl: "",
+        videoPoster: "",
+      },
+      part2: {
+        subLabel: "02. How the AI workflow works",
+        introLine: "Every step the author goes through, with what it is built with underneath. The AI suggests, the author decides.",
+        steps: [
+          {
+            number: 1,
+            title: "Upload",
+            description: "PDF, Word or text file, or the sample chapter",
+            cards: [
+              { name: "pdfjs-dist, mammoth", description: "Read PDF and Word files. Plain text works too." },
+              { name: "Own text parser", description: "Cleans text, splits chapters and sentences." },
+            ],
+          },
+          {
+            number: 2,
+            title: "Analyse",
+            description: "Claude suggests mood, characters and parts",
+            cards: [
+              { name: "Anthropic API", description: "claude-sonnet-5-5 reads the chapter.", isAI: true },
+              { name: "Validator and fallback", description: "Up to 2 attempts, repairs, then a basic reading." },
+              { name: "Answer cache", description: "In memory, with rate limits." },
+            ],
+          },
+          {
+            number: 3,
+            title: "Decide",
+            description: "Author edits direction and parts, and locks parts",
+            cards: [
+              { name: "Next.js 16, React 19", description: "App screens and API routes." },
+              { name: "TypeScript, Tailwind 4", description: "Code and styling." },
+            ],
+          },
+          {
+            number: 4,
+            title: "Coach",
+            description: "Line tips on delivery, pauses, pronunciation, voice",
+            cards: [
+              { name: "Anthropic API", description: "Same model gives 2 to 3 tips per line.", isAI: true },
+              { name: "Refresh and update", description: "Re-asks when the model skips parts." },
+            ],
+          },
+          {
+            number: 5,
+            title: "Hear",
+            description: "Example read aloud, one voice per character",
+            cards: [
+              { name: "Anthropic API", description: "Labels who speaks each line. Falls back to a guess.", isAI: true },
+              { name: "OpenAI TTS", description: "gpt-4o-mini-tts, voice coral, American English.", isAI: true },
+            ],
+          },
+          {
+            number: 6,
+            title: "Record",
+            description: "Teleprompter, line notes, optional voice following",
+            cards: [
+              { name: "Web Speech API", description: "Optional voice following in the browser." },
+              { name: "IndexedDB", description: "Takes stay in the browser. Nothing uploaded." },
+            ],
+          },
+          {
+            number: 7,
+            title: "Polish",
+            description: "Studio sound, punch-in re-records, undo",
+            cards: [
+              { name: "RNNoise (WASM)", description: "Noise removal for Studio sound." },
+              { name: "Own audio chain", description: "Gate, EQ, compression, loudness." },
+              { name: "Auto splice", description: "Punch-in from line marks and pauses, with undo." },
+            ],
+          },
+        ],
+        underTheHoodTitle: "UNDER THE HOOD",
+        underTheHoodSubtitle: "What each step is built with",
+        legendLabel: "Calls an outside AI service",
+        showMoreLabel: "Show more details",
+        showLessLabel: "Show less",
+        whatSetsApart: {
+          title: "WHAT SETS IT APART",
+          subtitle: "Product and engineering choices",
+          cards: [
+            {
+              title: "Author stays in control",
+              body: "Authors edit mood and parts, and lock a part so a refresh never overwrites it. 3 eval cases test this.",
+            },
+            {
+              title: "Reliability loop around the model",
+              body: "Validator, retry note with the error, repairs, fallback. On real text, valid first attempts went from 9/18 to 18/18 after a prompt fix.",
+            },
+            {
+              title: "Punch-in re-records",
+              body: "Re-record from line marks and pauses, with a lead-in, automatic splice and undo.",
+            },
+            {
+              title: "Evaluation in four categories",
+              body: "Emotional ambiguity, beginner coaching, author override, output reliability. Includes real-text cases.",
+            },
+          ],
+        },
+        aroundTheBuild: {
+          title: "AROUND THE BUILD",
+          subtitle: "Data, guardrails and checks",
+          cards: [
+            {
+              title: "Where data goes",
+              body: "Scripts go to Anthropic and example text to OpenAI. Audio takes stay in the browser.",
+            },
+            {
+              title: "Server guardrails",
+              body: "In-memory rate limits and an answer cache on the API routes.",
+            },
+            {
+              title: "Evaluation",
+              body: "18 cases, 3 runs each, rule checks plus a judge model. Results tracked in Google Sheets.",
+            },
+            {
+              title: "Tests and checks",
+              body: "57 automated tests with tsx, plus tsc and eslint.",
+            },
+          ],
+        },
+      },
+      part3: {
+        subLabel: "03. One key engineering decision",
+        rows: [
+          { label: "THE DECISION", placeholder: "[Add your content here]" },
+          { label: "WHY", placeholder: "[Add your content here]" },
+          { label: "THE TRADE-OFF", placeholder: "[Add your content here]" },
+          { label: "WHAT CHANGED", placeholder: "[Add your content here]" },
+        ],
+      },
     },
     currentProcessFlow: {
       steps: [

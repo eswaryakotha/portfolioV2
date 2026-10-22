@@ -7,6 +7,9 @@ import CurrentProcessFlow from "@/components/CurrentProcessFlow";
 import DecorativeQuote from "@/components/DecorativeQuote";
 import AiSolutionSection from "@/components/AiSolutionSection";
 import MarketResearchTable from "@/components/MarketResearchTable";
+import KeyFeaturesTable from "@/components/KeyFeaturesTable";
+import WireframePanel from "@/components/WireframePanel";
+import SolutionSection from "@/components/SolutionSection";
 
 type Props = {
   title: string;
@@ -121,7 +124,7 @@ export default function CaseStudyTemplate({ title, subtitle, tagline, hideSideba
           {study.productStrategy ? (
             <section className="border-t border-gray-200 pt-6">
               <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-                Product Strategy and Insight
+                Product Strategy and Insights
               </h2>
               <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">
                 {study.productStrategy.subLabel}
@@ -136,6 +139,12 @@ export default function CaseStudyTemplate({ title, subtitle, tagline, hideSideba
                 annotationLine1={study.productStrategy.annotationLine1}
                 annotationLine2={study.productStrategy.annotationLine2}
               />
+              {study.productStrategy.keyFeatures && (
+                <KeyFeaturesTable data={study.productStrategy.keyFeatures} />
+              )}
+              {study.productStrategy.wireframes && (
+                <WireframePanel data={study.productStrategy.wireframes} />
+              )}
             </section>
           ) : (
             <section className="border-t border-gray-200 pt-6">
@@ -146,12 +155,16 @@ export default function CaseStudyTemplate({ title, subtitle, tagline, hideSideba
             </section>
           )}
 
-          <section className="border-t border-gray-200 pt-6">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-              Solution
-            </h2>
-            <p className="text-sm text-gray-800 leading-relaxed">{study.solution}</p>
-          </section>
+          {study.solutionSection ? (
+            <SolutionSection data={study.solutionSection} />
+          ) : (
+            <section className="border-t border-gray-200 pt-6">
+              <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
+                Solution
+              </h2>
+              <p className="text-sm text-gray-800 leading-relaxed">{study.solution}</p>
+            </section>
+          )}
 
           <section className="border-t border-gray-200 pt-6">
             <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">

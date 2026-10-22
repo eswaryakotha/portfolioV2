@@ -23,10 +23,11 @@ export default function DecorativeQuote({ text }: { text: string }) {
       <p style={{
         margin: 0,
         textAlign: "center",
-        fontSize: 14,
+        fontSize: 16,
         lineHeight: 1.65,
         color: "#111",
-        fontWeight: 600,
+        fontFamily: "var(--font-advercase), Georgia, 'Times New Roman', serif",
+        fontWeight: 400,
       }}>
         {text}
       </p>
