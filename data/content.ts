@@ -33,21 +33,21 @@ export const projects: Project[] = [
     tags: ["[Role]", "[Year]", "[Domain, e.g. B2B SaaS]"],
   },
   {
-    id: "project-two",
-    title: "Project Two",
-    summary: "[Coming soon — placeholder for second case study]",
+    id: "veraai",
+    title: "VeraAI",
+    summary: "[Add one-line summary]",
     role: "[Your Role]",
     year: "[Year]",
-    slug: null,
+    slug: "veraai",
     tags: ["[Role]", "[Year]"],
   },
   {
-    id: "project-three",
-    title: "Project Three",
-    summary: "[Coming soon — placeholder for third case study]",
+    id: "metamint",
+    title: "MetaMint",
+    summary: "[Add one-line summary]",
     role: "[Your Role]",
     year: "[Year]",
-    slug: null,
+    slug: "metamint",
     tags: ["[Role]", "[Year]"],
   },
 ];
@@ -277,11 +277,19 @@ export type MeetAllisonData = {
 };
 
 export type CaseStudy = {
+  // Page-level meta (replaces per-page props)
+  pageTitle: string;
+  subtitle?: string;
+  tagline?: string;
+  hideSidebar?: boolean;
+  summary?: string;
+  // Sidebar metadata
   company: string;
   role: string;
   timeline: string;
   team: string;
   tools: string;
+  // Rich section components
   equationAnnotation?: EquationAnnotationContent;
   overviewGrid?: SummaryGridData;
   meetAllison?: MeetAllisonData;
@@ -291,18 +299,36 @@ export type CaseStudy = {
   productStrategy?: ProductStrategyData;
   solutionSection?: SolutionData;
   evaluationSection?: EvaluationData;
+  // Fallback text fields
   overview: string;
   problem: string;
   myRole: string;
-  process?: string[];
   solution: string;
+  // Placeholder section blocks (for new pages)
+  problemBlocks?: Array<{ label: string; text: string }>;
+  productStrategyBlocks?: Array<{ label: string; type: "table" | "screens"; text: string }>;
+  solutionBlocks?: Array<{ label: string; type: "video" | "diagram" | "decision"; text: string }>;
+  evaluationText?: string;
+  // Legacy optional
+  process?: string[];
   impact?: string[];
+  // Learnings
   learnings?: string[];
   learningItems?: Array<{ title: string; body: string }>;
+  // Per-section visibility (default: all visible)
+  showSections?: Partial<Record<
+    "overview" | "problem" | "productStrategy" | "solution" | "evaluation" | "learnings",
+    boolean
+  >>;
 };
 
 export const caseStudies: Record<string, CaseStudy> = {
   "dolby-labs": {
+    pageTitle: "How might we help UGC authors confidently bring their stories to audio?",
+    subtitle: "Dolby Labs X Purdue [2023] | Independent [2026]",
+    tagline: "(Spoiler: Not the way Dolby originally thought)",
+    hideSidebar: true,
+    summary: "[One-line summary of what you built and its impact]",
     company: "Dolby Laboratories",
     role: "[Your Title, e.g. Senior Product Manager]",
     timeline: "[e.g. Jan 2022 – Dec 2023]",
@@ -796,6 +822,108 @@ export const caseStudies: Record<string, CaseStudy> = {
         title: "Voice generation tools aren’t enough",
         body: "Audiobook narration must capture the story’s emotional intensity and nuance, not just sound as human as possible.",
       },
+    ],
+  },
+
+  "veraai": {
+    pageTitle: "[Add VeraAI case study title]",
+    subtitle: "VeraAI",
+    tagline: "[Add hook line]",
+    hideSidebar: true,
+    summary: "[Add one-line summary]",
+    company: "[Add company]",
+    role: "[Add role]",
+    timeline: "[Add timeline]",
+    team: "[Add team]",
+    tools: "[Add tools]",
+    overviewGrid: {
+      problem: [
+        { headline: "[Add problem headline]", body: "[Add the problem statement]" },
+      ],
+      solution: {
+        intro: "[Add solution description]",
+        items: ["[Add item 1]", "[Add item 2]", "[Add item 3]"],
+      },
+      users: "[Add user description]",
+      results: [
+        { year: "[Year]", label: "[Add results label]", body: "[Add results description]" },
+      ],
+    },
+    overview: "",
+    problem: "",
+    myRole: "",
+    solution: "",
+    problemBlocks: [
+      { label: "01.", text: "[Add the problem statement]" },
+      { label: "02.", text: "[Add the problem statement]" },
+      { label: "03.", text: "[Add the problem statement]" },
+    ],
+    productStrategyBlocks: [
+      { label: "01.", type: "table", text: "[Add table content]" },
+      { label: "02.", type: "table", text: "[Add table content]" },
+      { label: "03.", type: "screens", text: "[Add screens content]" },
+    ],
+    solutionBlocks: [
+      { label: "01. See it in action", type: "video", text: "[Add video or description]" },
+      { label: "02.", type: "diagram", text: "[Add diagram content]" },
+      { label: "03. One key engineering decision", type: "decision", text: "[Add decision content]" },
+    ],
+    evaluationText: "[Add evaluation and observability content]",
+    learningItems: [
+      { title: "[Add learning title]", body: "[Add learning body]" },
+      { title: "[Add learning title]", body: "[Add learning body]" },
+      { title: "[Add learning title]", body: "[Add learning body]" },
+    ],
+  },
+
+  "metamint": {
+    pageTitle: "[Add MetaMint case study title]",
+    subtitle: "MetaMint",
+    tagline: "[Add hook line]",
+    hideSidebar: true,
+    summary: "[Add one-line summary]",
+    company: "[Add company]",
+    role: "[Add role]",
+    timeline: "[Add timeline]",
+    team: "[Add team]",
+    tools: "[Add tools]",
+    overviewGrid: {
+      problem: [
+        { headline: "[Add problem headline]", body: "[Add the problem statement]" },
+      ],
+      solution: {
+        intro: "[Add solution description]",
+        items: ["[Add item 1]", "[Add item 2]", "[Add item 3]"],
+      },
+      users: "[Add user description]",
+      results: [
+        { year: "[Year]", label: "[Add results label]", body: "[Add results description]" },
+      ],
+    },
+    overview: "",
+    problem: "",
+    myRole: "",
+    solution: "",
+    problemBlocks: [
+      { label: "01.", text: "[Add the problem statement]" },
+      { label: "02.", text: "[Add the problem statement]" },
+      { label: "03.", text: "[Add the problem statement]" },
+    ],
+    productStrategyBlocks: [
+      { label: "01.", type: "table", text: "[Add table content]" },
+      { label: "02.", type: "table", text: "[Add table content]" },
+      { label: "03.", type: "screens", text: "[Add screens content]" },
+    ],
+    solutionBlocks: [
+      { label: "01. See it in action", type: "video", text: "[Add video or description]" },
+      { label: "02.", type: "diagram", text: "[Add diagram content]" },
+      { label: "03. One key engineering decision", type: "decision", text: "[Add decision content]" },
+    ],
+    evaluationText: "[Add evaluation and observability content]",
+    learningItems: [
+      { title: "[Add learning title]", body: "[Add learning body]" },
+      { title: "[Add learning title]", body: "[Add learning body]" },
+      { title: "[Add learning title]", body: "[Add learning body]" },
     ],
   },
 };
