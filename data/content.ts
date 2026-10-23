@@ -181,8 +181,8 @@ export type EngineeringDecisionData = {
   whatImproved: {
     label: string;
     caption: string;
-    before: { count: number; total: number };
-    after: { count: number; total: number };
+    before: { count: number; total: number; rowLabel?: string };
+    after: { count: number; total: number; rowLabel?: string };
     annotation: string;
     ariaLabel: string;
   };
@@ -378,8 +378,14 @@ export const caseStudies: Record<string, CaseStudy> = {
         {
           year: "2026",
           label: "AI evaluation",
-          body: "Built an AI audiobook narration tool and evaluated it against an 18-case test suite across three runs per case, increasing the share of cases passing every run from 20% to 50%.",
-          boldPhrases: ["20% to 50%"],
+          body: "Built an AI audiobook narration tool with an 18-case test suite (three runs per case). Cases passing every run rose from 20% to 53% on the same 15 cases.",
+          boldPhrases: ["20% to 53%"],
+        },
+        {
+          year: "",
+          label: "AI reliability",
+          body: "Fixed AI answers the app could not use. On six real book excerpts, answers that worked on the first try, without a retry, rose from 50% to 100% after a prompt fix.",
+          boldPhrases: ["50% to 100%"],
         },
       ],
     },
@@ -587,10 +593,6 @@ export const caseStudies: Record<string, CaseStudy> = {
               body: "Authors edit mood and parts, and lock a part so a refresh never overwrites it. 3 eval cases test this.",
             },
             {
-              title: "Reliability loop around the model",
-              body: "Validator, retry note with the error, repairs, fallback. On real text, valid first attempts went from 9/18 to 18/18 after a prompt fix.",
-            },
-            {
               title: "Punch-in re-records",
               body: "Re-record from line marks and pauses, with a lead-in, automatic splice and undo.",
             },
@@ -611,10 +613,6 @@ export const caseStudies: Record<string, CaseStudy> = {
             {
               title: "Server guardrails",
               body: "In-memory rate limits and an answer cache on the API routes.",
-            },
-            {
-              title: "Evaluation",
-              body: "18 cases, 3 runs each, rule checks plus a judge model. Results tracked in Google Sheets.",
             },
             {
               title: "Tests and checks",
@@ -661,11 +659,11 @@ export const caseStudies: Record<string, CaseStudy> = {
         },
         whatImproved: {
           label: "What improved",
-          caption: "First-attempt validity, six real excerpts, 3 runs each",
-          before: { count: 9, total: 18 },
-          after: { count: 18, total: 18 },
-          annotation: "after the prompt fix",
-          ariaLabel: "First attempt validity before: 9 of 18 runs valid, 50 percent. After: 18 of 18 runs valid, 100 percent.",
+          caption: "Cases passing every run, Run 1 vs Run 4",
+          before: { count: 3, total: 15, rowLabel: "Run 1" },
+          after: { count: 8, total: 15, rowLabel: "Run 4" },
+          annotation: "",
+          ariaLabel: "Cases passing every run: Run 1, 3 of 15 (20%). Run 4, 8 of 15 (53%).",
         },
       },
     },

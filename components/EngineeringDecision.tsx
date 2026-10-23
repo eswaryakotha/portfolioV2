@@ -241,7 +241,7 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
               color: "#999",
               width: 38,
               flexShrink: 0,
-            }}>Before</span>
+            }}>{data.whatImproved.before.rowLabel ?? "Before"}</span>
             <BlockRow
               count={data.whatImproved.before.count}
               total={data.whatImproved.before.total}
@@ -258,15 +258,17 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
           </div>
 
           {/* Annotation between rows */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 46, marginBottom: 8 }}>
-            <svg aria-hidden="true" width="18" height="16" viewBox="0 0 18 16" style={{ flexShrink: 0 }}>
-              <path d="M 9,2 Q 15,8 9,14" fill="none" stroke={ORANGE} strokeWidth="1.2" strokeLinecap="round" />
-              <path d="M 6,11 L 9,15 L 12,11" fill="none" stroke={ORANGE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span style={{ fontFamily: "var(--font-caveat), cursive", fontSize: 13, color: ORANGE }}>
-              {data.whatImproved.annotation}
-            </span>
-          </div>
+          {data.whatImproved.annotation && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 46, marginBottom: 8 }}>
+              <svg aria-hidden="true" width="18" height="16" viewBox="0 0 18 16" style={{ flexShrink: 0 }}>
+                <path d="M 9,2 Q 15,8 9,14" fill="none" stroke={ORANGE} strokeWidth="1.2" strokeLinecap="round" />
+                <path d="M 6,11 L 9,15 L 12,11" fill="none" stroke={ORANGE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontFamily: "var(--font-caveat), cursive", fontSize: 13, color: ORANGE }}>
+                {data.whatImproved.annotation}
+              </span>
+            </div>
+          )}
 
           {/* After row */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -276,7 +278,7 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
               color: "#999",
               width: 38,
               flexShrink: 0,
-            }}>After</span>
+            }}>{data.whatImproved.after.rowLabel ?? "After"}</span>
             <BlockRow
               count={data.whatImproved.after.count}
               total={data.whatImproved.after.total}

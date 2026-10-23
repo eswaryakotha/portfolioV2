@@ -108,7 +108,7 @@ export default function SummaryGrid({ grid }: { grid: SummaryGridData }) {
         <ul className="flex flex-col gap-3">
           {grid.results.map((item, i) => (
             <li key={i} className="flex gap-3 text-sm">
-              <span className="font-mono text-xs text-gray-400 shrink-0 mt-0.5">{item.year}</span>
+              <span className="font-mono text-xs text-gray-400 shrink-0 mt-0.5 w-8">{item.year}</span>
               <p className="text-gray-700 leading-relaxed">
                 <span className="font-semibold text-gray-900">{item.label}:</span>{" "}
                 {renderWithBold(item.body, item.boldPhrases)}
