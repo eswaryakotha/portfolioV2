@@ -10,6 +10,7 @@ import MarketResearchTable from "@/components/MarketResearchTable";
 import KeyFeaturesTable from "@/components/KeyFeaturesTable";
 import WireframePanel from "@/components/WireframePanel";
 import SolutionSection from "@/components/SolutionSection";
+import EvaluationSection from "@/components/EvaluationSection";
 
 type Props = {
   title: string;
@@ -166,49 +167,77 @@ export default function CaseStudyTemplate({ title, subtitle, tagline, hideSideba
             </section>
           )}
 
-          <section className="border-t border-gray-200 pt-6">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-              Process
-            </h2>
-            <ol className="flex flex-col gap-3">
-              {study.process.map((step, i) => (
-                <li key={i} className="flex gap-3 text-sm text-gray-800">
-                  <span className="font-mono text-xs text-gray-400 mt-0.5 shrink-0">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </section>
+          {study.evaluationSection && (
+            <EvaluationSection data={study.evaluationSection} />
+          )}
 
-          <section className="border-t border-gray-200 pt-6">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-              Impact / Results
-            </h2>
-            <ul className="flex flex-col gap-2">
-              {study.impact.map((item, i) => (
-                <li key={i} className="text-sm text-gray-800 flex gap-2">
-                  <span className="text-gray-300 shrink-0">—</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </section>
+          {study.process && study.process.length > 0 && (
+            <section className="border-t border-gray-200 pt-6">
+              <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
+                Process
+              </h2>
+              <ol className="flex flex-col gap-3">
+                {study.process.map((step, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-gray-800">
+                    <span className="font-mono text-xs text-gray-400 mt-0.5 shrink-0">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
-          <section className="border-t border-gray-200 pt-6">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-              Learnings
-            </h2>
-            <ul className="flex flex-col gap-2">
-              {study.learnings.map((item, i) => (
-                <li key={i} className="text-sm text-gray-800 flex gap-2">
-                  <span className="text-gray-300 shrink-0">—</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </section>
+          {study.impact && study.impact.length > 0 && (
+            <section className="border-t border-gray-200 pt-6">
+              <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
+                Impact / Results
+              </h2>
+              <ul className="flex flex-col gap-2">
+                {study.impact.map((item, i) => (
+                  <li key={i} className="text-sm text-gray-800 flex gap-2">
+                    <span className="text-gray-300 shrink-0">—</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {(study.learningItems || (study.learnings && study.learnings.length > 0)) && (
+            <section className="border-t border-gray-200 pt-6">
+              <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
+                Learnings
+              </h2>
+              {study.learningItems ? (
+                <ol className="flex flex-col gap-8">
+                  {study.learningItems.map((item, i) => (
+                    <li key={i} className="flex flex-col sm:flex-row sm:gap-6">
+                      <span className="font-mono text-xs text-gray-400 mb-1 sm:mb-0 sm:mt-0.5 shrink-0">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <strong className="text-sm font-semibold text-gray-900 block mb-1">
+                          {item.title}
+                        </strong>
+                        <p className="text-sm text-gray-800 leading-relaxed">{item.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {study.learnings!.map((item, i) => (
+                    <li key={i} className="text-sm text-gray-800 flex gap-2">
+                      <span className="text-gray-300 shrink-0">—</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
         </article>
       </div>
     </div>

@@ -13,7 +13,7 @@ function MonoLabel({ children }: { children: string }) {
   return (
     <p style={{
       fontFamily: "'Courier New', Courier, monospace",
-      fontSize: 10,
+      fontSize: 12,
       color: "#999",
       textTransform: "uppercase",
       letterSpacing: "0.06em",

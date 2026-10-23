@@ -206,6 +206,54 @@ export type SolutionData = {
   part3: EngineeringDecisionData;
 };
 
+// ── Evaluation & Observability ────────────────────────────────
+
+export type EvaluationRunData = {
+  run: string;
+  cases: number;
+  passed: number;
+  flaky: number;
+  failed: number;
+  validFirst: { count: number; total: number };
+  changed: string;
+  sharedPassed?: number;
+  hasFootnote?: boolean;
+};
+
+export type EvaluationData = {
+  sectionLabel: string;
+  // 01
+  label01: string;
+  stats: Array<{ value: string; label: string }>;
+  intro: string;
+  caseGroups: Array<{ label: string; count: number }>;
+  checkCards: Array<{ title: string; body: string }>;
+  bookNote: string;
+  // 02
+  label02: string;
+  statusCards: Array<{ status: "PASS" | "FLAKY" | "FAIL"; runs: boolean[]; description: string }>;
+  flakyNote: string;
+  // 04
+  label04: string;
+  modelCallsRows: Array<{ case: string; calls: number; isTotal?: boolean }>;
+  runs: EvaluationRunData[];
+  footnote: string;
+  legendPass: string;
+  legendFlaky: string;
+  legendFail: string;
+  // 05
+  label05: string;
+  failingGroupLabel: string;
+  failingCards: Array<{ title: string; detail: string; important?: boolean }>;
+  importantNote: string;
+  authorNote: string;
+  flakyGroupLabel: string;
+  flakyDetailCards: Array<{ title: string; detail: string }>;
+  // 06
+  label06: string;
+  limits: string[];
+};
+
 export type AiSolutionSubsectionData = {
   subLabel: string;
   leadBefore: string;
@@ -242,13 +290,15 @@ export type CaseStudy = {
   aiSolutionSubsection?: AiSolutionSubsectionData;
   productStrategy?: ProductStrategyData;
   solutionSection?: SolutionData;
+  evaluationSection?: EvaluationData;
   overview: string;
   problem: string;
   myRole: string;
-  process: string[];
+  process?: string[];
   solution: string;
-  impact: string[];
-  learnings: string[];
+  impact?: string[];
+  learnings?: string[];
+  learningItems?: Array<{ title: string; body: string }>;
 };
 
 export const caseStudies: Record<string, CaseStudy> = {
@@ -593,6 +643,130 @@ export const caseStudies: Record<string, CaseStudy> = {
         },
       },
     },
+    evaluationSection: {
+      sectionLabel: "Evaluation and Results",
+      // 01
+      label01: "01. How it is tested",
+      stats: [
+        { value: "18", label: "test cases" },
+        { value: "3", label: "runs per case" },
+        { value: "2", label: "kinds of checks" },
+        { value: "3", label: "real book excerpts" },
+      ],
+      intro: "18 test cases, each a small scenario with a defined good answer. Each case runs 3 times, because AI answers vary from run to run.",
+      caseGroups: [
+        { label: "Reading the emotion of a line", count: 6 },
+        { label: "Coaching a first-time narrator", count: 5 },
+        { label: "Respecting the author's choices", count: 3 },
+        { label: "Producing output the app can use", count: 4 },
+      ],
+      checkCards: [
+        {
+          title: "Rule checks (automatic)",
+          body: "Advice must be one or two sentences, a hard name must get a pronunciation tip, and so on.",
+        },
+        {
+          title: "Judge model (a second Claude call)",
+          body: "Decides whether the answer fits the scene and the author's chosen feeling. An answer the judge cannot decide on counts as a fail.",
+        },
+      ],
+      bookNote: "Three of the cases use real book excerpts, so the tests are not only invented examples.",
+      // 02
+      label02: "02. What PASS, FLAKY and FAIL mean",
+      statusCards: [
+        {
+          status: "PASS",
+          runs: [true, true, true],
+          description: "The case succeeded in all 3 runs.",
+        },
+        {
+          status: "FLAKY",
+          runs: [true, false, true],
+          description: "The case succeeded in some runs but not all. The product works sometimes, which is the riskiest result for a first-time author.",
+        },
+        {
+          status: "FAIL",
+          runs: [false, false, false],
+          description: "The case failed in all 3 runs.",
+        },
+      ],
+      flakyNote: "the riskiest one",
+      // 04
+      label04: "03. Run history",
+      modelCallsRows: [
+        { case: "R1: full sample chapter analysis", calls: 1 },
+        { case: "R2: line coach, three selections", calls: 3 },
+        { case: "R3: update parts, then two advice refreshes", calls: 3 },
+        { case: "Total per run", calls: 7, isTotal: true },
+      ],
+      runs: [
+        {
+          run: "Run 1", cases: 15, passed: 3, flaky: 7, failed: 5,
+          validFirst: { count: 18, total: 21 },
+          changed: "Baseline",
+        },
+        {
+          run: "Run 2", cases: 15, passed: 4, flaky: 7, failed: 4,
+          validFirst: { count: 18, total: 21 },
+          changed: "Fixed two scoring bugs. Shortened coach advice to two sentences and capped suggestions at three.",
+        },
+        {
+          run: "Run 3", cases: 15, passed: 8, flaky: 4, failed: 3,
+          validFirst: { count: 20, total: 21 },
+          changed: "Told the model not to put code-like tags inside its answer fields, which had broken the app's reading of its output. Made the update step name the parts to return, and retry once if parts are skipped.",
+        },
+        {
+          run: "Run 4", cases: 18, passed: 9, flaky: 5, failed: 4,
+          validFirst: { count: 39, total: 39 },
+          changed: "Added 3 real-excerpt cases. Gave the model a worked example of the exact answer format.",
+          sharedPassed: 8, hasFootnote: true,
+        },
+      ],
+      footnote: "Run 4 has 18 cases, so compare it with runs 1 to 3 only on the 15 shared cases (8/15 passed every run).",
+      legendPass: "Passed every run",
+      legendFlaky: "Flaky",
+      legendFail: "Failed every run",
+      // 05
+      label05: "04. What still fails",
+      failingGroupLabel: "Failing every run",
+      failingCards: [
+        {
+          title: "Coaching a long, suspenseful passage",
+          detail: "Tips keep breaking the length rule. Advice runs to three sentences where the limit is two.",
+        },
+        {
+          title: "Coaching a line with an invented fantasy name",
+          detail: "The pronunciation tip for the name is always given. The judge rejects the other tips for adding details the text does not contain.",
+        },
+        {
+          title: "Refreshing advice after the author picks a tender, relieved feeling",
+          detail: "The advice tells the narrator to sound like she is holding back tears. The judge reads that as sadness, not relief, so it counts as drifting from the author's choice.",
+          important: true,
+        },
+        {
+          title: "Coaching a sharp line when the author chose a tender, relieved feeling",
+          detail: "The same drift. Tips add held-back tears or keep a sharp edge.",
+          important: true,
+        },
+      ],
+      importantNote: "most important for the product: the author stays in control",
+      authorNote: "The author's own text describes the moment as \"a way of not crying\", so the judge may be stricter than a human reader. That has not been checked by a person.",
+      flakyGroupLabel: "Flaky",
+      flakyDetailCards: [
+        { title: "The same short line in two stories", detail: "The AI sometimes reads an encouraging sister as anxious, which the judge rejects as not warm." },
+        { title: "Author says a character is softening", detail: "The AI sometimes labels the part sharp ache or stinging instead of something that shows softening." },
+        { title: "A line with a name and an apartment code", detail: "Sometimes only one tip comes back, with no pronunciation help." },
+        { title: "A line with only everyday words", detail: "Tips sometimes invent a detail that is not in the text." },
+        { title: "Six real excerpts", detail: "Output is valid every time, but in one run a character had no feeling listed for some parts." },
+      ],
+      // 06
+      label06: "05. Limits",
+      limits: [
+        "The same model family judges its own output.",
+        "No user testing has been done.",
+        "Production monitoring: not built.",
+      ],
+    },
     currentProcessFlow: {
       steps: [
         { id: "01", label: "Prepare" },
@@ -607,23 +781,21 @@ export const caseStudies: Record<string, CaseStudy> = {
     problem: "",
     myRole:
       "[Describe your specific responsibilities. Were you the sole PM? Did you own discovery, delivery, or both? What decisions were yours to make?]",
-    process: [
-      "[Process step 1 — e.g. Ran 20 user interviews to map the current workflow and identify friction points]",
-      "[Process step 2 — e.g. Synthesized findings into an opportunity map and prioritized with the team]",
-      "[Process step 3 — e.g. Ran two discovery sprints to test assumptions before committing to a solution]",
-      "[Process step 4 — e.g. Shipped an MVP in 6 weeks, then iterated based on usage data]",
-    ],
     solution:
       "[Describe what you shipped. What does it do? How does it address the problem you defined?]",
-    impact: [
-      "[Impact metric 1 — e.g. Reduced onboarding time from 14 days to 3 days]",
-      "[Impact metric 2 — e.g. Increased feature adoption by 40% in 60 days post-launch]",
-      "[Impact metric 3 — e.g. $2M ARR attributed to the new capability in first year]",
-    ],
-    learnings: [
-      "[Learning 1 — e.g. Shipping earlier surfaced assumptions we had held for months]",
-      "[Learning 2 — e.g. Alignment with the sales team was the hidden critical path]",
-      "[Learning 3 — optional — e.g. I'd invest more time in a North Star metric earlier]",
+    learningItems: [
+      {
+        title: "Human-in-the-loop evaluation",
+        body: "AI can misinterpret emotional nuance, making human review essential to ensure feedback aligns with the author’s intent.",
+      },
+      {
+        title: "Author control is harder than it looks",
+        body: "Giving authors editing capabilities isn’t enough; AI coaching must consistently respect their corrections and preferences.",
+      },
+      {
+        title: "Voice generation tools aren’t enough",
+        body: "Audiobook narration must capture the story’s emotional intensity and nuance, not just sound as human as possible.",
+      },
     ],
   },
 };
