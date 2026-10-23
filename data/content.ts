@@ -777,10 +777,11 @@ export const caseStudies: Record<string, CaseStudy> = {
       authorNote: "The author's own text describes the moment as \"a way of not crying\", so the judge may be stricter than a human reader. That has not been checked by a person.",
       flakyGroupLabel: "Flaky",
       flakyDetailCards: [
-        { title: 'Reading the mood of the same line in two different stories', detail: 'The line “Go ahead.” is placed in two stories. Sometimes the AI reads the encouraging sister as “anxious” or “quiet courage”, and the judge rejects it as not warm.' },
-        { title: "Following the author’s note that a character is softening", detail: 'The author says Maya is softening toward Noah. The AI sometimes labels the part “sharp ache” or “stinging”, which does not show softening. When the author says she is furious, the label is always right.' },
-        { title: 'Coaching a line with a name and an apartment code', detail: 'The line mentions “Mrs. Rao from 4B”. Sometimes only one tip comes back, with no help on how to say “Rao” or “4B”.' },
-        { title: 'Coaching a line made only of everyday words', detail: 'The test line is “The room suddenly felt cold. She folded her arms.” Sometimes a tip invents a detail that is not in the text, such as “listening for the footsteps”.' },
+        { title: "Reading the mood of the same line in two different stories", detail: "The same short line of dialogue is placed in two stories where it means different things. Sometimes the AI gives the warm, encouraging version an anxious or uneasy mood, and the judge rejects it." },
+        { title: "Following the author's chosen feeling for a scene", detail: "The author tells the AI that a character is softening. Sometimes the AI labels the scene with a painful or stinging mood instead, which does not match the author's choice. When the author chooses an angry feeling, which matches the AI's own reading, the label was right in every run." },
+        { title: "Coaching a line that contains a name and a code", detail: "The line includes a person's name and an apartment number. Sometimes the AI returns only one tip, with no help on how to pronounce either." },
+        { title: "Coaching a line made only of everyday words", detail: "The line has nothing hard to say. Sometimes the AI adds a tip based on a detail that is not in the text." },
+        { title: "Analysing real book excerpts", detail: "The output is always usable by the app. In one run, a character in one excerpt had no feeling listed for some parts of the scene." },
       ],
       // 06
       label06: "05. Limits",
