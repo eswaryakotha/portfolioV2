@@ -12,8 +12,19 @@ export const siteContent = {
   copyright: `© ${new Date().getFullYear()} [Your Name]. All rights reserved.`,
 };
 
+export const ACCENTS = {
+  dolby: "#E07B39",
+  veraai: "#081A4A",
+} as const;
+
+// Brighter companion used for hand-drawn annotations; falls back to the accent.
+export const ACCENTS_BRIGHT: Record<string, string> = {
+  veraai: "#2F6BFF",
+};
+
 export type Project = {
   id: string;
+  accent: string;
   title: string;
   summary: string;
   role: string;
@@ -25,6 +36,7 @@ export type Project = {
 export const projects: Project[] = [
   {
     id: "dolby-labs",
+    accent: ACCENTS.dolby,
     title: "Dolby Labs",
     summary: "[One-line summary of what you built and its impact]",
     role: "[Your Role]",
@@ -34,6 +46,7 @@ export const projects: Project[] = [
   },
   {
     id: "veraai",
+    accent: ACCENTS.veraai,
     title: "VeraAI",
     summary: "[Add one-line summary]",
     role: "[Your Role]",
@@ -43,6 +56,7 @@ export const projects: Project[] = [
   },
   {
     id: "metamint",
+    accent: ACCENTS.dolby,
     title: "MetaMint",
     summary: "[Add one-line summary]",
     role: "[Your Role]",
@@ -73,10 +87,21 @@ export type ProblemItem = {
 };
 
 export type SummaryGridData = {
-  problem: Array<ProblemItem>;
-  solution: { strikethrough?: string; intro: string; items: string[]; closing?: string };
+  // numbered points, or a single paragraph
+  problem: Array<ProblemItem> | string;
+  solution: {
+    label?: string; // box label, default "Solution"
+    strikethrough?: string;
+    intro: string;
+    note?: { heading: string; body: string }; // margin note under the Results box
+    squigglePhrase?: string; // phrase inside intro to underline with a hand-drawn squiggle
+    items?: string[];
+    closing?: string;
+  };
   users: string;
-  results: Array<{ year: string; label: string; body: string; boldPhrases?: string[] }>;
+  hideUsersIcons?: boolean;
+  // year-labeled items, or plain bullets (**bold** markers supported)
+  results: Array<{ year: string; label: string; body: string; boldPhrases?: string[] }> | string[];
 };
 
 export type ColIcon = { name: string; label?: string; size?: number };
@@ -268,19 +293,180 @@ export type AiSolutionSubsectionData = {
 export type ProcessStep = { id: string; label: string };
 export type CurrentProcessFlowData = { steps: ProcessStep[] };
 
-export type MeetAllisonData = {
-  imageBaseName: string; // base name without extension, e.g. "allison" — tries .png .webp .jpg .svg
-  caption: string;
-  col2: { text: string; icons: ColIcon[] };
-  col3: { text: string; icons: ColIcon[] };
-  speechBubble: string;
+export type ProcessFlowchartData = {
+  note?: string; // smaller handwritten note beside the "Current process" label
+  steps: string[][]; // main row; each box is a list of paragraphs
+  loop: { from: number; to: number }; // 0-based: arrow from the top of `from` back into the top of `to`
+  branch: { text: string; rejoin: number }; // box under `loop.from`; elbow arrow into the left of box `rejoin`
+};
+
+export type MatrixStatus = "yes" | "partial" | "no";
+
+export type ToolsAnalysisData = {
+  subLabel: string;
+  intro: string;
+  tableHeaders: string[];
+  tableRows: Array<{ tool: string; purpose: string; description: string }>;
+  leadIns: string[];
+  matrix: {
+    caption: string; // visually hidden
+    columns: string[];
+    rows: Array<{ feature: string; cells: Array<{ status: MatrixStatus; note?: string }> }>;
+  };
+  stats: Array<{ value: string; text: string; source?: string }>; // source: shown only if filled in
+  closing: string;
+};
+
+export type ProductJobsData = {
+  subLabel: string;
+  paragraph: string;
+  leadIn: string;
+  jobs: Array<{ icon: string; text: string }>; // icon = Lucide icon name
+  closing: { bold: string; rest: string };
+};
+
+export type PersonaData = {
+  subLabel: string;
+  intro: string;
+  segments: Array<{ name: string; text: string }>; // name is shown bold, followed by ":"
+  personas: Array<{
+    role: string;
+    name: string;
+    avatar: { src: string; alt: string; width: number; height: number; blend?: boolean };
+  }>;
+  rows: Array<{ label: string; cells: Array<string | string[]> }>; // string[] = bullet list
+  opportunities: {
+    leadIn: string;
+    cards: Array<{ title: string; items: string[] }>;
+  };
+  focusIndex: number; // persona / opportunity card to highlight (0-based)
+  focusNote: string; // handwritten annotation pointing at that card
+  closing: string;
+};
+
+export type FeaturesMvpData = {
+  subLabel: string;
+  intro: string;
+  headers: [string, string, string];
+  rows: Array<{ marker: string; jtbd: string; feature: string; mvp: string }>; // empty mvp shows a gray hyphen
+};
+
+export type LevelValue = "Low" | "Medium" | "High";
+export type PriorityLevel = "Must-Have" | "Should-Have" | "Could-Have" | "Won’t-Have";
+
+export type FeaturePriorityData = {
+  subLabel: string;
+  headers: [string, string, string, string, string];
+  rows: Array<{
+    feature: string;
+    impact: LevelValue;
+    effort: LevelValue;
+    priority: PriorityLevel;
+    notes: string; // empty shows a gray hyphen
+  }>;
+};
+
+export type PivotsData = {
+  heading: string;
+  note: string; // handwritten annotation beside the current pivot
+  pivots: Array<{
+    label: string;
+    title: string;
+    body: string;
+    calloutLabel: string;
+    calloutText: string;
+    status: "dropped" | "current";
+    statusLabel: string;
+    icon: string; // Lucide icon name
+  }>;
+  closing: string;
+};
+
+export type PilotData = {
+  heading: string;
+  videoUrl: string; // empty = placeholder; .mp4 path = <video>; YouTube / Vimeo / Loom link = iframe
+  poster: string;
+  intro: string;
+  stats: Array<{ value: string; label: string }>;
+  cards: Array<{ icon: string; title: string; text: string }>; // icon = Lucide icon name
+};
+
+export type WebsiteData = {
+  heading: string;
+  intro: string;
+  first: {
+    subLabel: string;
+    videoUrl: string; // empty = placeholder; .mp4 path = <video>; YouTube / Vimeo / Loom link = iframe
+    poster: string;
+    placeholderLabel: string;
+    caption: string;
+    tags: string[];
+  };
+  communicating: {
+    subLabel: string;
+    // src is a path under /public; a missing file shows the dashed placeholder
+    blocks: Array<{ src: string; alt: string; width?: number; height?: number; placeholderLabel: string; caption: string }>;
+  };
+  contribution: { label: string; text: string };
+};
+
+export type WhatsNextData = {
+  heading: string;
+  cards: Array<{ icon: string; label: string; text: string; tags?: string[] }>; // icon = Lucide icon name
+};
+
+export type StripImage = { src: string; alt: string; width: number; height: number; blend?: boolean };
+
+// One bordered column next to the person: icons, an image, or (neither) an
+// "[illustration]" placeholder, with the text centered at the bottom.
+export type StripColumn = {
+  text: string;
+  icons?: ColIcon[];
+  iconsGap?: number;
+  iconsAlign?: "center" | "flex-start";
+  textMarginBottom?: number;
+  image?: StripImage;
+  icon?: ColIcon; // shown in place of an image/placeholder (decorative)
+  iconLead?: { name?: string; color: string; size?: number }; // mark to the left of the icon (default "Check")
+  iconCaption?: string; // bold line under the icon, e.g. an amount
+  iconOffsetY?: number; // nudge the icon group vertically in px (positive = down)
+  textOffsetY?: number; // nudge the text vertically in px (negative = up)
+  badge?: string; // handwritten note at the top right of the box, e.g. "X3"
+  box?: boolean; // default true
+};
+
+export type StoryStripData = {
+  flowchart?: ProcessFlowchartData; // shown directly under the quote
+  layout?: "steps"; // numbered N-up row with arrows; omitted = original 3-up
+  subLabel: string;
+  ariaDescription?: string;
+  ariaLabel?: string;
+  person: {
+    name: string;
+    label: string; // handwritten label above the drawing
+    caption: string;
+    arrow?: boolean; // small curved arrow from the label to the drawing
+    alt: string;
+    imageBaseName?: string; // looked up in /public/comic (.png .webp .jpg .svg)
+    image?: Omit<StripImage, "alt">; // or an explicit image (alt comes from `alt` above)
+  };
+  columns: StripColumn[];
+  afterFlowchartText?: string; // paragraph after the flowchart
+  afterFlowchartQuote?: string; // decorative quote after that paragraph (no quotation characters)
+  closingText?: string; // paragraph after the quote
+  quote?: string; // no quotation characters; the decorative marks are added by the component
 };
 
 export type CaseStudy = {
   // Page-level meta (replaces per-page props)
   pageTitle: string;
   subtitle?: string;
-  tagline?: string;
+  tagline?: string; // optional line under the label; omitted = not rendered
+  metaTitle?: string;
+  metaDescription?: string;
+  accent: string;
+  accentBright?: string;
+  hookImage?: { src: string; alt: string; width: number; height: number };
   hideSidebar?: boolean;
   summary?: string;
   // Sidebar metadata
@@ -292,7 +478,16 @@ export type CaseStudy = {
   // Rich section components
   equationAnnotation?: EquationAnnotationContent;
   overviewGrid?: SummaryGridData;
-  meetAllison?: MeetAllisonData;
+  storyStrip?: StoryStripData;
+  toolsAnalysis?: ToolsAnalysisData;
+  productJobs?: ProductJobsData;
+  personas?: PersonaData;
+  featuresMvp?: FeaturesMvpData;
+  featurePriority?: FeaturePriorityData;
+  pivots?: PivotsData;
+  pilot?: PilotData;
+  website?: WebsiteData;
+  whatsNext?: WhatsNextData;
   currentProcessFlow?: CurrentProcessFlowData;
   aiSubsection?: AiSubsectionData;
   aiSolutionSubsection?: AiSolutionSubsectionData;
@@ -314,6 +509,7 @@ export type CaseStudy = {
   impact?: string[];
   // Learnings
   learnings?: string[];
+  learningsHeading?: string; // section label; default "Learnings"
   learningItems?: Array<{ title: string; body: string }>;
   // Per-section visibility (default: all visible)
   showSections?: Partial<Record<
@@ -327,6 +523,7 @@ export const caseStudies: Record<string, CaseStudy> = {
     pageTitle: "How might we help UGC authors confidently bring their stories to audio?",
     subtitle: "Dolby Labs X Purdue [2023] | Independent [2026]",
     tagline: "(Spoiler: Not the way Dolby originally thought)",
+    accent: ACCENTS.dolby,
     hideSidebar: true,
     summary: "[One-line summary of what you built and its impact]",
     company: "Dolby Laboratories",
@@ -348,7 +545,7 @@ export const caseStudies: Record<string, CaseStudy> = {
         {
           headline: "Audiobook production is hard",
           body: "Audiobooks are one of the fastest growing media formats, but their creation is time-consuming, expensive and inaccessible for independent novice authors.",
-          insertion: { word: "very", after: "is", color: "#E07B39" },
+          insertion: { word: "very", after: "is", color: "var(--accent)" },
         },
         {
           headline: "Authors don't know where to start",
@@ -389,26 +586,37 @@ export const caseStudies: Record<string, CaseStudy> = {
         },
       ],
     },
-    meetAllison: {
-      imageBaseName: "allison",
-      caption: "Writer and content creator",
-      col2: {
-        text: "She wants to turn her written stories into high-quality audiobooks and reach listeners on platforms like Audible.",
-        icons: [
-          { name: "BookOpen" },
-          { name: "ArrowRight", size: 16 },
-          { name: "Headphones" },
-        ],
+    storyStrip: {
+      subLabel: "01. Making an audiobook",
+      person: {
+        name: "Allison",
+        label: "Meet Allison!",
+        caption: "Writer and content creator",
+        alt: "Allison — writer and content creator",
+        imageBaseName: "allison",
       },
-      col3: {
-        text: "But where does she start? Recording. Editing. Production. Too many tools to learn.",
-        icons: [
-          { name: "Mic", label: "Recording" },
-          { name: "Scissors", label: "Editing" },
-          { name: "Layers", label: "Production" },
-        ],
-      },
-      speechBubble: "Why does it take so many apps just to make an audiobook?",
+      columns: [
+        {
+          text: "She wants to turn her written stories into high-quality audiobooks and reach listeners on platforms like Audible.",
+          icons: [
+            { name: "BookOpen" },
+            { name: "ArrowRight", size: 16 },
+            { name: "Headphones" },
+          ],
+        },
+        {
+          text: "But where does she start? Recording. Editing. Production. Too many tools to learn.",
+          icons: [
+            { name: "Mic", label: "Recording" },
+            { name: "Scissors", label: "Editing" },
+            { name: "Layers", label: "Production" },
+          ],
+          iconsGap: 20,
+          iconsAlign: "flex-start",
+          textMarginBottom: 16,
+        },
+      ],
+      quote: "Why does it take so many apps just to make an audiobook?",
     },
     aiSubsection: {
       subLabel: "02. So, should AI do the talking?",
@@ -824,9 +1032,18 @@ export const caseStudies: Record<string, CaseStudy> = {
   },
 
   "veraai": {
-    pageTitle: "[Add VeraAI case study title]",
-    subtitle: "VeraAI",
-    tagline: "[Add hook line]",
+    pageTitle: "How can we reduce a 30-day sales cycle to a single day?",
+    subtitle: "VeraAI Technologies Inc. [2025 - 2026]",
+    accent: ACCENTS.veraai,
+    accentBright: ACCENTS_BRIGHT.veraai,
+    metaTitle: "How can we reduce a 30-day sales cycle to a single day? | VeraAI",
+    metaDescription: "VeraAI Technologies Inc. case study, 2025 - 2026",
+    hookImage: {
+      src: "/veraai/hook.png",
+      width: 1536,
+      height: 1024,
+      alt: "Diagram: 30 days of decisions around a calendar, including layout options, material choices, appliance selection, design revisions, quoting and re-quoting, coordination, compliance, client alignment, budget considerations, and measurements, leading to '1 visit to yes?' with visualize the layout, select materials, and get a quote.",
+    },
     hideSidebar: true,
     summary: "[Add one-line summary]",
     company: "[Add company]",
@@ -835,47 +1052,449 @@ export const caseStudies: Record<string, CaseStudy> = {
     team: "[Add team]",
     tools: "[Add tools]",
     overviewGrid: {
-      problem: [
-        { headline: "[Add problem headline]", body: "[Add the problem statement]" },
-      ],
+      problem:
+        "Remodelers rely on fragmented tools and repeated manual work to turn homeowner requirements into designs and quotations. The process is slow, unpredictable, and difficult to scale.",
       solution: {
-        intro: "[Add solution description]",
-        items: ["[Add item 1]", "[Add item 2]", "[Add item 3]"],
+        label: "Solution & North Star",
+        intro:
+          "An AI-assisted design workflow that generates NKBA-compliant kitchen layouts, 2D visuals, and bills of materials and quotations to accelerate early design decisions.",
+        squigglePhrase: "NKBA-compliant",
+        note: {
+          heading: "Uh, what is NKBA-compliant?",
+          body: "A kitchen design that follows the National Kitchen & Bath Association’s guidelines for safety, functionality, accessibility, and proper spacing.",
+        },
       },
-      users: "[Add user description]",
+      users:
+        "Kitchen remodeling specialists (aka remodellers) who need to create reliable designs and proposals quickly, without learning complex design software.",
+      hideUsersIcons: true,
       results: [
-        { year: "[Year]", label: "[Add results label]", body: "[Add results description]" },
+        "Generated **10–15 NKBA-compliant kitchen layouts**, validating an early level of technical feasibility.",
+        "Built a chatbot that identified and returned material selections based on user input.",
+        "Defined an MVP focused on measurements, layout generation, catalog integration, and quotations.",
+        "Coordinated a **12-person hybrid team** across three sprints.",
       ],
     },
     overview: "",
     problem: "",
     myRole: "",
     solution: "",
+    storyStrip: {
+      layout: "steps",
+      flowchart: {
+        note: "(average time: 42 days)",
+        steps: [
+          ["Potential Contact (Lead Generation - Advertising Sources)"],
+          ["What does the homeowner need for their new Kitchen?", "Project Info & Logistical Info"],
+          ["Start Sketches - Drafts (Either Manual or Software)"],
+          ["Customer Review : Design & Notes"],
+          ["Check Material catalogs for availability"],
+          ["Confirmation between Client & Remodeller"],
+          ["Bill of Materials & Quotation"],
+        ],
+        loop: { from: 3, to: 2 },
+        branch: { text: "Customer visits Showroom to pick materials", rejoin: 4 },
+      },
+      subLabel: "01. A long, fragmented path from consultation to quotation",
+      ariaDescription: "Meet Dave, a kitchen renovation specialist at DreamKitchens Inc.",
+      ariaLabel: "Meet Dave",
+      person: {
+        name: "Dave",
+        label: "Meet Dave!",
+        caption: "Kitchen renovation specialist at DreamKitchens Inc.",
+        arrow: true,
+        alt: "Cartoon of Dave, a smiling man with short twisted hair, wearing a black sweater with green squiggles and raising one finger as if making a point.",
+        image: { src: "/veraai/dave.png", width: 316, height: 400 },
+      },
+      columns: [
+        {
+          text: "His client, Renata, wants to remodel her L‑shaped kitchen in Florida.",
+          image: {
+            src: "/veraai/renata.png",
+            alt: "Cartoon of Renata, a woman with shoulder-length black hair and a teal striped top, eyes closed with her hand resting on her chest.",
+            width: 287,
+            height: 400,
+          },
+        },
+        {
+          text: "Dave walks her through the proposed designs, makes three rounds of revisions, and takes her to select materials.",
+          icon: { name: "Files", size: 56 },
+          badge: "X3",
+          image: { src: "", alt: "", width: 287, height: 400 }, // src empty = placeholder
+        },
+        {
+          text: "With the design finalized, he begins preparing the quotation.",
+          textOffsetY: -30,
+          icon: { name: "FileText", size: 56 },
+          iconLead: { color: "#16A34A" },
+          iconCaption: "$10,680",
+          iconOffsetY: 10,
+          image: { src: "", alt: "", width: 287, height: 400 }, // src empty = placeholder
+        },
+        {
+          text: "Then, just as the project is about to move forward, Renata changes her mind. She decides to put the renovation on hold and revisit it another day.",
+          icon: { name: "House", size: 56 },
+          iconLead: { name: "X", color: "#DC2626" },
+          image: { src: "", alt: "", width: 287, height: 400 }, // src empty = placeholder
+        },
+      ],
+      quote: "Thirty days of decisions, and no deal.",
+      closingText:
+        "Closing a remodeling client involves multiple steps: scheduling, planning, creating schematics, selecting materials, and preparing a quote. Each design revision or change in material selection can add time and uncertainty.",
+      afterFlowchartText:
+        "Remodelers needed a way to deliver quality designs faster without taking on additional tools or training.",
+      afterFlowchartQuote:
+        "We are not tech savvy people, we are not going to spend time learning the tool. As a salesperson, we want to close clients and keep moving",
+    },
+    toolsAnalysis: {
+      subLabel: "02. Why existing tools weren’t enough",
+      intro: "Our competitive analysis highlighted a fragmented workflow:",
+      tableHeaders: ["Tools", "What’s it for?", "Description"],
+      tableRows: [
+        {
+          tool: "AutoCAD / 2020",
+          purpose: "Schematics & Floor Plans",
+          description: "Industry-standard CAD software for precise 2D/3D technical drawings, requiring specialized training and significant time.",
+        },
+        {
+          tool: "RoomGPT / InteriorAI",
+          purpose: "2D & 3D Layouts",
+          description: "AI tools generating inspirational design visualizations, focused on aesthetics rather than construction-ready layouts or code compliance.",
+        },
+        {
+          tool: "Houzz Pro / CoConstruct",
+          purpose: "Scheduling & Budgeting",
+          description: "Project management platforms handling scheduling, budgeting, and collaboration but not automating initial design creation.",
+        },
+      ],
+      leadIns: [
+        "Each tool was evaluated based on the features it offers to remodellers.",
+        "A cohesive view of the features of the tools are as follows -",
+      ],
+      matrix: {
+        caption: "Feature comparison of AutoCAD, RoomGPT, InteriorAI, Houzz Pro, and CoConstruct",
+        columns: ["AutoCAD / 2020", "RoomGPT / InteriorAI", "Houzz Pro / CoConstruct"],
+        rows: [
+          { feature: "Real Manufacturer Catalogs", cells: [{ status: "no" }, { status: "no" }, { status: "yes", note: "[Limited SKU]" }] },
+          { feature: "Generative Design (AI)", cells: [{ status: "no" }, { status: "yes" }, { status: "no" }] },
+          { feature: "NKBA-Compliant Logic", cells: [{ status: "yes" }, { status: "no" }, { status: "no" }] },
+          { feature: "Photoreal Visualization", cells: [{ status: "partial", note: "[Manual Render]" }, { status: "yes" }, { status: "partial" }] },
+          { feature: "Build-Ready Outputs", cells: [{ status: "yes" }, { status: "no" }, { status: "partial" }] },
+          { feature: "Natural Language Interface", cells: [{ status: "no" }, { status: "yes" }, { status: "no" }] },
+          { feature: "Instant Bill of Materials", cells: [{ status: "partial" }, { status: "no" }, { status: "partial" }] },
+        ],
+      },
+      stats: [
+        { value: "57%", text: "of customers change their mind midway through the project", source: "" },
+        { value: "49%", text: "of customers don’t move ahead without visualizations", source: "" },
+      ],
+      closing: "This analysis led us to prioritise the key features of VeraAI.",
+    },
+    productJobs: {
+      subLabel: "01. Build around compliance, not just visualization",
+      paragraph:
+        "We chose NKBA kitchen guidelines as the product’s North Star, with an initial focus on kitchens before expanding to bathrooms and other remodeling workflows.",
+      leadIn: "Our MVP centered on four jobs:",
+      jobs: [
+        { icon: "Ruler", text: "Capture kitchen measurements." },
+        { icon: "ShieldCheck", text: "Generate NKBA-compliant layouts." },
+        { icon: "LayoutGrid", text: "Produce 2D visuals using catalog items." },
+        { icon: "ReceiptText", text: "Generate a bill of materials and quotation." },
+      ],
+      closing: {
+        bold: "The principle:",
+        rest: " give remodelers a high-confidence starting point that they could use to move the project forward.",
+      },
+    },
+    personas: {
+      subLabel: "02. Segmentation & Targeting",
+      intro:
+        "VeraAI aims to be the sole end-to-end workflow tool for remodellers to close sales. The core product covers the four stages of gaining a client, affecting three target segments:",
+      segments: [
+        { name: "Homeowners", text: "Customers who are interested in having their Kitchen renovated" },
+        { name: "Business Account Owners", text: "Administrators who track & maintain lead generation" },
+        {
+          name: "Project Specialists",
+          text: "Remodellers who do the ground work of analysing the current vs future states of the Kitchen & fulfilling the needs of the Homeowner",
+        },
+      ],
+      personas: [
+        {
+          role: "Homeowner",
+          name: "Annie",
+          avatar: {
+            src: "/veraai/annie.png",
+            width: 160,
+            height: 200,
+            alt: "Cartoon of Annie, a homeowner with a black bob haircut, eyes closed in a smile, wearing a loose black top.",
+            blend: true,
+          },
+        },
+        {
+          role: "Business Account Owner",
+          name: "Jack",
+          avatar: {
+            src: "/veraai/jack.png",
+            width: 190,
+            height: 200,
+            alt: "Cartoon of Jack, a business account owner in a black hat and yellow shirt, holding an open laptop.",
+            blend: true,
+          },
+        },
+        {
+          role: "Project Specialist",
+          name: "Edgar",
+          avatar: {
+            src: "/veraai/edgar.png",
+            width: 150,
+            height: 200,
+            alt: "Cartoon of Edgar, a project specialist with short dark hair, wearing a black sweater with yellow flecks over a yellow collar.",
+            blend: true,
+          },
+        },
+      ],
+      rows: [
+        { label: "Primary Motivations", cells: [
+          "Achieve a functional, aesthetically pleasing kitchen within a clear budget and timeline.",
+          "Maximize lead conversion and project profitability",
+          "Deliver compliant, accurate designs with minimal rework",
+        ] },
+        { label: "Behavioural Patterns", cells: [
+          [
+              "Research-driven and comparison-oriented, exploring multiple vendors online before initiating contact",
+              "Seeks frequent updates and visual confirmation, especially before committing to cost or design decisions",
+            ],
+          [
+              "Prioritizes pipeline visibility and predictability, tracking leads and client status across tools",
+              "Balances sales and operations simultaneously, often switching context between closing deals and managing active projects",
+            ],
+          [
+              "Relies on manual, fragmented workflows and consolidates information late in the process",
+              "Validates compliance and feasibility after initial design, leading to rework and revisions",
+            ],
+        ] },
+        { label: "Resource Constraints", cells: [
+          "Limited renovation knowledge, time, and budget flexibility",
+          "Limited visibility across sales, projects, and teams",
+          "Time pressure, fragmented tools, and incomplete site data",
+        ] },
+        { label: "Goals & Outcomes", cells: [
+          "Confidence in decisions and transparency from discovery through completion",
+          "A predictable pipeline with controlled costs and timely delivery",
+          "Faster design-to-quote cycles with NKBA-compliant outputs",
+        ] },
+      ],
+      opportunities: {
+        leadIn: "Possible opportunities to serve each persona -",
+        cards: [
+          {
+            title: "Homeowners",
+            items: ["Discovery through Marketing channels", "Lead Submission & Onboarding", "Communication & Status Visibility"],
+          },
+          {
+            title: "Business Account Owners",
+            items: ["Lead Generation/ Capture", "Client State Tracking", "Vendor & Catalog Management System", "Project Management System", "Sales"],
+          },
+          {
+            title: "Project Specialists",
+            items: ["Project Folders", "Notetaker", "Measurements", "2D & 3D Schematics", "BOM & Quotation Generation"],
+          },
+        ],
+      },
+      focusIndex: 2,
+      focusNote: "our MVP focus",
+      closing:
+        "With the NKBA-compliant engine as our North Star, we focused on serving the Project Specialist first, building only the minimum features required to validate our idea [MVP: Minimum Viable Product].",
+    },
+    featuresMvp: {
+      subLabel: "03. Key Features",
+      intro: "As a Project Specialist, these are the main features needed in a day-to-day workflow -",
+      headers: ["JTBD", "Feature", "MVP"],
+      rows: [
+        {
+          marker: "#1",
+          jtbd: "- When analyzing a client’s kitchen, I want to capture accurate measurements quickly, so I can design layouts without missing constraints",
+          feature: "Measurements capture tool using Mobile",
+          mvp: "Manual entry of measurements on webpage",
+        },
+        {
+          marker: "#2",
+          jtbd: "- When planning a renovation, I want NKBA‑compliant layouts, so I can avoid rework and stay within industry standards",
+          feature: "NKBA‑compliant layout generation",
+          mvp: "",
+        },
+        {
+          marker: "#3",
+          jtbd: "- When visualizing a kitchen design, I want 2D & 3D schematics generated from catalog items, so I can present realistic layouts to homeowners",
+          feature: "2D & 3D schematics via catalog ingestion",
+          mvp: "Create 2D schematic with limited catalog items",
+        },
+        {
+          marker: "#4",
+          jtbd: "- When finalizing the project, I want a BOM and accurate quotation generated automatically, so I can save time and reduce errors",
+          feature: "BOM & quotation generation",
+          mvp: "Create a 2-in-1 BOM + Quotation with catalog data reflected",
+        },
+      ],
+    },
+    featurePriority: {
+      subLabel: "04. Feature Prioritization",
+      headers: ["Feature", "Impact", "Effort", "Priority", "Notes"],
+      rows: [
+        { feature: "Measurements", impact: "High", effort: "Low", priority: "Must-Have", notes: "" },
+        { feature: "NKBA Engine", impact: "High", effort: "High", priority: "Must-Have", notes: "" },
+        { feature: "Layout Generation", impact: "High", effort: "High", priority: "Must-Have", notes: "" },
+        { feature: "Catalog Ingestion", impact: "Medium", effort: "High", priority: "Should-Have", notes: "Include Limited catalog Items" },
+        { feature: "Chatbot", impact: "Medium", effort: "High", priority: "Should-Have", notes: "Create Keyword matching chatbot" },
+        { feature: "Lookbook", impact: "Low", effort: "Low", priority: "Won’t-Have", notes: "" },
+        { feature: "2D Scene Visualizer", impact: "High", effort: "High", priority: "Should-Have", notes: "Include essential scenes | Resource Constraints" },
+        { feature: "3D Design Studio", impact: "High", effort: "High", priority: "Won’t-Have", notes: "Time & Resource constraints" },
+        { feature: "BOM + Quotation", impact: "High", effort: "High", priority: "Should-Have", notes: "Basic BOM & Quotation to include essential details" },
+        { feature: "Credit Allocation", impact: "Medium", effort: "High", priority: "Won’t-Have", notes: "" },
+        { feature: "Project Tracking", impact: "Medium", effort: "Low", priority: "Could-Have", notes: "" },
+      ],
+    },
+    pivots: {
+      heading: "Three pivots to find the right product",
+      note: "we are here",
+      pivots: [
+        {
+          label: "Pivot 1",
+          title: "Predefined kitchen templates",
+          body: "We started with a studio offering predefined templates and layouts for homeowners to choose from.",
+          calloutLabel: "What we learned",
+          calloutText: "The concept was already widely available, making differentiation difficult.",
+          status: "dropped",
+          statusLabel: "Dropped",
+          icon: "LayoutTemplate",
+        },
+        {
+          label: "Pivot 2",
+          title: "Layering catalog items onto kitchen photos",
+          body: "We explored segmenting kitchen photos and overlaying catalog materials to help homeowners visualize changes.",
+          calloutLabel: "What we learned",
+          calloutText: "Segmentation and layering were technically complex and inconsistent, and the approach struggled to support complete remodels.",
+          status: "dropped",
+          statusLabel: "Dropped",
+          icon: "Layers",
+        },
+        {
+          label: "Pivot 3",
+          title: "NKBA‑compliant AI layouts",
+          body: "We shifted toward generating kitchen layouts guided by NKBA standards, with 2D visuals to help project specialists present designs to homeowners.",
+          calloutLabel: "Why this direction",
+          calloutText: "It focused the product on a concrete remodeling need, producing usable layouts within established design constraints, rather than visualization alone.",
+          status: "current",
+          statusLabel: "Current direction",
+          icon: "ShieldCheck",
+        },
+      ],
+      closing: "This became the current direction, with further development still in progress.",
+    },
+    showSections: { solution: false, evaluation: false }, // Solution is replaced by `pilot`; Evaluation is hidden for now
+    pilot: {
+      heading: "Building and validating the pilot",
+      videoUrl: "",
+      poster: "",
+      intro: "The pilot focused on establishing technical feasibility for the core workflow.",
+      stats: [
+        { value: "10–15", label: "NKBA‑compliant layouts generated" },
+        { value: "12", label: "person hybrid team" },
+        { value: "3", label: "sprints" },
+      ],
+      cards: [
+        { icon: "LayoutGrid", title: "Layout generation", text: "Generated 10–15 NKBA‑compliant kitchen layouts." },
+        { icon: "MessageSquareText", title: "Material selection", text: "Built a chatbot that returned material selections based on user input." },
+        { icon: "Network", title: "CRM architecture", text: "Defined customer journey tracking and vendor information management." },
+        {
+          icon: "Rocket",
+          title: "Product execution",
+          text: "Built the product’s frontend end-to-end, coordinated a 12‑person hybrid team across three sprints, and developed landing pages and go-to-market materials.",
+        },
+      ],
+    },
+    website: {
+      heading: "Bringing VeraAI to market",
+      intro:
+        "Beyond defining the product, I built VeraAI’s website end-to-end, translating the product vision into a customer-facing experience for kitchen and bath remodeling professionals.",
+      first: {
+        subLabel: "01. The first impression",
+        videoUrl: "",
+        poster: "",
+        placeholderLabel: "[Website walkthrough video, 10–20 seconds]",
+        caption:
+          "A look at the first draft of VeraAI’s website, from the homepage and value proposition to the presentation of its product capabilities.",
+        tags: ["Website design and frontend development", "Early draft"],
+      },
+      communicating: {
+        subLabel: "02. Communicating the product",
+        blocks: [
+          {
+            src: "/veraai/website/hero.png",
+            alt: "Screenshot of the VeraAI homepage hero, showing the product headline and call to action for kitchen and bath remodeling professionals.",
+            placeholderLabel: "[Homepage hero screenshot]",
+            caption:
+              "The homepage introduced VeraAI’s vision and communicated the value of AI-assisted kitchen and bath remodeling.",
+          },
+          {
+            src: "/veraai/website/features.png",
+            alt: "Screenshot of the VeraAI website's product and features section, laying out the product capabilities.",
+            placeholderLabel: "[Product and features section screenshot]",
+            caption:
+              "The product sections translated VeraAI’s capabilities into a clear story for prospective customers and stakeholders.",
+          },
+        ],
+      },
+      contribution: {
+        label: "My contribution",
+        text: "End-to-end frontend development, website content presentation, and go-to-market materials.",
+      },
+    },
     problemBlocks: [
       { label: "01.", text: "[Add the problem statement]" },
       { label: "02.", text: "[Add the problem statement]" },
-      { label: "03.", text: "[Add the problem statement]" },
     ],
     productStrategyBlocks: [
       { label: "01.", type: "table", text: "[Add table content]" },
       { label: "02.", type: "table", text: "[Add table content]" },
       { label: "03.", type: "screens", text: "[Add screens content]" },
     ],
-    solutionBlocks: [
-      { label: "01. See it in action", type: "video", text: "[Add video or description]" },
-      { label: "02.", type: "diagram", text: "[Add diagram content]" },
-      { label: "03. One key engineering decision", type: "decision", text: "[Add decision content]" },
-    ],
     evaluationText: "[Add evaluation and observability content]",
+    learningsHeading: "What I learned",
     learningItems: [
-      { title: "[Add learning title]", body: "[Add learning body]" },
-      { title: "[Add learning title]", body: "[Add learning body]" },
-      { title: "[Add learning title]", body: "[Add learning body]" },
+      {
+        title: "Differentiate on the workflow, not just the interface.",
+        body: "Attractive visualizations weren’t enough; the product needed to help remodelers produce usable, NKBA‑compliant designs.",
+      },
+      {
+        title: "Technical feasibility must shape product strategy.",
+        body: "The photo-layering concept revealed how implementation constraints can undermine an otherwise appealing idea.",
+      },
+      {
+        title: "A focused MVP is more valuable than an oversized roadmap.",
+        body: "Prioritizing the core layout workflow helped narrow the scope to the capabilities most central to the product’s value.",
+      },
     ],
+    whatsNext: {
+      heading: "What’s next",
+      cards: [
+        {
+          icon: "Cog",
+          label: "Build",
+          text: "Continue developing the NKBA‑compliant layout engine and the workflow connecting generated layouts to 2D visuals, material selection, and quotations.",
+        },
+        {
+          icon: "Users",
+          label: "Validate",
+          text: "Validate the product with remodelers, measuring design time, manual corrections, iteration frequency, user adoption, and eventually the time required to close a client.",
+          tags: ["Design time", "Manual corrections", "Iteration frequency", "User adoption", "Time to close a client"],
+        },
+      ],
+    },
   },
 
   "metamint": {
     pageTitle: "[Add MetaMint case study title]",
+    accent: ACCENTS.dolby,
     subtitle: "MetaMint",
     tagline: "[Add hook line]",
     hideSidebar: true,

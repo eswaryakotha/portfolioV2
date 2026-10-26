@@ -1,8 +1,18 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { CaseStudy } from "@/data/content";
 import SummaryGrid from "@/components/SummaryGrid";
 import EquationAnnotation from "@/components/EquationAnnotation";
-import MeetAllison from "@/components/MeetAllison";
+import StoryStrip from "@/components/StoryStrip";
+import ToolsAnalysis from "@/components/ToolsAnalysis";
+import ProductJobs from "@/components/ProductJobs";
+import PersonaSection from "@/components/PersonaSection";
+import FeaturesMvpTable from "@/components/FeaturesMvpTable";
+import FeaturePriorityTable from "@/components/FeaturePriorityTable";
+import PivotsSection from "@/components/PivotsSection";
+import PilotSection from "@/components/PilotSection";
+import WebsiteSection from "@/components/WebsiteSection";
+import WhatsNextSection from "@/components/WhatsNextSection";
 import CurrentProcessFlow from "@/components/CurrentProcessFlow";
 import DecorativeQuote from "@/components/DecorativeQuote";
 import AiSolutionSection from "@/components/AiSolutionSection";
@@ -17,7 +27,13 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
     study.showSections?.[key] !== false;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
+    <div
+      className="max-w-5xl mx-auto px-6 py-12"
+      style={{
+        "--accent": study.accent,
+        "--accent-bright": study.accentBright ?? study.accent,
+      } as React.CSSProperties}
+    >
       <Link
         href="/work"
         className="font-mono text-xs text-gray-500 hover:text-gray-900 uppercase tracking-widest"
@@ -61,6 +77,19 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
             {study.tagline && (
               <p className="text-sm text-gray-500 mt-2">{study.tagline}</p>
             )}
+            {study.hookImage && (
+              <div className="mt-8">
+                <Image
+                  src={study.hookImage.src}
+                  alt={study.hookImage.alt}
+                  width={study.hookImage.width}
+                  height={study.hookImage.height}
+                  priority
+                  sizes="(min-width: 1000px) 1000px, 100vw"
+                  className="mx-auto w-full max-w-[1000px] h-auto"
+                />
+              </div>
+            )}
             {study.equationAnnotation && (
               <div className="mt-8">
                 <EquationAnnotation content={study.equationAnnotation} />
@@ -89,21 +118,33 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
               {study.problem && (
                 <p className="text-sm text-gray-800 leading-relaxed">{study.problem}</p>
               )}
-              {study.meetAllison && (
-                <MeetAllison data={study.meetAllison} />
+              {study.storyStrip && (
+                <StoryStrip data={study.storyStrip} />
               )}
-              {study.problemBlocks && (
-                <div className="flex flex-col gap-8">
-                  {study.problemBlocks.map((block) => (
-                    <div key={block.label}>
-                      <p className="font-mono text-xs tracking-widest text-gray-400 mb-2">
-                        {block.label}
-                      </p>
-                      <p className="text-sm text-gray-800 leading-relaxed">{block.text}</p>
-                    </div>
-                  ))}
+              {study.toolsAnalysis && (
+                <div className="mt-8">
+                  <ToolsAnalysis data={study.toolsAnalysis} />
                 </div>
               )}
+              {(() => {
+                const blocks = (study.problemBlocks ?? [])
+                  // the story strip and tools analysis replace the "01." and "02." placeholders
+                  .filter((block) => !(study.storyStrip && block.label === "01."))
+                  .filter((block) => !(study.toolsAnalysis && block.label === "02."));
+                if (blocks.length === 0) return null;
+                return (
+                  <div className={`flex flex-col gap-8${study.storyStrip || study.toolsAnalysis ? " mt-8" : ""}`}>
+                    {blocks.map((block) => (
+                      <div key={block.label}>
+                        <p className="font-mono text-xs tracking-widest text-gray-400 mb-2">
+                          {block.label}
+                        </p>
+                        <p className="text-sm text-gray-800 leading-relaxed">{block.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </section>
           )}
 
@@ -165,7 +206,16 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   Product Strategy and Insights
                 </h2>
                 <div className="flex flex-col gap-8">
-                  {study.productStrategyBlocks.map((block) => (
+                  {study.productJobs && <ProductJobs data={study.productJobs} />}
+                  {study.personas && <PersonaSection data={study.personas} />}
+                  {study.featuresMvp && <FeaturesMvpTable data={study.featuresMvp} />}
+                  {study.featurePriority && <FeaturePriorityTable data={study.featurePriority} />}
+                  {study.productStrategyBlocks
+                    // the product jobs, personas and features table replace the "01.", "02." and "03." placeholders
+                    .filter((block) => !(study.productJobs && block.label === "01."))
+                    .filter((block) => !(study.personas && block.label === "02."))
+                    .filter((block) => !(study.featuresMvp && block.label === "03."))
+                    .map((block) => (
                     <div key={block.label}>
                       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">
                         {block.label}
@@ -192,6 +242,12 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
               </section>
             )
           )}
+
+          {study.pivots && <PivotsSection data={study.pivots} />}
+
+          {study.pilot && <PilotSection data={study.pilot} />}
+
+          {study.website && <WebsiteSection data={study.website} />}
 
           {show("solution") && (
             study.solutionSection ? (
@@ -291,7 +347,7 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
           {show("learnings") && (study.learningItems || (study.learnings && study.learnings.length > 0)) && (
             <section className="border-t border-gray-200 pt-6">
               <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
-                Learnings
+                {study.learningsHeading ?? "Learnings"}
               </h2>
               {study.learningItems ? (
                 <ol className="flex flex-col gap-8">
@@ -321,6 +377,8 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
               )}
             </section>
           )}
+
+          {study.whatsNext && <WhatsNextSection data={study.whatsNext} />}
         </article>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import type { EquationAnnotationContent } from "@/data/content";
 
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 
 // Coordinate reference (viewBox 0 0 820 140, text at y=85, 18px Advercase normal):
 // "UGC audiobook creators"  x 194–≈364  (cx≈268, ellipse right x=364)

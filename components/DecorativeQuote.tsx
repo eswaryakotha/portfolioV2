@@ -1,10 +1,18 @@
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 
-export default function DecorativeQuote({ text, fontSize = 16 }: { text: string; fontSize?: number }) {
+export default function DecorativeQuote({
+  text,
+  fontSize = 16,
+  maxWidth = 540,
+}: {
+  text: string;
+  fontSize?: number;
+  maxWidth?: number;
+}) {
   return (
     <div style={{
       position: "relative",
-      maxWidth: 540,
+      maxWidth,
       margin: "0 auto",
       padding: "8px 36px 20px",
     }}>

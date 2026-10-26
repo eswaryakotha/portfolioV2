@@ -5,7 +5,7 @@ import { Lightbulb } from "lucide-react";
 import DecorativeQuote from "@/components/DecorativeQuote";
 import type { EngineeringDecisionData } from "@/data/content";
 
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 const INK = "#2B2B2B";
 const CARD_BORDER = "#e5e7eb";
 

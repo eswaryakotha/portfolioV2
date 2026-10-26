@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { AnnotatedScreenData } from "@/data/content";
 
-const ORANGE = "#E07B39";
-const ORANGE_70 = "rgba(224,123,57,0.7)";
+const ORANGE = "var(--accent)";
+const ORANGE_70 = "color-mix(in srgb, var(--accent) 70%, transparent)";
 
 export default function AnnotatedScreen({ screen }: { screen: AnnotatedScreenData }) {
   const [isDebug, setIsDebug] = useState(false);
@@ -59,7 +59,7 @@ export default function AnnotatedScreen({ screen }: { screen: AnnotatedScreenDat
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              color: "#E07B39",
+              color: "var(--accent)",
               marginBottom: 4,
             }}>
               {screen.header.jtbd}

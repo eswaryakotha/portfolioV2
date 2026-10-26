@@ -8,7 +8,7 @@ import {
 import type { EvaluationData } from "@/data/content";
 
 // ── Design tokens ─────────────────────────────────────────────
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 const INK = "#2B2B2B";
 const CARD_BORDER = "#e5e7eb";
 

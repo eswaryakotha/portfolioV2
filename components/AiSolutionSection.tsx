@@ -7,7 +7,7 @@ function Icon({ name, size = 40 }: { name: string; size?: number }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Comp = (LucideIcons as any)[name];
   if (!Comp) return null;
-  return <Comp size={size} strokeWidth={1.5} color="#E07B39" />;
+  return <Comp size={size} strokeWidth={1.5} color="var(--accent)" />;
 }
 
 export default function AiSolutionSection({ data }: { data: AiSolutionSubsectionData }) {

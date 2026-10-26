@@ -12,7 +12,7 @@ type Props = {
 //   wordGap:     1px between word bottom and caret apex (via marginBottom on label)
 //   wordGap (marginBottom): 4px between word bottom and caret apex
 
-export default function InsertionMark({ word, color = "#E07B39" }: Props) {
+export default function InsertionMark({ word, color = "var(--accent)" }: Props) {
   return (
     <span
       aria-hidden="true"

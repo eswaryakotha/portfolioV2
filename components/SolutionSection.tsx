@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 import EngineeringDecision from "@/components/EngineeringDecision";
 import type { SolutionData, DiagramStep, SolutionTechCard } from "@/data/content";
 
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 const NEAR_BLACK = "#111"; // used only outside the board (e.g. video play icon)
 const CARD_BORDER = "#e5e7eb";
 const FRAME_BG = "#eeeeec";

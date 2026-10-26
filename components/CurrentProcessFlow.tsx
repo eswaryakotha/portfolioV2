@@ -3,8 +3,8 @@ import path from "path";
 import { Fragment } from "react";
 import { ArrowRight } from "lucide-react";
 import type { CurrentProcessFlowData } from "@/data/content";
+import CurrentProcessLabel from "@/components/CurrentProcessLabel";
 
-const ORANGE = "#E07B39";
 const PROCESS_DIR = path.join(process.cwd(), "public", "process");
 
 function getStepLogos(stepCount: number): string[][] {
@@ -36,45 +36,7 @@ export default function CurrentProcessFlow({ data }: { data: CurrentProcessFlowD
 
         {/* ── Handwritten label + arrow ── */}
         <div className="flex-shrink-0 sm:w-[140px]" style={{ marginBottom: 30 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            style={{
-              color: ORANGE,
-              fontFamily: "var(--font-caveat), cursive",
-              fontSize: 20,
-              lineHeight: 1,
-              transform: "rotate(-3deg)",
-              transformOrigin: "left center",
-              display: "inline-block",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Current process
-          </span>
-          {/* Curved arrow pointing toward step 1 — desktop only */}
-          <svg
-            viewBox="0 0 80 18"
-            width="72"
-            height="16"
-            aria-hidden="true"
-            className="hidden sm:block"
-            style={{ flexShrink: 0 }}
-          >
-            <defs>
-              <marker id="cp-head" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
-                <path d="M 0,0 L 7,3 L 0,6 Z" fill={ORANGE} />
-              </marker>
-            </defs>
-            <path
-              d="M 2,9 Q 40,2 76,11"
-              stroke={ORANGE}
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-              markerEnd="url(#cp-head)"
-            />
-          </svg>
-          </div>
+          <CurrentProcessLabel />
         </div>
 
         {/* ── Flow: logos on top, label on bottom, arrows between ── */}

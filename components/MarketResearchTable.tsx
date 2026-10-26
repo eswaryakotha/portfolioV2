@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import type { ProductTableRow } from "@/data/content";
 
-const ORANGE = "#E07B39";
+const ORANGE = "var(--accent)";
 
 type Box = { top: number; height: number; width: number };
 
