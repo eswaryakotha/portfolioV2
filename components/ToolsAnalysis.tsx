@@ -69,6 +69,9 @@ const srOnly: React.CSSProperties = {
   border: 0,
 };
 
+// The feature matrix (table + legend) is hidden for now; the stats stay.
+const SHOW_MATRIX = false;
+
 export default function ToolsAnalysis({ data }: { data: ToolsAnalysisData }) {
   const { matrix } = data;
   return (
@@ -120,7 +123,7 @@ export default function ToolsAnalysis({ data }: { data: ToolsAnalysisData }) {
 
       {/* Matrix + stats */}
       <div className="flex flex-col min-[1000px]:flex-row min-[1000px]:items-center" style={{ gap: 32, marginTop: 24 }}>
-        <div className="min-w-0 min-[1000px]:w-[70%]">
+        {SHOW_MATRIX && <div className="min-w-0 min-[1000px]:w-[70%]">
           <div style={{ overflowX: "auto", position: "relative" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 560 }}>
               <caption style={srOnly}>{matrix.caption}</caption>
@@ -187,9 +190,9 @@ export default function ToolsAnalysis({ data }: { data: ToolsAnalysisData }) {
               </li>
             ))}
           </ul>
-        </div>
+        </div>}
 
-        <div className="grid grid-cols-1 min-[640px]:grid-cols-2 min-[1000px]:grid-cols-1 min-[1000px]:w-[30%]" style={{ gap: 48 }}>
+        <div className={SHOW_MATRIX ? "grid grid-cols-1 min-[640px]:grid-cols-2 min-[1000px]:grid-cols-1 min-[1000px]:w-[30%]" : "grid grid-cols-1 min-[640px]:grid-cols-2 w-full"} style={{ gap: 48 }}>
           {data.stats.map((stat) => (
             <div key={stat.value}>
               <p style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 600, color: "var(--accent-bright, var(--accent))", margin: 0 }}>

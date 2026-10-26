@@ -1,5 +1,7 @@
 import React from "react";
-import type { ProblemItem, SummaryGridData } from "@/data/content";
+import type { LabeledResult, ProblemItem, SummaryGridData, YearResult } from "@/data/content";
+import SolutionCards from "@/components/SolutionCards";
+import ResultsLabeled from "@/components/ResultsLabeled";
 import InsertionMark from "@/components/InsertionMark";
 import NoteArrow from "@/components/NoteArrow";
 
@@ -173,7 +175,7 @@ export default function SummaryGrid({ grid }: { grid: SummaryGridData }) {
       </div>
 
       {/* Row 2: Solution + Users — 50/50, stacked on mobile */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className={`grid grid-cols-1 ${grid.stackLayout ? "" : "sm:grid-cols-2 "}gap-3`}>
         <div data-sg="solution" className="border border-gray-200 p-5">
           <p className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">{grid.solution.label ?? "Solution"}</p>
           {grid.solution.strikethrough && (
@@ -192,8 +194,10 @@ export default function SummaryGrid({ grid }: { grid: SummaryGridData }) {
               </li>
             ))}
           </ol>}
+          {grid.solution.lead && <p className="text-sm text-gray-700 leading-relaxed mb-3">{grid.solution.lead}</p>}
+          {grid.solution.cards && <SolutionCards cards={grid.solution.cards} note={grid.solution.foundationNote} />}
           {grid.solution.closing && (
-            <p className="text-sm text-gray-700">{grid.solution.closing}</p>
+            <p className={grid.solution.cards ? "text-sm text-gray-700 leading-relaxed mt-6" : "text-sm text-gray-700"}>{grid.solution.closing}</p>
           )}
         </div>
         <div className="border border-gray-200 p-5">
@@ -220,9 +224,11 @@ export default function SummaryGrid({ grid }: { grid: SummaryGridData }) {
               </li>
             ))}
           </ul>
+        ) : "verb" in (grid.results[0] as object) ? (
+          <ResultsLabeled items={grid.results as LabeledResult[]} />
         ) : (
         <ul className="flex flex-col gap-3">
-          {(grid.results as Exclude<SummaryGridData["results"], string[]>).map((item, i) => (
+          {(grid.results as YearResult[]).map((item, i) => (
             <li key={i} className="flex gap-3 text-sm">
               <span className="font-mono text-xs text-gray-400 shrink-0 mt-0.5 w-8">{item.year}</span>
               <p className="text-gray-700 leading-relaxed">

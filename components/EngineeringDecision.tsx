@@ -108,8 +108,8 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
         </p>
       </div>
 
-      {/* TRADE-OFF */}
-      <div>
+      {/* TRADE-OFF (hidden for now) */}
+      {false && <div>
         <MonoLabel>{data.tradeoff.label}</MonoLabel>
         <div style={{ border: `1px solid ${CARD_BORDER}`, borderRadius: 4, padding: "12px 16px" }}>
           <ul style={{ margin: "0 0 10px 0", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -129,10 +129,10 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
             {data.tradeoff.closing}
           </p>
         </div>
-      </div>
+      </div>}
 
-      {/* REASONING — arrow on left, label + phrases on right */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+      {/* REASONING — arrow on left, label + phrases on right (hidden for now) */}
+      {false && <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
         <svg
           aria-hidden="true"
           width="56" height="36" viewBox="0 0 56 36"
@@ -166,7 +166,7 @@ export default function EngineeringDecision({ data }: { data: EngineeringDecisio
             {data.reasoning.ariaDescription}
           </span>
         </div>
-      </div>
+      </div>}
 
       {/* CHALLENGE */}
       <div>

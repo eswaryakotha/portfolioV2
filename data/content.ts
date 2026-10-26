@@ -15,11 +15,13 @@ export const siteContent = {
 export const ACCENTS = {
   dolby: "#E07B39",
   veraai: "#081A4A",
+  metamint: "#1F6B4F", // placeholder deep mint green; change here
 } as const;
 
 // Brighter companion used for hand-drawn annotations; falls back to the accent.
 export const ACCENTS_BRIGHT: Record<string, string> = {
   veraai: "#2F6BFF",
+  metamint: "#2E9E73", // placeholder bright mint; change here
 };
 
 export type Project = {
@@ -56,7 +58,7 @@ export const projects: Project[] = [
   },
   {
     id: "metamint",
-    accent: ACCENTS.dolby,
+    accent: ACCENTS.metamint,
     title: "MetaMint",
     summary: "[Add one-line summary]",
     role: "[Your Role]",
@@ -86,7 +88,34 @@ export type ProblemItem = {
   };
 };
 
+// Optional pieces used by the MetaMint Overview (Dolby and VeraAI don't set them).
+export type StatusCard = {
+  icon: string; // lucide-react icon name
+  tag: string; // real-text status, e.g. "Working Prototype"
+  title: string;
+  text: string;
+  status: "vision" | "built"; // vision = dashed border, built = solid tinted
+};
+
+export type StatTile = {
+  percentLabel: string; // the figure as displayed; checked against correct/total in dev
+  correct: number;
+  total: number;
+  decimals: number; // shown precision
+  description: string;
+};
+
+export type LabeledResult = {
+  verb: string;
+  title: string;
+  text?: string;
+  stats?: StatTile[];
+};
+
+export type YearResult = { year: string; label: string; body: string; boldPhrases?: string[] };
+
 export type SummaryGridData = {
+  stackLayout?: boolean; // Solution and Users each take a full-width row
   // numbered points, or a single paragraph
   problem: Array<ProblemItem> | string;
   solution: {
@@ -97,11 +126,14 @@ export type SummaryGridData = {
     squigglePhrase?: string; // phrase inside intro to underline with a hand-drawn squiggle
     items?: string[];
     closing?: string;
+    lead?: string; // line between the intro and the status cards
+    cards?: StatusCard[];
+    foundationNote?: string; // handwritten note + arrow from the last card to the first
   };
   users: string;
   hideUsersIcons?: boolean;
   // year-labeled items, or plain bullets (**bold** markers supported)
-  results: Array<{ year: string; label: string; body: string; boldPhrases?: string[] }> | string[];
+  results: YearResult[] | string[] | LabeledResult[];
 };
 
 export type ColIcon = { name: string; label?: string; size?: number };
@@ -457,6 +489,18 @@ export type StoryStripData = {
   quote?: string; // no quotation characters; the decorative marks are added by the component
 };
 
+// Hook visual for the MetaMint hero: a budget notebook page plus a chat bubble.
+// The total and the overage are computed from `items` and `budget`.
+export type BudgetHookData = {
+  heading: string;
+  budgetLabel: string;
+  budget: number;
+  items: Array<{ label: string; amount: number; flag?: "question" }>;
+  totalLabel: string;
+  scribble: string; // red handwritten note next to the circled total
+  bubble: { before: string; after: string; time: string };
+};
+
 export type CaseStudy = {
   // Page-level meta (replaces per-page props)
   pageTitle: string;
@@ -477,6 +521,7 @@ export type CaseStudy = {
   tools: string;
   // Rich section components
   equationAnnotation?: EquationAnnotationContent;
+  budgetHook?: BudgetHookData;
   overviewGrid?: SummaryGridData;
   storyStrip?: StoryStripData;
   toolsAnalysis?: ToolsAnalysisData;
@@ -1068,10 +1113,11 @@ export const caseStudies: Record<string, CaseStudy> = {
         "Kitchen remodeling specialists (aka remodellers) who need to create reliable designs and proposals quickly, without learning complex design software.",
       hideUsersIcons: true,
       results: [
-        "Generated **10–15 NKBA-compliant kitchen layouts**, validating an early level of technical feasibility.",
-        "Built a chatbot that identified and returned material selections based on user input.",
-        "Defined an MVP focused on measurements, layout generation, catalog integration, and quotations.",
-        "Coordinated a **12-person hybrid team** across three sprints.",
+        "Generated and tested 10–15 NKBA‑compliant kitchen layouts in the working product, validating the technical feasibility of AI-assisted kitchen design.",
+        "Defined the MVP scope across measurement capture, kitchen layout generation, catalog integration, and quotation workflows.",
+        "Built the product’s end-to-end frontend using React and Tailwind CSS, implementing the core user journey from onboarding through kitchen design & quotation.",
+        "Designed and developed VeraAI’s marketing website and landing page, establishing the product’s digital presence and communicating its value proposition.",
+        "Coordinated a 12‑person hybrid team across three sprints, aligning execution with MVP priorities.",
       ],
     },
     overview: "",
@@ -1168,7 +1214,7 @@ export const caseStudies: Record<string, CaseStudy> = {
       ],
       leadIns: [
         "Each tool was evaluated based on the features it offers to remodellers.",
-        "A cohesive view of the features of the tools are as follows -",
+        // Hidden with the matrix: "A cohesive view of the features of the tools are as follows -"
       ],
       matrix: {
         caption: "Feature comparison of AutoCAD, RoomGPT, InteriorAI, Houzz Pro, and CoConstruct",
@@ -1493,10 +1539,36 @@ export const caseStudies: Record<string, CaseStudy> = {
   },
 
   "metamint": {
-    pageTitle: "[Add MetaMint case study title]",
-    accent: ACCENTS.dolby,
-    subtitle: "MetaMint",
-    tagline: "[Add hook line]",
+    pageTitle: "What if your money coach understood your financial life, not just your transactions?",
+    accent: ACCENTS.metamint,
+    accentBright: ACCENTS_BRIGHT.metamint,
+    subtitle: "MetaMint, Independent [2026]",
+    // tagline (spoiler line) intentionally omitted; it is optional and renders nothing when absent
+    metaTitle: "What if your money coach understood your financial life, not just your transactions? | MetaMint",
+    metaDescription: "MetaMint case study, Independent, 2026",
+    budgetHook: {
+      heading: "Chicago Trip",
+      budgetLabel: "My budget:",
+      budget: 1000,
+      items: [
+        { label: "Flights", amount: 320 },
+        { label: "Stay (3 nights)", amount: 360 },
+        { label: "Lou Malnati’s pizza", amount: 48 },
+        { label: "Cafés + snacks", amount: 65 },
+        { label: "Museum tickets", amount: 96 },
+        { label: "Uber / transit", amount: 72 },
+        { label: "Other food", amount: 120 },
+        { label: "Shopping", amount: 110 },
+        { label: "Misc (??)", amount: 95, flag: "question" },
+      ],
+      totalLabel: "Total",
+      scribble: "oh no...",
+      bubble: {
+        before: "You’re ",
+        after: " over your budget. Want to see where you spent the most?",
+        time: "9:41 PM",
+      },
+    },
     hideSidebar: true,
     summary: "[Add one-line summary]",
     company: "[Add company]",
@@ -1505,16 +1577,55 @@ export const caseStudies: Record<string, CaseStudy> = {
     team: "[Add team]",
     tools: "[Add tools]",
     overviewGrid: {
-      problem: [
-        { headline: "[Add problem headline]", body: "[Add the problem statement]" },
-      ],
+      stackLayout: true,
+      problem:
+        "Financial decisions don’t happen in isolation. Planning a trip, splitting costs with friends, and staying within a budget are connected but managing money often means piecing together information across conversations and financial tools.",
       solution: {
-        intro: "[Add solution description]",
-        items: ["[Add item 1]", "[Add item 2]", "[Add item 3]"],
+        intro:
+          "MetaMint is a conversational AI money coach designed to make financial guidance more contextual by connecting everyday conversations with spending and budgeting decisions.",
+        lead: "The product has two connected layers:",
+        cards: [
+          {
+            icon: "MessagesSquare",
+            tag: "Product Vision",
+            title: "Money Coach",
+            text: "Personalized guidance for trip planning, savings goals, budget awareness, and relevant financial products, informed by the user’s financial context.",
+            status: "vision",
+          },
+          {
+            icon: "Receipt",
+            tag: "Working Prototype",
+            title: "Group Expense Tracking",
+            text: "An expense-understanding and tracking capability that turns group conversations and receipts into structured expenses, shared balances, and planned-versus-actual spending data.",
+            status: "built",
+          },
+        ],
+        foundationNote: "the foundation",
+        closing:
+          "The expense-tracking layer provides a foundation for the broader Money Coach vision, connecting what people plan to spend with what they actually spend.",
       },
-      users: "[Add user description]",
+      users:
+        "Individuals seeking more contextual guidance on spending and budgeting, alongside friends and travel groups coordinating shared expenses.",
+      hideUsersIcons: true,
       results: [
-        { year: "[Year]", label: "[Add results label]", body: "[Add results description]" },
+        {
+          verb: "Designed",
+          title: "The Money Coach",
+          text: "Designed a conversational AI money coach to help people plan trips, set savings goals, stay within budgets, and explore relevant financial products using the context of their everyday lives.",
+        },
+        {
+          verb: "Built",
+          title: "Group Expense Tracking",
+          text: "Built a working prototype that understands expense-related messages and receipts, splits group expenses, tracks balances, and links planned expenses to actual spending.",
+        },
+        {
+          verb: "Evaluated",
+          title: "AI Reliability",
+          stats: [
+            { percentLabel: "92%", correct: 23, total: 25, decimals: 0, description: "accuracy (23/25 images) in image relevance classification." },
+            { percentLabel: "95.2%", correct: 20, total: 21, decimals: 1, description: "accuracy (20/21 messages) in intent classification during the unified evaluation run." },
+          ],
+        },
       ],
     },
     overview: "",

@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { CaseStudy } from "@/data/content";
 import SummaryGrid from "@/components/SummaryGrid";
 import EquationAnnotation from "@/components/EquationAnnotation";
+import BudgetHook from "@/components/BudgetHook";
 import StoryStrip from "@/components/StoryStrip";
 import ToolsAnalysis from "@/components/ToolsAnalysis";
 import ProductJobs from "@/components/ProductJobs";
@@ -22,6 +23,9 @@ import WireframePanel from "@/components/WireframePanel";
 import SolutionSection from "@/components/SolutionSection";
 import EvaluationSection from "@/components/EvaluationSection";
 
+const SHOW_FEATURE_PRIORITY = false; // Feature Prioritization hidden for now
+
+const SHOW_MARKET_RESEARCH = false; // Market Research hidden for now
 export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
   const show = (key: keyof NonNullable<CaseStudy["showSections"]>) =>
     study.showSections?.[key] !== false;
@@ -88,6 +92,11 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   sizes="(min-width: 1000px) 1000px, 100vw"
                   className="mx-auto w-full max-w-[1000px] h-auto"
                 />
+              </div>
+            )}
+            {study.budgetHook && (
+              <div className="mt-8">
+                <BudgetHook data={study.budgetHook} />
               </div>
             )}
             {study.equationAnnotation && (
@@ -180,6 +189,8 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                 <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">
                   Product Strategy and Insights
                 </h2>
+                {SHOW_MARKET_RESEARCH && (
+                  <>
                 <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">
                   {study.productStrategy.subLabel}
                 </p>
@@ -193,6 +204,8 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   annotationLine1={study.productStrategy.annotationLine1}
                   annotationLine2={study.productStrategy.annotationLine2}
                 />
+                  </>
+                )}
                 {study.productStrategy.keyFeatures && (
                   <KeyFeaturesTable data={study.productStrategy.keyFeatures} />
                 )}
@@ -209,7 +222,8 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   {study.productJobs && <ProductJobs data={study.productJobs} />}
                   {study.personas && <PersonaSection data={study.personas} />}
                   {study.featuresMvp && <FeaturesMvpTable data={study.featuresMvp} />}
-                  {study.featurePriority && <FeaturePriorityTable data={study.featurePriority} />}
+                  {/* Feature Prioritization hidden for now */}
+                  {SHOW_FEATURE_PRIORITY && study.featurePriority && <FeaturePriorityTable data={study.featurePriority} />}
                   {study.productStrategyBlocks
                     // the product jobs, personas and features table replace the "01.", "02." and "03." placeholders
                     .filter((block) => !(study.productJobs && block.label === "01."))

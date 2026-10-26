@@ -961,7 +961,8 @@ function WhatStillFails({ data }: { data: EvaluationData }) {
         {data.authorNote}
       </p>
 
-      {/* Flaky group */}
+      {/* Flaky group (hidden for now) */}
+      {false && (<>
       <div style={{ marginBottom: 4 }}>
         <MonoTag>{data.flakyGroupLabel}</MonoTag>
       </div>
@@ -1016,6 +1017,7 @@ function WhatStillFails({ data }: { data: EvaluationData }) {
           </li>
         ))}
       </ul>
+      </>)}
     </div>
   );
 }
@@ -1100,7 +1102,7 @@ export default function EvaluationSection({ data }: { data: EvaluationData }) {
 
       <div className="flex flex-col gap-10">
         <HowItIsTested data={data} />
-        <StatusMeaning data={data} />
+        {/* StatusMeaning hidden for now */}
         <RunHistory data={data} />
         <WhatStillFails data={data} />
         <Limits data={data} />
