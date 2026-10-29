@@ -357,6 +357,185 @@ export type ProductJobsData = {
   closing: { bold: string; rest: string };
 };
 
+export type JtbdData = {
+  subLabel: string;
+  intro: string;
+  headers: [string, string, string, string]; // #, Type, Job, Job to be done
+  // one entry per type: Lucide icon name and tag style (outline | tint | gray)
+  types: Record<string, { icon: string; style: "outline" | "tint" | "gray" }>;
+  rows: Array<{ number: string; type: string; job: string; jtbd: string }>;
+};
+
+export type FeatureBoardData = {
+  subLabel: string;
+  showMvpNote: boolean; // set to false to hide the handwritten note (it also needs every MVP card to be Must Have)
+  mvpNote: string;
+  // one entry per category and per priority: Lucide icon name
+  categories: Record<string, { icon: string }>;
+  priorities: Record<string, { icon: string }>;
+  priorityOrder: string[]; // order used by the counts line and the legend
+  // style picks the column look; "out" is the parking lot. Move a card between columns by moving it between cards arrays.
+  releases: Array<{
+    name: string;
+    style: "mvp" | "v02" | "v10" | "out";
+    summaryPhrase: string; // used in the summary line, after the count
+    cards: Array<{ text: string; category: string; priority: string }>;
+  }>;
+};
+
+export type ProductAnalyticsData = {
+  subLabel: string;
+  intro: string;
+  rationale: { label: string; items: Array<{ icon: string; text: string }> };
+  goal: {
+    label: string;
+    tag: { text: string; icon: string };
+    text: string; // *word* is shown in italic
+    lifecycle: { label: string; steps: string[]; focus: string; focusNote: string; focusSrText: string };
+  };
+  competitors: { label: string; groups: Array<{ label: string; names: string[] }> }; // empty label = hidden
+  users: {
+    label: string;
+    jobLabel: string;
+    journeyLabel: string;
+    metamintSrText: string;
+    items: Array<{
+      label: string;
+      title: string;
+      icon: string;
+      job: string[]; // one item is shown as a paragraph, more as a list
+      steps: Array<{ text: string; metamint?: boolean }>;
+    }>;
+  };
+  metrics: {
+    label: string;
+    northStar: { label: string; title: string; icon: string; chips: Array<{ icon: string; text: string }>; srText: string };
+    focusPill: string;
+    groups: Array<{ icon: string; label: string; items: string[]; focus?: boolean }>;
+  };
+};
+
+export type SolutionDemoData = {
+  videosSubLabel: string;
+  videos: Array<{
+    tag: string;
+    tagStyle: "dashed" | "solid";
+    title: string;
+    placeholderLabel: string;
+    ariaLabel: string; // " (placeholder)" is added while videoUrl is empty
+    videoUrl: string; // empty = placeholder; .mp4 path = video; YouTube, Vimeo or Loom link = iframe
+    poster: string;
+    text: string;
+  }>;
+  diagram: {
+    subLabel: string;
+    intro: string;
+    srText: string;
+    groups: Array<{ id: string; label: string }>; // headings used below 1000px
+    // type: ai | code | io | eval. row and column are 1-based grid cells (desktop); colSpan defaults to 1.
+    // Boxes are listed in reading order.
+    boxes: Array<{
+      id: string;
+      type: "ai" | "code" | "io" | "eval";
+      tag: string;
+      name: string;
+      description: string;
+      stack: string;
+      icon: string; // Lucide icon name; ai and code boxes use the legend icon when empty
+      row: number;
+      column: number;
+      colSpan?: number;
+      group: string;
+    }>;
+    connections: Array<{ from: string; to: string }>;
+    legend: Array<{ type: "ai" | "code" | "io"; icon: string; tag: string; label: string }>;
+  };
+};
+
+export type KeyDecisionData = {
+  subLabel: string;
+  headline: string; // shown inside the decorative quote marks, so no quotation characters here
+  challenge: { label: string; icon: string; text: string };
+  decision: {
+    label: string;
+    text: string;
+    lanes: {
+      ai: { icon: string; label: string; subtitle: string; rows: Array<{ icon: string; text: string }> };
+      code: { icon: string; label: string; subtitle: string; rows: Array<{ icon: string; text: string }> };
+    };
+    handoff: { note: string; showNote: boolean }; // showNote false hides the handwritten note
+    srText: string;
+  };
+  why: {
+    label: string;
+    text: string;
+    showChips: boolean; // false hides the three chips
+    chips: string[];
+  };
+};
+
+// one result stored once as counts; the Overview and the evaluation cards both read it
+export type EvalCounts = { correct: number; total: number };
+
+export type AiReliabilitySection = {
+  kind: "aiReliability";
+  subLabel: string;
+  intro: string[];
+  cards: Array<{
+    icon: string;
+    label: string;
+    // scored cards: counts, unit word and the percentage the counts must give (checked in dev)
+    counts?: EvalCounts;
+    unit?: string;
+    expectedPercent?: string;
+    note?: string;
+    // unscored card: shown instead of a percentage
+    bigText?: string;
+    countText?: string;
+    pill?: string;
+  }>;
+  scopeNote: string;
+};
+
+export type FailureDecisionCase = {
+  tag: string;
+  title: string;
+  // the three parts, in order: the failure, the decision, the product implication
+  parts: Array<{ icon: string; label: string; text: string }>;
+  // shown inside the first part, under its text
+  visual:
+    | { kind: "runs"; rows: Array<{ label: string; counts: EvalCounts; expectedPercent: string; highlight?: boolean }>; srText: string }
+    | { kind: "bubble"; text: string; tags: string[]; tagIcon: string; note: { text: string; show: boolean } };
+};
+
+export type FailureDecisionSection = {
+  kind: "failureDecision";
+  subLabel: string;
+  cases: FailureDecisionCase[];
+};
+
+export type EvalsShapedSection = {
+  kind: "evalsShaped";
+  subLabel: string;
+  intro: string;
+  rows: Array<{ icon: string; title: string; finding: string; decision: string }>;
+  findingLabel: string;
+  decisionLabel: string;
+};
+
+export type LimitsNextSection = {
+  kind: "limitsNext";
+  subLabel: string;
+  limits: { label: string; icon: string; items: string[] };
+  next: { label: string; items: string[] };
+  closing: string;
+};
+
+export type EvaluationsData = {
+  heading: string;
+  subSections: Array<AiReliabilitySection | FailureDecisionSection | EvalsShapedSection | LimitsNextSection>; // add the next parts here
+};
+
 export type PersonaData = {
   subLabel: string;
   intro: string;
@@ -447,6 +626,32 @@ export type WhatsNextData = {
   cards: Array<{ icon: string; label: string; text: string; tags?: string[] }>; // icon = Lucide icon name
 };
 
+export type ProcessRowStep = {
+  icon: string; // lucide-react icon name
+  title: string;
+  text: string;
+  manual?: boolean; // gets a "Manual" tag when showManualTags is on
+  logos?: string[]; // optional paths under /public/metamint/process/; empty = nothing shown
+};
+
+export type ProcessRowData = {
+  showManualTags: boolean; // lowercase "manual" next to the icon of manual steps
+  showStepArrows: boolean; // thin gray arrows between the steps
+  steps: ProcessRowStep[];
+};
+
+export type OpportunityData = {
+  subLabel: string;
+  text: string;
+  shift: {
+    notJust: { label: string; icon: string; text: string; srText: string };
+    butAlso: { label: string; icon: string; text: string };
+  };
+  chips: Array<{ icon: string; text: string }>; // lucide-react icon names
+  closing: string;
+  closingHighlight: string; // phrase inside `closing` that gets the marker highlight
+};
+
 export type StripImage = { src: string; alt: string; width: number; height: number; blend?: boolean };
 
 // One bordered column next to the person: icons, an image, or (neither) an
@@ -465,11 +670,14 @@ export type StripColumn = {
   textOffsetY?: number; // nudge the text vertically in px (negative = up)
   badge?: string; // handwritten note at the top right of the box, e.g. "X3"
   box?: boolean; // default true
+  // animated icon scene (row layout); an `image` with a src replaces it
+  scene?: { kind: "coinDrop" | "pile" | "question"; icons: string[] };
 };
 
 export type StoryStripData = {
   flowchart?: ProcessFlowchartData; // shown directly under the quote
-  layout?: "steps"; // numbered N-up row with arrows; omitted = original 3-up
+  layout?: "steps" | "row"; // steps: person beside 2-up boxes; row: person plus a single row of boxes with arrows; omitted = original 3-up
+  quoteMaxWidth?: number; // widest the quote may get (default 540)
   subLabel: string;
   ariaDescription?: string;
   ariaLabel?: string;
@@ -487,6 +695,7 @@ export type StoryStripData = {
   afterFlowchartQuote?: string; // decorative quote after that paragraph (no quotation characters)
   closingText?: string; // paragraph after the quote
   quote?: string; // no quotation characters; the decorative marks are added by the component
+  processRow?: ProcessRowData; // "Current process" icon steps directly under the quote
 };
 
 // Hook visual for the MetaMint hero: a budget notebook page plus a chat bubble.
@@ -525,7 +734,13 @@ export type CaseStudy = {
   overviewGrid?: SummaryGridData;
   storyStrip?: StoryStripData;
   toolsAnalysis?: ToolsAnalysisData;
+  opportunity?: OpportunityData;
   productJobs?: ProductJobsData;
+  jtbd?: JtbdData;
+  featureBoard?: FeatureBoardData;
+  productAnalytics?: ProductAnalyticsData;
+  solutionDemo?: SolutionDemoData;
+  keyDecision?: KeyDecisionData;
   personas?: PersonaData;
   featuresMvp?: FeaturesMvpData;
   featurePriority?: FeaturePriorityData;
@@ -549,6 +764,7 @@ export type CaseStudy = {
   productStrategyBlocks?: Array<{ label: string; type: "table" | "screens"; text: string }>;
   solutionBlocks?: Array<{ label: string; type: "video" | "diagram" | "decision"; text: string }>;
   evaluationText?: string;
+  evaluations?: EvaluationsData;
   // Legacy optional
   process?: string[];
   impact?: string[];
@@ -561,6 +777,12 @@ export type CaseStudy = {
     "overview" | "problem" | "productStrategy" | "solution" | "evaluation" | "learnings",
     boolean
   >>;
+};
+
+// MetaMint AI reliability results, stored once (the Overview and the evaluation cards read these)
+export const METAMINT_EVAL = {
+  image: { correct: 23, total: 25 } as EvalCounts,
+  intent: { correct: 28, total: 29 } as EvalCounts,
 };
 
 export const caseStudies: Record<string, CaseStudy> = {
@@ -1622,11 +1844,363 @@ export const caseStudies: Record<string, CaseStudy> = {
           verb: "Evaluated",
           title: "AI Reliability",
           stats: [
-            { percentLabel: "92%", correct: 23, total: 25, decimals: 0, description: "accuracy (23/25 images) in image relevance classification." },
-            { percentLabel: "95.2%", correct: 20, total: 21, decimals: 1, description: "accuracy (20/21 messages) in intent classification during the unified evaluation run." },
+            { percentLabel: "92%", ...METAMINT_EVAL.image, decimals: 0, description: `accuracy (${METAMINT_EVAL.image.correct}/${METAMINT_EVAL.image.total} images) in image relevance classification.` },
+            { percentLabel: "96.6%", ...METAMINT_EVAL.intent, decimals: 1, description: `accuracy (${METAMINT_EVAL.intent.correct}/${METAMINT_EVAL.intent.total} messages) in intent classification during the unified evaluation run.` },
           ],
         },
       ],
+    },
+    storyStrip: {
+      layout: "row",
+      quoteMaxWidth: 760,
+      subLabel: "01. Planning a trip without losing track", // placeholder wording
+      ariaDescription: "Meet Elena. She is planning a birthday trip to Yosemite.",
+      ariaLabel: "Meet Elena",
+      person: {
+        name: "Elena",
+        label: "Meet Elena!",
+        arrow: true,
+        caption: "Planning a birthday trip to Yosemite",
+        alt: "Cartoon illustration of Elena, a woman with a black bob and bangs, a small smile and eyes cast down to the side, wearing a black tank top.",
+        image: { src: "/metamint/elena.png", width: 279, height: 400 },
+      },
+      columns: [
+        {
+          text: "She’s currently unemployed, so she needs to be careful about how much she spends without giving up the experience.",
+          scene: { kind: "coinDrop", icons: ["Wallet", "Coins"] },
+        },
+        {
+          text: "Elena keeps track of her expenses in her head, on scraps of paper, and across different conversations.",
+          scene: { kind: "pile", icons: ["StickyNote", "StickyNote", "MessageCircle", "MessagesSquare"] },
+        },
+        {
+          text: "With so much to remember, it’s easy to lose track of bills or even estimate how much she is spending.",
+          scene: { kind: "question", icons: ["CircleQuestionMark"] },
+        },
+      ],
+      quote: "I wish it could keep track of my expenses as I plan, so I can see where my money is going and stay within my budget.",
+      processRow: {
+        showManualTags: false, // set to true to show the "manual" words
+        showStepArrows: false, // set to true to bring the gray arrows back
+        steps: [
+          { icon: "MessagesSquare", title: "Discuss expenses in chat", text: "Share payments, receipts, and plans across conversations.", logos: [] },
+          { icon: "ReceiptText", title: "Reconstruct expenses", text: "Manually enter amounts, identify who paid, and calculate how to split costs.", manual: true, logos: [] },
+          { icon: "ArrowLeftRight", title: "Settle up with friends", text: "Use a separate tool to track balances and figure out who owes whom.", logos: [] },
+          { icon: "Calculator", title: "Calculate personal spending", text: "Manually add up expenses, track individual spending, and work out how much money remains for the trip.", manual: true, logos: [] },
+        ],
+      },
+    },
+    opportunity: {
+      subLabel: "02. The opportunity",
+      text: "Elena doesn’t just need another tool to split a bill. She needs a way to connect everyday spending with her bigger financial picture, so she can track what she spends, plan what she can afford, and make more informed decisions.",
+      shift: {
+        notJust: { label: "Not just", icon: "Split", text: "Split a bill", srText: "Not just: split a bill" },
+        butAlso: { label: "But also", icon: "Network", text: "Everyday spending connected to the bigger financial picture" },
+      },
+      chips: [
+        { icon: "Eye", text: "Track what she spends" },
+        { icon: "CalendarCheck", text: "Plan what she can afford" },
+        { icon: "Lightbulb", text: "Make more informed decisions" },
+      ],
+      closing: "That’s the opportunity behind MetaMint: a conversational Money Coach that understands the context of everyday life.",
+      closingHighlight: "a conversational Money Coach that understands the context of everyday life",
+    },
+    jtbd: {
+      subLabel: "01. JTBD",
+      intro: "To understand what users truly need from a financial companion, I mapped their functional, emotional, and social Jobs to Be Done (JTBD), looking beyond expense tracking to the broader decisions they want help making.",
+      headers: ["#", "Type", "Description", "Jobs to be done"],
+      types: {
+        Functional: { icon: "Wrench", style: "outline" },
+        Emotional: { icon: "Heart", style: "tint" },
+        Social: { icon: "Users", style: "gray" },
+      },
+      // Row 1 has not been provided yet. Add it here, as { number: "1", type, job, jtbd }.
+      rows: [
+        {
+          number: "2",
+          type: "Functional",
+          job: "Split shared expenses fairly and pick the right card for each purchase, without leaving the chat",
+          jtbd: "When my group chat is planning a trip or settling a bill, I want a fast and fair way to track and split costs without leaving the chat, so I can keep things simple and accurate.",
+        },
+        {
+          number: "3",
+          type: "Emotional",
+          job: "Feel in control and confident about money decisions without active management or anxiety",
+          jtbd: "When I’m thinking about a financial decision or upcoming expense, I want to feel confident I’m making the right call quickly, so I can stop worrying and move on with my day.",
+        },
+        {
+          number: "4",
+          type: "Social",
+          job: "Be the easygoing friend who handles money fairly and gracefully in groups",
+          jtbd: "When I’m splitting expenses or making money decisions in a group, I want everything handled fairly without anyone getting upset, so I can be the friend who keeps things together without making it weird.",
+        },
+      ],
+    },
+    featureBoard: {
+      subLabel: "02. Feature Prioritization",
+      showMvpNote: true,
+      mvpNote: "the MVP is all Must Have",
+      categories: {
+        "Personal Coaching": { icon: "MessageCircleHeart" },
+        Personalisation: { icon: "SlidersHorizontal" },
+        "Group Context": { icon: "Users" },
+        Monetisation: { icon: "BadgeDollarSign" },
+        "Analytics & Intelligence": { icon: "ChartNoAxesCombined" },
+        "Trust & Safety": { icon: "ShieldCheck" },
+      },
+      priorities: {
+        "Must Have": { icon: "Check" },
+        "Should Have": { icon: "Contrast" },
+        "Could Have": { icon: "Minus" },
+        "Won’t Have": { icon: "X" },
+      },
+      priorityOrder: ["Must Have", "Should Have", "Could Have", "Won’t Have"],
+      releases: [
+        {
+          name: "MVP V0.1",
+          style: "mvp",
+          summaryPhrase: "in the MVP",
+          cards: [
+            { text: "Trip-scoped financial coaching conversations (1:1 WhatsApp thread)", category: "Personal Coaching", priority: "Must Have" },
+            { text: "Proactive nudges before/during/after a trip or financial event", category: "Personal Coaching", priority: "Must Have" },
+            { text: "Explicit profile memory disclosure and consent flow", category: "Personalisation", priority: "Must Have" },
+            { text: "User-visible memory summary (“here’s what I remember about you”)", category: "Personalisation", priority: "Must Have" },
+            { text: "Expense splitting in group WhatsApp chats", category: "Group Context", priority: "Must Have" },
+          ],
+        },
+        {
+          name: "V0.2",
+          style: "v02",
+          summaryPhrase: "in V0.2",
+          cards: [
+            { text: "Referral CTR and conversion tracking", category: "Monetisation", priority: "Won’t Have" },
+            { text: "Situational card recommendations in group context", category: "Group Context", priority: "Should Have" },
+            { text: "Cohort analysis by beachhead segment (recent immigrants, students)", category: "Analytics & Intelligence", priority: "Should Have" },
+            { text: "Settlement view (who owes whom)", category: "Group Context", priority: "Should Have" },
+            { text: "Photo receipt capture and parsing", category: "Personal Coaching", priority: "Should Have" },
+          ],
+        },
+        {
+          name: "V1.0",
+          style: "v10",
+          summaryPhrase: "in V1.0",
+          cards: [
+            { text: "Voice-note expense logging", category: "Personal Coaching", priority: "Could Have" },
+            { text: "Third-party privacy audit and public report", category: "Trust & Safety", priority: "Could Have" },
+            { text: "Behavioral signal pipeline (no self-reported micro-surveys)", category: "Analytics & Intelligence", priority: "Could Have" },
+            { text: "LLM quality and hallucination monitoring", category: "Trust & Safety", priority: "Could Have" },
+            { text: "Budget setting and tracking per trip/goal", category: "Personalisation", priority: "Should Have" },
+          ],
+        },
+        {
+          name: "Out of Scope (Won’t have)",
+          style: "out",
+          summaryPhrase: "out of scope",
+          cards: [
+            { text: "Partner offer personalisation based on profile memory", category: "Monetisation", priority: "Won’t Have" },
+            { text: "In-product financial transactions (transfers, purchases)", category: "Monetisation", priority: "Won’t Have" },
+          ],
+        },
+      ],
+    },
+    productAnalytics: {
+      subLabel: "03. Product Analytics",
+      intro: "Why the product exists, who it serves, and the metrics that show whether it is working.",
+      rationale: {
+        label: "PRODUCT RATIONALE",
+        items: [
+          { icon: "Compass", text: "Real world utility beyond social and content" },
+          { icon: "CircleDollarSign", text: "Defensible new revenue stream without becoming a regulated financial entity" },
+          { icon: "LayoutTemplate", text: "Demonstrate Meta’s capability to extend WhatsApp into life-utility categories, setting a template for future products" },
+          { icon: "Handshake", text: "Address Meta’s brand-trust deficit in finance through the No-Authority Zone principle" },
+        ],
+      },
+      goal: {
+        label: "COMPANY GOAL",
+        tag: { text: "Engagement", icon: "Target" },
+        text: "Distribution is solved at Meta-scale; The real question is whether users *engage* with the AI when given the option. If group chats invoke @Mint regularly and users opt into the 1:1 personal coach, growth and monetization follow naturally.",
+        lifecycle: {
+          label: "LIFECYCLE FOCUS",
+          steps: ["Growth", "Engagement", "Retention", "Monetisation"],
+          focus: "Engagement",
+          focusNote: "Our focus",
+          focusSrText: "Focus:",
+        },
+      },
+      competitors: {
+        label: "COMPETITORS",
+        groups: [
+          { label: "", names: ["Cleo"] },
+          { label: "", names: ["Splitwise", "CreditKarma", "ChatGPT"] },
+          { label: "", names: ["Reddit", "Instagram"] },
+        ],
+      },
+      users: {
+        label: "WHO IT SERVES",
+        jobLabel: "JOB TO BE DONE",
+        journeyLabel: "SUCCESS JOURNEY",
+        metamintSrText: "MetaMint does this step",
+        items: [
+          {
+            label: "USER 1",
+            title: "Trip Planners, Organizers",
+            icon: "ClipboardList",
+            job: ["Split a shared expense (Airbnb, group dinner, rent) fairly and fast without leaving the chat or doing mental math"],
+            steps: [
+              { text: "Open the app" },
+              { text: "Put a message (e.g. Check out this AirBnB link)" },
+              { text: "Prompt Metamint, @Mint - Add this AirBnB to our group expenses" },
+              { text: "MetaMint creates a group expense table", metamint: true },
+            ],
+          },
+          {
+            label: "USER 2",
+            title: "The group members",
+            icon: "Users",
+            job: ["Privately figure out how to afford their share of the trip", "Pick the right card for their share of trip-related purchases"],
+            steps: [
+              { text: "Open the App" },
+              { text: "Prompt MetaMint, @Mint - which is the best card to use for this purchase" },
+              { text: "MetaMint looks for relevant deals and promotions and suggests promptly", metamint: true },
+            ],
+          },
+        ],
+      },
+      metrics: {
+        label: "HOW SUCCESS IS MEASURED",
+        northStar: {
+          label: "NORTH STAR METRIC",
+          title: "Decision Events per Active User per Month",
+          icon: "Star",
+          chips: [
+            { icon: "Split", text: "Split confirmed" },
+            { icon: "CreditCard", text: "Card Recommendation" },
+            { icon: "ArrowLeftRight", text: "Settlement completed" },
+            { icon: "MessageCircleHeart", text: "Personal Coach" },
+          ],
+          srText: "Decision Events per Active User per Month (Split confirmed, Card Recommendation, Settlement completed, Personal Coach)",
+        },
+        focusPill: "Primary focus",
+        groups: [
+          { icon: "TrendingUp", label: "GROWTH METRICS", items: ["First Meaningful Interaction (FMI) Rate", "Group Activation Rate"] },
+          { icon: "MessagesSquare", label: "ENGAGEMENT METRICS", items: ["Group Chat Sessions per Activated Group per Month", "1:1 Activation Rate", "AI Conversation Depth"], focus: true },
+          { icon: "BadgeDollarSign", label: "MONETISATION METRICS", items: ["Referral Click-Through rate", "Partner Referral Revenue"] },
+        ],
+      },
+    },
+    solutionDemo: {
+      videosSubLabel: "01. See it in action",
+      videos: [
+        {
+          tag: "Product Vision",
+          tagStyle: "dashed",
+          title: "Money Coach",
+          placeholderLabel: "[Money Coach video coming soon]",
+          ariaLabel: "Money Coach video",
+          videoUrl: "",
+          poster: "",
+          text: "Designed the broader Money Coach experience, spanning trip planning, savings goals, spending guidance, and contextual card recommendations.",
+        },
+        {
+          tag: "Working Prototype",
+          tagStyle: "solid",
+          title: "Group Expense Tracking",
+          placeholderLabel: "[Group expense tracking video coming soon]",
+          ariaLabel: "Group expense tracking video",
+          videoUrl: "",
+          poster: "",
+          text: "Built a working prototype that uses AI to classify expense-related inputs, extract receipt details, and interpret user intent, with deterministic code handling expense splitting and balance tracking.",
+        },
+      ],
+      diagram: {
+        subLabel: "02. How group expense tracking works",
+        intro: "Each box shows what it does, then what it is built on.",
+        srText: "A receipt image goes through an image classifier and extraction, and a chat message goes through an intent classifier. Their results feed normalization, the split engine, planned state, and budget, which run through a Flask backend and pipeline into a WhatsApp-style prototype. An eval harness scores the classifier, extraction, and intent steps.",
+        groups: [
+          { id: "inputs", label: "INPUTS" },
+          { id: "ai", label: "AI STEPS" },
+          { id: "code", label: "DETERMINISTIC CODE" },
+          { id: "backend", label: "BACKEND AND UI" },
+          { id: "eval", label: "EVALUATION" },
+        ],
+        boxes: [
+        { id: "receipt", type: "io", tag: "Input", name: "Receipt image", description: "Photo or screenshot", stack: "", icon: "Image", row: 1, column: 1, group: "inputs" },
+        { id: "chat", type: "io", tag: "Input", name: "Chat message", description: "Text in the group chat", stack: "", icon: "MessageSquare", row: 1, column: 4, group: "inputs" },
+        { id: "classifier", type: "ai", tag: "AI", name: "Image classifier", description: "Process or ignore", stack: "Anthropic API (vision)", icon: "Sparkles", row: 2, column: 1, group: "ai" },
+        { id: "extraction", type: "ai", tag: "AI", name: "Extraction", description: "Totals, line items", stack: "Anthropic API (vision)", icon: "Sparkles", row: 2, column: 2, group: "ai" },
+        { id: "intent", type: "ai", tag: "AI", name: "Intent classifier", description: "5 intent types", stack: "Anthropic API (text)", icon: "Sparkles", row: 2, column: 4, group: "ai" },
+        { id: "normalization", type: "code", tag: "Code", name: "Normalization", description: "Standard expense", stack: "Python", icon: "Braces", row: 3, column: 1, group: "code" },
+        { id: "split", type: "code", tag: "Code", name: "Split engine", description: "Who owes whom", stack: "Python, AI item matching", icon: "Braces", row: 3, column: 2, group: "code" },
+        { id: "planned", type: "code", tag: "Code", name: "Planned state", description: "Status tracking", stack: "Python, swipe-to-reply", icon: "Braces", row: 3, column: 3, group: "code" },
+        { id: "budget", type: "code", tag: "Code", name: "Budget", description: "Spent and left", stack: "Python (budget.py)", icon: "Braces", row: 3, column: 4, group: "code" },
+        { id: "flask", type: "io", tag: "Backend", name: "Flask backend and pipeline", description: "app.py and pipeline.py", stack: "Python, Flask", icon: "Server", row: 4, column: 1, colSpan: 4, group: "backend" },
+        { id: "prototype", type: "io", tag: "UI", name: "WhatsApp-style prototype", description: "Group chat, Me chat, tracker", stack: "HTML and JavaScript", icon: "Smartphone", row: 5, column: 1, colSpan: 4, group: "backend" },
+        { id: "evals", type: "eval", tag: "Eval", name: "Eval harness", description: "Scores classifier, extraction, intent", stack: "run_evals.py, labeled test folders", icon: "FlaskConical", row: 6, column: 1, colSpan: 4, group: "eval" },
+        ],
+        connections: [
+          { from: "receipt", to: "classifier" },
+          { from: "classifier", to: "extraction" },
+          { from: "extraction", to: "normalization" },
+          { from: "chat", to: "intent" },
+          { from: "intent", to: "planned" },
+          { from: "normalization", to: "split" },
+          { from: "split", to: "planned" },
+          { from: "planned", to: "budget" },
+          { from: "normalization", to: "flask" },
+          { from: "split", to: "flask" },
+          { from: "planned", to: "flask" },
+          { from: "budget", to: "flask" },
+          { from: "flask", to: "prototype" },
+        ],
+        legend: [
+          { type: "ai", icon: "Sparkles", tag: "AI", label: "AI (Anthropic API)" },
+          { type: "code", icon: "Braces", tag: "Code", label: "Deterministic code" },
+          { type: "io", icon: "Server", tag: "Input", label: "Input, backend, UI" },
+        ],
+      },
+    },
+    keyDecision: {
+      subLabel: "03. One key engineering decision",
+      headline: "AI interprets. Code calculates.",
+      challenge: {
+        label: "THE CHALLENGE",
+        icon: "Lightbulb",
+        text: "Expense messages and receipts are messy and unpredictable, but financial calculations need to be consistent.",
+      },
+      decision: {
+        label: "THE DECISION",
+        text: "I separated AI interpretation from deterministic financial logic. AI handles the ambiguous inputs (classifying images, extracting receipt details, and interpreting expense intent), while code handles expense normalization, bill splitting, and balance updates.",
+        lanes: {
+          ai: {
+            icon: "Sparkles",
+            label: "AI INTERPRETS",
+            subtitle: "Messy, ambiguous inputs",
+            rows: [
+              { icon: "ScanSearch", text: "Classifying images" },
+              { icon: "ReceiptText", text: "Extracting receipt details" },
+              { icon: "MessageSquareQuote", text: "Interpreting expense intent" },
+            ],
+          },
+          code: {
+            icon: "Braces",
+            label: "CODE CALCULATES",
+            subtitle: "Consistent financial logic",
+            rows: [
+              { icon: "Scale", text: "Expense normalization" },
+              { icon: "Split", text: "Bill splitting" },
+              { icon: "Wallet", text: "Balance updates" },
+            ],
+          },
+        },
+        handoff: { note: "structured expense", showNote: true },
+        srText: "AI interprets messy inputs by classifying images, extracting receipt details, and interpreting expense intent. Code then calculates expense normalization, bill splitting, and balance updates.",
+      },
+      why: {
+        label: "WHY IT WORKS",
+        text: "This separation makes financial calculations predictable and testable without relying on an LLM to perform money math.",
+        showChips: true,
+        chips: ["Predictable", "Testable", "No LLM money math"],
+      },
     },
     overview: "",
     problem: "",
@@ -1647,11 +2221,181 @@ export const caseStudies: Record<string, CaseStudy> = {
       { label: "02.", type: "diagram", text: "[Add diagram content]" },
       { label: "03. One key engineering decision", type: "decision", text: "[Add decision content]" },
     ],
+    showSections: { evaluation: true },
+    evaluations: {
+      heading: "EVALUATIONS AND RESULTS",
+      subSections: [
+        {
+          kind: "aiReliability",
+          subLabel: "01. Evaluating AI reliability",
+          intro: [
+            "I built a unified evaluation script to test MetaMint’s AI components against labeled examples, covering image relevance classification and message intent classification. For receipt extraction, I reviewed outputs manually, but a labeled test set was not yet available to calculate accuracy.",
+            "Rather than optimize for accuracy alone, I examined failure cases to understand where the system could misinterpret financial activity and how those errors should be handled.",
+          ],
+          cards: [
+            {
+              icon: "ScanSearch",
+              label: "IMAGE RELEVANCE CLASSIFIER",
+              counts: METAMINT_EVAL.image,
+              unit: "images",
+              expectedPercent: "92.0%",
+              note: "2 payment-confirmation images missed",
+            },
+            {
+              icon: "MessageSquareText",
+              label: "INTENT CLASSIFIER",
+              counts: METAMINT_EVAL.intent,
+              unit: "messages",
+              expectedPercent: "96.6%",
+              note: "1 ambiguous expense update missed",
+            },
+            {
+              icon: "ReceiptText",
+              label: "RECEIPT EXTRACTION",
+              bigText: "Not yet scored",
+              countText: "20 line items found on one reviewed receipt; 1 price misread",
+              pill: "Manual review",
+            },
+          ],
+          scopeNote: "The classifier scores measure agreement with the labeled test cases, not overall real-world product accuracy.",
+        },
+        {
+          kind: "failureDecision",
+          subLabel: "02. One Failure, One Decision",
+          cases: [
+            {
+              tag: "Case 01 · Image classifier",
+              title: "When a payment confirmation looks like a personal transfer",
+              parts: [
+                {
+                  icon: "TriangleAlert",
+                  label: "THE FAILURE",
+                  text: "The classifier first scored 94.1% (16/17 images). After I added more UPI payment screens it fell to 86.4% (19/22), missing bare payment screens where the recipient’s name looked like a person or a code. One prompt revision brought it to 92.0% (23/25).",
+                },
+                {
+                  icon: "Scale",
+                  label: "THE DECISION",
+                  text: "I checked first that the misses were real, not mislabeled data. I stopped tuning when two ambiguous cases remained, because more changes risked overfitting and wrongly processing genuine personal transfers.",
+                },
+                {
+                  icon: "Lightbulb",
+                  label: "THE PRODUCT IMPLICATION",
+                  text: "When the classifier is uncertain, the safer behavior is to let the user explicitly request processing rather than automatically treat every payment screen as an expense.",
+                },
+              ],
+              visual: {
+                kind: "runs",
+                rows: [
+                  { label: "Baseline", counts: { correct: 16, total: 17 }, expectedPercent: "94.1%" },
+                  { label: "After adding UPI screens", counts: { correct: 19, total: 22 }, expectedPercent: "86.4%" },
+                  { label: "After one prompt revision", counts: METAMINT_EVAL.image, expectedPercent: "92.0%", highlight: true },
+                ],
+                srText: "Three runs: baseline 94.1% (16 of 17 images), after adding UPI screens 86.4% (19 of 22), after one prompt revision 92.0% (23 of 25).",
+              },
+            },
+            {
+              tag: "Case 02 · Intent classifier",
+              title: "When an expense update lacks context",
+              parts: [
+                {
+                  icon: "TriangleAlert",
+                  label: "THE FAILURE",
+                  text: "“The Airbnb ended up being 18k” was misclassified because the message alone didn’t make it clear whether the user was reporting a new expense or updating a planned one.",
+                },
+                {
+                  icon: "Scale",
+                  label: "THE DECISION",
+                  text: "I documented the limitation and relied on the reply-to-planned-expense flow to provide context when users respond directly to the original plan.",
+                },
+                {
+                  icon: "Lightbulb",
+                  label: "THE PRODUCT IMPLICATION",
+                  text: "The right classification can depend on conversation context, not just the wording of a single message.",
+                },
+              ],
+              visual: {
+                kind: "bubble",
+                text: "The Airbnb ended up being 18k",
+                tags: ["New expense?", "Update to a planned one?"],
+                tagIcon: "CircleQuestionMark",
+                note: { text: "same words, two meanings", show: true },
+              },
+            },
+          ],
+        },
+        {
+          kind: "evalsShaped",
+          subLabel: "03. How the evals shaped the product",
+          intro: "Testing the AI was a way to decide how the product behaves when the AI is wrong.",
+          findingLabel: "FINDING",
+          decisionLabel: "DECISION",
+          rows: [
+            {
+              icon: "UserCheck",
+              title: "Act when invited",
+              finding: "Two bare UPI screens stayed ambiguous at 92%.",
+              decision: "I stopped tuning. If MetaMint ignores a screen, the user can ask it to process it.",
+            },
+            {
+              icon: "ShieldCheck",
+              title: "Fail safe",
+              finding: "In a finance product, recording something nobody asked for is worse than missing it.",
+              decision: "Ambiguous images lean ignore. Ambiguous messages lean informational.",
+            },
+            {
+              icon: "ClipboardCheck",
+              title: "Test cases define the product",
+              finding: "“Dinner cost us 2,400, but the expense is on me.” has nothing to split.",
+              decision: "I relabeled it informational. An expense is something that triggers a split.",
+            },
+            {
+              icon: "Calculator",
+              title: "Money math stays in code",
+              finding: "Split, ledger, and budget amounts have one right answer.",
+              decision: "Plain code computes them, so the evals cover only judgment calls.",
+            },
+          ],
+        },
+        {
+          kind: "limitsNext",
+          subLabel: "04. Limits and what I would do next",
+          limits: {
+            label: "WHAT THE NUMBERS DO NOT SHOW",
+            icon: "CircleAlert",
+            items: [
+              "Receipt extraction is not scored yet. None of the 14 receipts has expected values.",
+              "One price was misread on a 20-item receipt ($17.99 as $7.99). I documented it as a known limitation.",
+              "The item matcher, the newest AI call, has no eval set.",
+              "No user testing yet.",
+            ],
+          },
+          next: {
+            label: "WHAT I WOULD DO NEXT",
+            items: [
+              "Label the 14 receipts to score extraction.",
+              "Add a check that compares the sum of line items to the receipt total.",
+              "Build an eval set for the item matcher.",
+              "Test with real users.",
+            ],
+          },
+          closing: "Every miss on record has a known cause and a handling decision.",
+        },
+      ],
+    },
     evaluationText: "[Add evaluation and observability content]",
     learningItems: [
-      { title: "[Add learning title]", body: "[Add learning body]" },
-      { title: "[Add learning title]", body: "[Add learning body]" },
-      { title: "[Add learning title]", body: "[Add learning body]" },
+      {
+        title: "A missed expense beats a wrong one.",
+        body: "In a finance product, recording something nobody asked for does more harm than missing it, so when the model is unsure, the product stays quiet.",
+      },
+      {
+        title: "For money, trust comes before personalization.",
+        body: "A coach that remembers your finances has to show what it remembers and ask first, so memory consent and a visible summary made the MVP while monetization waited.",
+      },
+      {
+        title: "Let AI judge and code calculate.",
+        body: "The model handles messy inputs, while split, ledger, and budget math stay in plain code that can be tested.",
+      },
     ],
   },
 };

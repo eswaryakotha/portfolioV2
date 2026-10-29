@@ -4,6 +4,8 @@ import * as LucideIcons from "lucide-react";
 import type { StoryStripData, StripColumn } from "@/data/content";
 import DecorativeQuote from "@/components/DecorativeQuote";
 import ProcessFlowchart from "@/components/ProcessFlowchart";
+import StripScene from "@/components/StripScene";
+import ProcessSteps from "@/components/ProcessSteps";
 
 const ACCENT = "var(--accent)";
 const HANDWRITING = "var(--accent-bright, var(--accent))";
@@ -350,6 +352,68 @@ function StepsRow({ data }: { data: StoryStripData }) {
   );
 }
 
+// Person plus a single row of boxes, each with an animated icon scene (or an
+// optional image) on top and the text lined up at the bottom. 1100+: all in one row.
+// 768-1099: the person centered on top, boxes in a row below. <768: one column.
+function RowSteps({ data }: { data: StoryStripData }) {
+  return (
+    <ol
+      className="grid grid-cols-1 min-[768px]:grid-cols-3 min-[1100px]:grid-cols-4 list-none p-0 m-0"
+      style={{ gap: 16, marginTop: 40 }}
+    >
+      <li className="relative min-[768px]:col-span-3 min-[768px]:justify-self-center min-[768px]:w-1/3 min-[1100px]:col-span-1 min-[1100px]:w-full">
+        <Person person={data.person} imageWidth="70%" />
+      </li>
+      {data.columns.map((col, i) => (
+        <li key={i} className="relative border border-gray-200 flex flex-col" style={{ padding: 16, paddingTop: 28 }}>
+          <span
+            aria-hidden="true"
+            className="font-mono text-gray-400"
+            style={{ position: "absolute", top: 10, left: 12, fontSize: 11, letterSpacing: "0.05em" }}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          {col.image?.src ? (
+            <img
+              src={col.image.src}
+              alt={col.image.alt}
+              width={col.image.width}
+              height={col.image.height}
+              style={{ width: 120, maxWidth: "100%", height: "auto", display: "block", margin: "0 auto" }}
+            />
+          ) : col.scene ? (
+            <StripScene kind={col.scene.kind} icons={col.scene.icons} />
+          ) : null}
+          <p
+            className="text-gray-700 leading-relaxed"
+            style={{ marginTop: "auto", paddingTop: 16, textAlign: "center", fontSize: 14 }}
+          >
+            {col.text}
+          </p>
+          {i < data.columns.length - 1 && (
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              className="hidden min-[768px]:block"
+              width="16"
+              height="12"
+              viewBox="0 0 16 12"
+              fill="none"
+              stroke="#9CA3AF"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ position: "absolute", left: "100%", top: "50%", marginTop: -6, pointerEvents: "none" }}
+            >
+              <path d="M 1,6 H 14 M 10,2 L 14.5,6 L 10,10" />
+            </svg>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export default function StoryStrip({ data }: { data: StoryStripData }) {
   const { person } = data;
   const ariaDescription = data.ariaDescription
@@ -361,7 +425,9 @@ export default function StoryStrip({ data }: { data: StoryStripData }) {
       {/* section label */}
       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">{data.subLabel}</p>
 
-      {data.layout === "steps" ? (
+      {data.layout === "row" ? (
+        <RowSteps data={data} />
+      ) : data.layout === "steps" ? (
         <StepsRow data={data} />
       ) : (
       <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 12 }}>
@@ -375,9 +441,11 @@ export default function StoryStrip({ data }: { data: StoryStripData }) {
 
       {data.quote && (
         <div style={{ marginTop: 36 }}>
-          <DecorativeQuote text={data.quote} />
+          <DecorativeQuote text={data.quote} maxWidth={data.quoteMaxWidth} />
         </div>
       )}
+
+      {data.processRow && <ProcessSteps data={data.processRow} />}
 
       {data.closingText && (
         <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 24 }}>

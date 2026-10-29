@@ -5,10 +5,12 @@ export default function CurrentProcessLabel({
   color = "var(--accent)",
   arrow = "side",
   note,
+  compact = false,
 }: {
   color?: string;
   arrow?: "side" | "down";
   note?: string;
+  compact?: boolean; // small thin arrow with an open head (MetaMint process row)
 }) {
   return (
     <div
@@ -33,7 +35,37 @@ export default function CurrentProcessLabel({
       >
         Current process
       </span>
-      {arrow === "side" ? (
+      {compact ? (
+        arrow === "side" ? (
+          <svg
+            viewBox="0 0 44 14"
+            width="44"
+            height="14"
+            aria-hidden="true"
+            focusable="false"
+            style={{ flexShrink: 0, overflow: "visible", pointerEvents: "none" }}
+          >
+            <g fill="none" stroke={color} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M 2,10 Q 22,2 41,8" />
+              <path d="M 35,3.5 L 41,8 L 35,12.5" />
+            </g>
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 16 30"
+            width="16"
+            height="30"
+            aria-hidden="true"
+            focusable="false"
+            style={{ flexShrink: 0, marginTop: 2, overflow: "visible", pointerEvents: "none" }}
+          >
+            <g fill="none" stroke={color} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M 3,2 C 14,5 14,17 8,26" />
+              <path d="M 3,21 L 8,27 L 13,21" />
+            </g>
+          </svg>
+        )
+      ) : arrow === "side" ? (
         /* Curved arrow pointing toward step 1 — desktop only */
         <svg
           viewBox="0 0 80 18"

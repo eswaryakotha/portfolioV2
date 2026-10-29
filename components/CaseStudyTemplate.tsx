@@ -6,6 +6,12 @@ import EquationAnnotation from "@/components/EquationAnnotation";
 import BudgetHook from "@/components/BudgetHook";
 import StoryStrip from "@/components/StoryStrip";
 import ToolsAnalysis from "@/components/ToolsAnalysis";
+import OpportunitySection from "@/components/OpportunitySection";
+import JtbdTable from "@/components/JtbdTable";
+import FeatureBoard from "@/components/FeatureBoard";
+import ProductAnalytics from "@/components/ProductAnalytics";
+import SolutionDemo from "@/components/SolutionDemo";
+import KeyDecision from "@/components/KeyDecision";
 import ProductJobs from "@/components/ProductJobs";
 import PersonaSection from "@/components/PersonaSection";
 import FeaturesMvpTable from "@/components/FeaturesMvpTable";
@@ -21,6 +27,7 @@ import MarketResearchTable from "@/components/MarketResearchTable";
 import KeyFeaturesTable from "@/components/KeyFeaturesTable";
 import WireframePanel from "@/components/WireframePanel";
 import SolutionSection from "@/components/SolutionSection";
+import EvaluationsResults from "@/components/EvaluationsResults";
 import EvaluationSection from "@/components/EvaluationSection";
 
 const SHOW_FEATURE_PRIORITY = false; // Feature Prioritization hidden for now
@@ -135,11 +142,18 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   <ToolsAnalysis data={study.toolsAnalysis} />
                 </div>
               )}
+              {study.opportunity && (
+                <div className="mt-8">
+                  <OpportunitySection data={study.opportunity} />
+                </div>
+              )}
               {(() => {
                 const blocks = (study.problemBlocks ?? [])
                   // the story strip and tools analysis replace the "01." and "02." placeholders
                   .filter((block) => !(study.storyStrip && block.label === "01."))
-                  .filter((block) => !(study.toolsAnalysis && block.label === "02."));
+                  .filter((block) => !(study.toolsAnalysis && block.label === "02."))
+                  // the opportunity replaces "02."; there is no content for "03."
+                  .filter((block) => !(study.opportunity && (block.label === "02." || block.label === "03.")));
                 if (blocks.length === 0) return null;
                 return (
                   <div className={`flex flex-col gap-8${study.storyStrip || study.toolsAnalysis ? " mt-8" : ""}`}>
@@ -220,15 +234,18 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                 </h2>
                 <div className="flex flex-col gap-8">
                   {study.productJobs && <ProductJobs data={study.productJobs} />}
+                  {study.jtbd && <JtbdTable data={study.jtbd} />}
+                  {study.featureBoard && <FeatureBoard data={study.featureBoard} />}
+                  {study.productAnalytics && <ProductAnalytics data={study.productAnalytics} />}
                   {study.personas && <PersonaSection data={study.personas} />}
                   {study.featuresMvp && <FeaturesMvpTable data={study.featuresMvp} />}
                   {/* Feature Prioritization hidden for now */}
                   {SHOW_FEATURE_PRIORITY && study.featurePriority && <FeaturePriorityTable data={study.featurePriority} />}
                   {study.productStrategyBlocks
                     // the product jobs, personas and features table replace the "01.", "02." and "03." placeholders
-                    .filter((block) => !(study.productJobs && block.label === "01."))
-                    .filter((block) => !(study.personas && block.label === "02."))
-                    .filter((block) => !(study.featuresMvp && block.label === "03."))
+                    .filter((block) => !((study.productJobs || study.jtbd) && block.label === "01."))
+                    .filter((block) => !((study.personas || study.featureBoard) && block.label === "02."))
+                    .filter((block) => !((study.featuresMvp || study.productAnalytics) && block.label === "03."))
                     .map((block) => (
                     <div key={block.label}>
                       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">
@@ -272,7 +289,13 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                   Solution
                 </h2>
                 <div className="flex flex-col gap-10">
-                  {study.solutionBlocks.map((block) => (
+                  {study.solutionDemo && <SolutionDemo data={study.solutionDemo} />}
+                  {study.keyDecision && <KeyDecision data={study.keyDecision} />}
+                  {study.solutionBlocks
+                    // the demo videos and the workflow diagram replace the "01." and "02." placeholders
+                    .filter((block) => !(study.solutionDemo && (block.type === "video" || block.type === "diagram")))
+                    .filter((block) => !(study.keyDecision && block.type === "decision"))
+                    .map((block) => (
                     <div key={block.label}>
                       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">
                         {block.label}
@@ -312,7 +335,9 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
           )}
 
           {show("evaluation") && (
-            study.evaluationSection ? (
+            study.evaluations ? (
+              <EvaluationsResults data={study.evaluations} />
+            ) : study.evaluationSection ? (
               <EvaluationSection data={study.evaluationSection} />
             ) : study.evaluationText ? (
               <section className="border-t border-gray-200 pt-6">
