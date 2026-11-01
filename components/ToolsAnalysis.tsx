@@ -71,11 +71,15 @@ const srOnly: React.CSSProperties = {
 
 // The feature matrix (table + legend) is hidden for now; the stats stay.
 const SHOW_MATRIX = false;
+// The heading, intro, tools table and lead-in are hidden for now; the stats and closing line stay.
+const SHOW_TOOLS_INTRO = false;
 
 export default function ToolsAnalysis({ data }: { data: ToolsAnalysisData }) {
   const { matrix } = data;
   return (
     <div>
+      {SHOW_TOOLS_INTRO && (
+        <>
       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">{data.subLabel}</p>
       <p className="text-sm text-gray-800 leading-relaxed">{data.intro}</p>
 
@@ -120,6 +124,8 @@ export default function ToolsAnalysis({ data }: { data: ToolsAnalysisData }) {
           </p>
         ))}
       </div>
+        </>
+      )}
 
       {/* Matrix + stats */}
       <div className="flex flex-col min-[1000px]:flex-row min-[1000px]:items-center" style={{ gap: 32, marginTop: 24 }}>

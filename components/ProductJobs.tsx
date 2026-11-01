@@ -51,10 +51,12 @@ export default function ProductJobs({ data }: { data: ProductJobsData }) {
         ))}
       </ol>
 
-      <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 32 }}>
-        <strong className="font-semibold">{data.closing.bold}</strong>
-        {data.closing.rest}
-      </p>
+      {data.showClosing !== false && (
+        <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 32 }}>
+          <strong className="font-semibold">{data.closing.bold}</strong>
+          {data.closing.rest}
+        </p>
+      )}
     </div>
   );
 }

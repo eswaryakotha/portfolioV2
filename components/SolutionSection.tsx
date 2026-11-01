@@ -1,5 +1,6 @@
 "use client";
 
+import VideoFrame from "@/components/VideoFrame";
 import type { ReactNode, CSSProperties } from "react";
 import { Play } from "lucide-react";
 import EngineeringDecision from "@/components/EngineeringDecision";
@@ -166,7 +167,32 @@ function StepCardDesktop({ step, index }: { step: DiagramStep; index: number }) 
 // ── Video part ────────────────────────────────────────────────
 
 function VideoPart({ data }: { data: SolutionData["part1"] }) {
-  const { videoUrl, videoPoster, subLabel } = data;
+  const { videoUrl, videoPoster, subLabel, videos } = data;
+  if (videos && videos.length > 0) {
+    return (
+      <div>
+        <p className="font-mono text-xs tracking-widest text-gray-400 mb-4">{subLabel}</p>
+        <div className="flex flex-col" style={{ gap: 48 }}>
+          {videos.map((v) => (
+            <div key={v.title}>
+              <h4 className="text-sm font-semibold text-gray-900" style={{ margin: "0 0 4px" }}>
+                {v.title}
+              </h4>
+              <p className="text-sm text-gray-800 leading-relaxed" style={{ margin: "0 0 12px" }}>
+                {v.text}
+              </p>
+              <VideoFrame
+                videoUrl={v.videoUrl}
+                poster={v.poster}
+                placeholderLabel={v.placeholderLabel}
+                title={v.videoUrl ? v.title : `${v.title} (placeholder)`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   const isMp4 = !!videoUrl && videoUrl.endsWith(".mp4");
   const embed = videoUrl && !isMp4 ? toEmbedUrl(videoUrl) : null;
   const showPlaceholder = !videoUrl || (!isMp4 && !embed);

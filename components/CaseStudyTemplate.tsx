@@ -235,7 +235,7 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
                 <div className="flex flex-col gap-8">
                   {study.productJobs && <ProductJobs data={study.productJobs} />}
                   {study.jtbd && <JtbdTable data={study.jtbd} />}
-                  {study.featureBoard && <FeatureBoard data={study.featureBoard} />}
+                  {study.featureBoard && study.featureBoard.show !== false && <FeatureBoard data={study.featureBoard} />}
                   {study.productAnalytics && <ProductAnalytics data={study.productAnalytics} />}
                   {study.personas && <PersonaSection data={study.personas} />}
                   {study.featuresMvp && <FeaturesMvpTable data={study.featuresMvp} />}

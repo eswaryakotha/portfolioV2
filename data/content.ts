@@ -247,7 +247,13 @@ export type EngineeringDecisionData = {
 
 export type SolutionData = {
   sectionLabel: string;
-  part1: { subLabel: string; videoUrl?: string; videoPoster?: string };
+  // `videos` (when set) replaces the single video: one titled part per video
+  part1: {
+    subLabel: string;
+    videoUrl?: string;
+    videoPoster?: string;
+    videos?: Array<{ title: string; text: string; videoUrl: string; poster: string; placeholderLabel: string }>;
+  };
   part2: {
     subLabel: string;
     introLine: string;
@@ -354,6 +360,7 @@ export type ProductJobsData = {
   paragraph: string;
   leadIn: string;
   jobs: Array<{ icon: string; text: string }>; // icon = Lucide icon name
+  showClosing?: boolean; // set to false to hide the principle line
   closing: { bold: string; rest: string };
 };
 
@@ -367,6 +374,7 @@ export type JtbdData = {
 };
 
 export type FeatureBoardData = {
+  show?: boolean; // set to false to hide the whole Feature Prioritization board
   subLabel: string;
   showMvpNote: boolean; // set to false to hide the handwritten note (it also needs every MVP card to be Must Have)
   mvpNote: string;
@@ -395,6 +403,7 @@ export type ProductAnalyticsData = {
   };
   competitors: { label: string; groups: Array<{ label: string; names: string[] }> }; // empty label = hidden
   users: {
+    show?: boolean; // set to false to hide the "Who it serves" block
     label: string;
     jobLabel: string;
     journeyLabel: string;
@@ -539,13 +548,13 @@ export type EvaluationsData = {
 export type PersonaData = {
   subLabel: string;
   intro: string;
-  segments: Array<{ name: string; text: string }>; // name is shown bold, followed by ":"
+  segments: Array<{ name: string; text: string }>; // name is shown bold, followed by ":"; empty = no list
   personas: Array<{
     role: string;
     name: string;
     avatar: { src: string; alt: string; width: number; height: number; blend?: boolean };
   }>;
-  rows: Array<{ label: string; cells: Array<string | string[]> }>; // string[] = bullet list
+  rows: Array<{ label: string; hidden?: boolean; cells: Array<string | string[]> }>; // string[] = bullet list; hidden: true skips the row
   opportunities: {
     leadIn: string;
     cards: Array<{ title: string; items: string[] }>;
@@ -647,7 +656,9 @@ export type OpportunityData = {
     notJust: { label: string; icon: string; text: string; srText: string };
     butAlso: { label: string; icon: string; text: string };
   };
+  showChips?: boolean; // set to false to hide the three outcome chips
   chips: Array<{ icon: string; text: string }>; // lucide-react icon names
+  showClosing?: boolean; // set to false to hide the closing statement
   closing: string;
   closingHighlight: string; // phrase inside `closing` that gets the marker highlight
 };
@@ -983,6 +994,29 @@ export const caseStudies: Record<string, CaseStudy> = {
         subLabel: "01. See it in action",
         videoUrl: "",
         videoPoster: "",
+        videos: [
+          {
+            title: "01. Narration Studio & Features",
+            text: "Explore the narration workspace and its tools designed to help authors prepare and manage their audiobook recordings.",
+            videoUrl: "/dolby/narration-studio.mp4",
+            poster: "",
+            placeholderLabel: "[Narration Studio video coming soon]",
+          },
+          {
+            title: "02. AI-Powered Narration Guidance",
+            text: "Review AI-generated narration recommendations, adjust emotional direction, and prepare to bring the manuscript to life.",
+            videoUrl: "/dolby/ai-narration-guidance.mp4",
+            poster: "",
+            placeholderLabel: "[AI narration guidance video coming soon]",
+          },
+          {
+            title: "03. Recording & Audio Enhancement",
+            text: "Record the narration using the guided teleprompter, refine mistakes with punch-and-roll, and compare the original recording with the studio-enhanced audio.",
+            videoUrl: "/dolby/recording-audio-enhancement.mp4",
+            poster: "",
+            placeholderLabel: "[Recording and enhancement video coming soon]",
+          },
+        ],
       },
       part2: {
         subLabel: "02. How the AI workflow works",
@@ -1468,6 +1502,7 @@ export const caseStudies: Record<string, CaseStudy> = {
         { icon: "LayoutGrid", text: "Produce 2D visuals using catalog items." },
         { icon: "ReceiptText", text: "Generate a bill of materials and quotation." },
       ],
+      showClosing: false,
       closing: {
         bold: "The principle:",
         rest: " give remodelers a high-confidence starting point that they could use to move the project forward.",
@@ -1476,15 +1511,8 @@ export const caseStudies: Record<string, CaseStudy> = {
     personas: {
       subLabel: "02. Segmentation & Targeting",
       intro:
-        "VeraAI aims to be the sole end-to-end workflow tool for remodellers to close sales. The core product covers the four stages of gaining a client, affecting three target segments:",
-      segments: [
-        { name: "Homeowners", text: "Customers who are interested in having their Kitchen renovated" },
-        { name: "Business Account Owners", text: "Administrators who track & maintain lead generation" },
-        {
-          name: "Project Specialists",
-          text: "Remodellers who do the ground work of analysing the current vs future states of the Kitchen & fulfilling the needs of the Homeowner",
-        },
-      ],
+        "VeraAI served three key stakeholder groups across the kitchen remodeling journey: homeowners, business account owners, and project specialists. Each had distinct needs, but project specialists were prioritized for the initial MVP.",
+      segments: [],
       personas: [
         {
           role: "Homeowner",
@@ -1540,7 +1568,7 @@ export const caseStudies: Record<string, CaseStudy> = {
               "Validates compliance and feasibility after initial design, leading to rework and revisions",
             ],
         ] },
-        { label: "Resource Constraints", cells: [
+        { label: "Resource Constraints", hidden: true, cells: [
           "Limited renovation knowledge, time, and budget flexibility",
           "Limited visibility across sales, projects, and teams",
           "Time pressure, fragmented tools, and incomplete site data",
@@ -1897,11 +1925,13 @@ export const caseStudies: Record<string, CaseStudy> = {
         notJust: { label: "Not just", icon: "Split", text: "Split a bill", srText: "Not just: split a bill" },
         butAlso: { label: "But also", icon: "Network", text: "Everyday spending connected to the bigger financial picture" },
       },
+      showChips: false,
       chips: [
         { icon: "Eye", text: "Track what she spends" },
         { icon: "CalendarCheck", text: "Plan what she can afford" },
         { icon: "Lightbulb", text: "Make more informed decisions" },
       ],
+      showClosing: false,
       closing: "That’s the opportunity behind MetaMint: a conversational Money Coach that understands the context of everyday life.",
       closingHighlight: "a conversational Money Coach that understands the context of everyday life",
     },
@@ -1937,6 +1967,7 @@ export const caseStudies: Record<string, CaseStudy> = {
       ],
     },
     featureBoard: {
+      show: false,
       subLabel: "02. Feature Prioritization",
       showMvpNote: true,
       mvpNote: "the MVP is all Must Have",
@@ -2036,6 +2067,7 @@ export const caseStudies: Record<string, CaseStudy> = {
         ],
       },
       users: {
+        show: false,
         label: "WHO IT SERVES",
         jobLabel: "JOB TO BE DONE",
         journeyLabel: "SUCCESS JOURNEY",

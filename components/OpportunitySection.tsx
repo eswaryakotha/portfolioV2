@@ -174,6 +174,7 @@ export default function OpportunitySection({ data }: { data: OpportunityData }) 
           </div>
         </div>
 
+        {data.showChips !== false && (
         <ul className="grid grid-cols-1 min-[768px]:grid-cols-3 list-none p-0" style={{ gap: 12, margin: "24px 0 0" }}>
           {data.chips.map((chip, i) => (
             <li
@@ -186,8 +187,10 @@ export default function OpportunitySection({ data }: { data: OpportunityData }) 
             </li>
           ))}
         </ul>
+        )}
       </div>
 
+      {data.showClosing !== false && (
       <p className="text-gray-800" style={{ marginTop: 40, fontSize: 14, lineHeight: 1.6 }}>
         {idx === -1 ? (
           data.closing
@@ -209,6 +212,7 @@ export default function OpportunitySection({ data }: { data: OpportunityData }) 
           </>
         )}
       </p>
+      )}
     </div>
   );
 }

@@ -49,12 +49,14 @@ function Avatar({
 }
 
 export default function PersonaSection({ data }: { data: PersonaData }) {
-  const { personas, rows, focusIndex } = data;
+  const { personas, focusIndex } = data;
+  const rows = data.rows.filter((r) => !r.hidden);
 
   return (
     <div>
       <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">{data.subLabel}</p>
       <p className="text-sm text-gray-800 leading-relaxed">{data.intro}</p>
+      {data.segments.length > 0 && (
       <ol className="text-sm text-gray-800 leading-relaxed list-decimal pl-5 flex flex-col gap-2" style={{ marginTop: 12 }}>
         {data.segments.map((seg) => (
           <li key={seg.name}>
@@ -62,6 +64,7 @@ export default function PersonaSection({ data }: { data: PersonaData }) {
           </li>
         ))}
       </ol>
+      )}
 
       {/* Persona table: 1100px and wider, may break out of the text column */}
       <div

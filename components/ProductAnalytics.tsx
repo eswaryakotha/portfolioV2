@@ -313,7 +313,7 @@ export default function ProductAnalytics({ data }: { data: ProductAnalyticsData 
       </p>
       <div className="flex flex-col" style={{ gap: 40, marginTop: 24 }}>
         <RationaleAndGoal data={data} />
-        <WhoItServes data={data.users} />
+        {data.users.show !== false && <WhoItServes data={data.users} />}
         <Measured data={data.metrics} />
       </div>
     </div>
