@@ -604,7 +604,18 @@ export type PivotsData = {
 
 export type PilotData = {
   heading: string;
-  videoNote?: string; // small note shown right below the video
+  showDetails?: boolean; // set to false to hide the intro line, the stat strip and the four cards below the video
+  videoNote?: string; // small note shown right below the video (or below the clips)
+  // short clips (muted, looping, autoplay) shown instead of the single video; each has a label and a line of text
+  clips?: Array<{
+    title: string;
+    text: string;
+    videoUrl: string;
+    poster?: string;
+    crop?: { width: number; height: number; top: number; bottom?: number };
+    // handwritten margin notes with an arrow into the clip (wide screens only); target and labelY are % of the clip frame
+    notes?: Array<{ text: string; side: "left" | "right"; target: [number, number]; labelY: number; reach?: number }>;
+  }>;
   videoCrop?: { width: number; height: number; top: number }; // .mp4 size and blank rows to cut from its top
   videoUrl: string; // empty = placeholder; .mp4 path = <video>; YouTube / Vimeo / Loom link = iframe
   poster: string;
@@ -625,14 +636,14 @@ export type WebsiteData = {
     tags: string[];
   };
   // video shown after "first"; replaces the "communicating" screenshots when those are hidden
-  second?: { videoUrl: string; poster: string; placeholderLabel: string; ariaLabel: string };
+  second?: { videoUrl: string; poster: string; placeholderLabel: string; ariaLabel: string; caption?: string; tags?: string[] };
   communicating: {
     show?: boolean; // set to false to hide the "Communicating the product" heading and screenshots
     subLabel: string;
     // src is a path under /public; a missing file shows the dashed placeholder
     blocks: Array<{ src: string; alt: string; width?: number; height?: number; placeholderLabel: string; caption: string }>;
   };
-  contribution: { label: string; text: string };
+  contribution: { show?: boolean; label: string; text: string }; // show: false hides the callout box
 };
 
 export type WhatsNextData = {
@@ -1694,7 +1705,37 @@ export const caseStudies: Record<string, CaseStudy> = {
     showSections: { solution: false, evaluation: false }, // Solution is replaced by `pilot`; Evaluation is hidden for now
     pilot: {
       heading: "Building and validating the pilot",
-      videoNote: "*directly from the VeraAI website",
+      showDetails: false,
+      videoNote: "*Clips are directly from the VeraAI website",
+      clips: [
+        {
+          title: "Measurements to rough sketch",
+          text: "As the measurements are filled in, a rough sketch of the layout appears on the right, before the layout is generated.",
+          videoUrl: "/veraai/pilot-clip-1.mp4",
+          crop: { width: 1920, height: 1080, top: 111, bottom: 47 },
+          notes: [{ text: "sketch builds as you type", side: "right", target: [80, 40], labelY: 22 }],
+        },
+        {
+          title: "Materials, vendors and the NKBA layout",
+          text: "Details such as the cabinets and countertop are added, along with the vendors to source materials from, so the 3D rendering and quotation can follow. Once the measurements and vendor details are in, the layout diagram appears, aligned to NKBA rules.",
+          videoUrl: "/veraai/pilot-clip-2.mp4",
+          crop: { width: 1920, height: 1080, top: 111, bottom: 47 },
+          notes: [{ text: "Layout aligned as per NKBA rules", side: "left", target: [21, 58], labelY: 40, reach: 90 }],
+        },
+        {
+          title: "Realistic 3D rendering",
+          text: "A realistic 3D rendering is generated from the measurements and layout information, using the materials chosen from the vendor information, so it reflects exactly those choices and lets you visualize what the kitchen will look like.",
+          videoUrl: "/veraai/pilot-clip-3.mp4",
+          crop: { width: 1920, height: 1080, top: 111, bottom: 47 },
+          notes: [{ text: "Rendered from materials and textures chosen", side: "right", target: [79, 52], labelY: 38, reach: 90 }],
+        },
+        {
+          title: "Bill of materials and quotation",
+          text: "A bill of materials and quotation are built from the vendors and materials finalized. Once the quote is ready and every adjustment is made, a formal quotation is generated, which can be sent as a PDF for the homeowner’s review.",
+          videoUrl: "/veraai/pilot-clip-4.mp4",
+          crop: { width: 1920, height: 1080, top: 111, bottom: 47 },
+        },
+      ],
       videoUrl: "/veraai/pilot-demo.mp4",
       videoCrop: { width: 1920, height: 1080, top: 107 },
       poster: "",
@@ -1722,7 +1763,7 @@ export const caseStudies: Record<string, CaseStudy> = {
       first: {
         subLabel: "01. The first impression",
         videoUrl: "/veraai/website-walkthrough.mp4",
-        poster: "",
+        poster: "/veraai/website-walkthrough-poster.jpg", // the frame at 5 seconds; playback still starts at 0
         placeholderLabel: "[Website walkthrough video, 10–20 seconds]",
         caption:
           "A look at the first draft of VeraAI’s website, from the homepage and value proposition to the presentation of its product capabilities.",
@@ -1730,9 +1771,11 @@ export const caseStudies: Record<string, CaseStudy> = {
       },
       second: {
         videoUrl: "/veraai/website-kitchen.mp4",
-        poster: "",
+        poster: "/veraai/website-kitchen-poster.jpg", // the frame at 17 seconds; playback still starts at 0
         placeholderLabel: "[Kitchen video coming soon]",
         ariaLabel: "VeraAI website kitchen video",
+        caption: "This was an actual three.js experiment I did on an actual JSON file from real contractor measurements.",
+        tags: ["Three.js experiment", "Real contractor measurements"],
       },
       communicating: {
         show: false,
@@ -1755,6 +1798,7 @@ export const caseStudies: Record<string, CaseStudy> = {
         ],
       },
       contribution: {
+        show: false,
         label: "My contribution",
         text: "End-to-end frontend development, website content presentation, and go-to-market materials.",
       },

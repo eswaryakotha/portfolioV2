@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import * as LucideIcons from "lucide-react";
 import type { PilotData } from "@/data/content";
 import VideoFrame from "@/components/VideoFrame";
+import LoopClip from "@/components/LoopClip";
 
 // "Building and validating the pilot": video frame, intro, stat strip, four cards
 // (they fade up in sequence when 30% visible).
@@ -52,21 +53,52 @@ export default function PilotSection({ data }: { data: PilotData }) {
 
   return (
     <section className="border-t border-gray-200 pt-6">
-      <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">{data.heading}</h2>
+      <h2 className="font-mono text-xs uppercase tracking-widest text-gray-400 mb-3">{data.heading}
+        {data.videoNote && (
+          <span className="normal-case tracking-normal" style={{ marginLeft: 8 }}>
+            ({data.videoNote})
+          </span>
+        )}
+      </h2>
 
-      <VideoFrame
-        videoUrl={data.videoUrl}
-        poster={data.poster}
-        crop={data.videoCrop}
-        placeholderLabel="[Pilot demo video coming soon]"
-        title={data.videoUrl ? "Pilot demo video" : "Pilot demo video (placeholder)"}
-      />
-      {data.videoNote && (
-        <p className="text-xs text-gray-500" style={{ margin: "8px 0 0" }}>
-          {data.videoNote}
-        </p>
+      {data.clips && data.clips.length > 0 ? (
+        <ul className="list-none p-0 m-0 flex flex-col" style={{ gap: 12 }}>
+          {data.clips.map((c, i) => (
+            <Fragment key={c.videoUrl}>
+              <li>
+                <h3 className="text-sm font-semibold text-gray-900" style={{ margin: "0 0 4px" }}>
+                  {c.title}
+                </h3>
+                <p className="text-sm text-gray-800 leading-relaxed" style={{ margin: "0 0 12px" }}>
+                  {c.text}
+                </p>
+                <LoopClip src={c.videoUrl} poster={c.poster} label={c.title} crop={c.crop} notes={c.notes} />
+              </li>
+              {/* flow arrow to the next step, same thin accent stroke and open head as the process flowcharts */}
+              {i < data.clips!.length - 1 && (
+                <li aria-hidden="true" role="presentation" style={{ display: "flex", justifyContent: "center", listStyle: "none" }}>
+                  <svg width="16" height="36" viewBox="0 0 16 36" fill="none" style={{ display: "block", overflow: "visible" }}>
+                    <g stroke={BRIGHT} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M 8,2 L 8,33" />
+                      <path d="M 3,27 L 8,34 L 13,27" />
+                    </g>
+                  </svg>
+                </li>
+              )}
+            </Fragment>
+          ))}
+        </ul>
+      ) : (
+        <VideoFrame
+          videoUrl={data.videoUrl}
+          poster={data.poster}
+          crop={data.videoCrop}
+          placeholderLabel="[Pilot demo video coming soon]"
+          title={data.videoUrl ? "Pilot demo video" : "Pilot demo video (placeholder)"}
+        />
       )}
-
+      {data.showDetails !== false && (
+        <>
       <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 40 }}>
         {data.intro}
       </p>
@@ -103,6 +135,8 @@ export default function PilotSection({ data }: { data: PilotData }) {
           </li>
         ))}
       </ul>
+        </>
+      )}
     </section>
   );
 }

@@ -103,6 +103,20 @@ export default function WebsiteSection({ data }: { data: WebsiteData }) {
             placeholderLabel={data.second.placeholderLabel}
             title={data.second.videoUrl ? data.second.ariaLabel : `${data.second.ariaLabel} (placeholder)`}
           />
+          {data.second.caption && (
+            <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 16 }}>
+              {data.second.caption}
+            </p>
+          )}
+          {data.second.tags && data.second.tags.length > 0 && (
+            <ul style={{ display: "flex", flexWrap: "wrap", gap: 8, listStyle: "none", padding: 0, margin: "12px 0 0" }}>
+              {data.second.tags.map((t) => (
+                <li key={t} className="font-mono text-gray-500" style={{ border: `1px solid ${BORDER}`, borderRadius: 4, padding: "3px 8px", fontSize: 11 }}>
+                  {t}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -143,6 +157,7 @@ export default function WebsiteSection({ data }: { data: WebsiteData }) {
       </div>
       )}
 
+      {data.contribution.show !== false && (
       <div style={{ marginTop: 40, background: "#F5F5F4", borderLeft: `3px solid ${BRIGHT}`, padding: 20 }}>
         <p className="font-mono text-gray-400 uppercase" style={{ margin: "0 0 8px", fontSize: 11, letterSpacing: "0.06em" }}>
           {data.contribution.label}
@@ -151,6 +166,7 @@ export default function WebsiteSection({ data }: { data: WebsiteData }) {
           {data.contribution.text}
         </p>
       </div>
+      )}
     </section>
   );
 }
