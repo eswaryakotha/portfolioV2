@@ -434,6 +434,10 @@ export type SolutionDemoData = {
     ariaLabel: string; // " (placeholder)" is added while videoUrl is empty
     videoUrl: string; // empty = placeholder; .mp4 path = video; YouTube, Vimeo or Loom link = iframe
     poster: string;
+    // handwritten margin note with an arrow into the phone (wide screens only); target and labelY are % of the phone frame
+    notes?: Array<{ text: string; side: "left" | "right"; target: [number, number]; labelY: number; reach?: number }>;
+    textAbove?: boolean; // true = the description sits between the title and the video
+    phone?: boolean; // true = portrait video shown inside a phone frame, autoplay, muted, looping
     text: string;
   }>;
   diagram: {
@@ -1713,7 +1717,6 @@ export const caseStudies: Record<string, CaseStudy> = {
           text: "As the measurements are filled in, a rough sketch of the layout appears on the right, before the layout is generated.",
           videoUrl: "/veraai/pilot-clip-1.mp4",
           crop: { width: 1920, height: 1080, top: 111, bottom: 47 },
-          notes: [{ text: "sketch builds as you type", side: "right", target: [80, 40], labelY: 22 }],
         },
         {
           title: "Materials, vendors and the NKBA layout",
@@ -2187,8 +2190,11 @@ export const caseStudies: Record<string, CaseStudy> = {
           title: "Money Coach",
           placeholderLabel: "[Money Coach video coming soon]",
           ariaLabel: "Money Coach video",
-          videoUrl: "",
+          videoUrl: "/metamint/money-coach.mp4",
           poster: "",
+          phone: true,
+          textAbove: true,
+          notes: [{ text: "Money Coach, right inside the chat", side: "right", target: [60, 38], labelY: 34, reach: 62 }],
           text: "Designed the broader Money Coach experience, spanning trip planning, savings goals, spending guidance, and contextual card recommendations.",
         },
         {

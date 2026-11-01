@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as LucideIcons from "lucide-react";
 import VideoFrame from "@/components/VideoFrame";
+import PhoneVideo from "@/components/PhoneVideo";
 import type { SolutionDemoData } from "@/data/content";
 
 // Solution: two video blocks, then the group expense tracking workflow as a live
@@ -56,15 +57,26 @@ function Videos({ data }: { data: SolutionDemoData }) {
             <h4 className="text-gray-900" style={{ margin: "8px 0 12px", fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>
               {v.title}
             </h4>
-            <VideoFrame
-              videoUrl={v.videoUrl}
-              poster={v.poster}
-              placeholderLabel={v.placeholderLabel}
-              title={v.videoUrl ? v.ariaLabel : `${v.ariaLabel} (placeholder)`}
-            />
-            <p className="text-sm text-gray-800 leading-relaxed" style={{ margin: "16px 0 0" }}>
-              {v.text}
-            </p>
+            {v.textAbove && (
+              <p className="text-sm text-gray-800 leading-relaxed" style={{ margin: "0 0 16px" }}>
+                {v.text}
+              </p>
+            )}
+            {v.phone && v.videoUrl ? (
+              <PhoneVideo src={v.videoUrl} poster={v.poster} label={v.ariaLabel} notes={v.notes} />
+            ) : (
+              <VideoFrame
+                videoUrl={v.videoUrl}
+                poster={v.poster}
+                placeholderLabel={v.placeholderLabel}
+                title={v.videoUrl ? v.ariaLabel : `${v.ariaLabel} (placeholder)`}
+              />
+            )}
+            {!v.textAbove && (
+              <p className="text-sm text-gray-800 leading-relaxed" style={{ margin: "16px 0 0" }}>
+                {v.text}
+              </p>
+            )}
           </div>
         ))}
       </div>
