@@ -95,7 +95,19 @@ export default function WebsiteSection({ data }: { data: WebsiteData }) {
         </ul>
       </div>
 
+      {data.second && (
+        <div style={{ marginTop: 32 }}>
+          <VideoFrame
+            videoUrl={data.second.videoUrl}
+            poster={data.second.poster}
+            placeholderLabel={data.second.placeholderLabel}
+            title={data.second.videoUrl ? data.second.ariaLabel : `${data.second.ariaLabel} (placeholder)`}
+          />
+        </div>
+      )}
+
       {/* 02 */}
+      {data.communicating.show !== false && (
       <div style={{ marginTop: 40 }}>
         <p className="font-mono text-xs tracking-widest text-gray-400 mb-3">{data.communicating.subLabel}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
@@ -129,6 +141,7 @@ export default function WebsiteSection({ data }: { data: WebsiteData }) {
           })}
         </div>
       </div>
+      )}
 
       <div style={{ marginTop: 40, background: "#F5F5F4", borderLeft: `3px solid ${BRIGHT}`, padding: 20 }}>
         <p className="font-mono text-gray-400 uppercase" style={{ margin: "0 0 8px", fontSize: 11, letterSpacing: "0.06em" }}>

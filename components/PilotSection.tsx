@@ -57,9 +57,15 @@ export default function PilotSection({ data }: { data: PilotData }) {
       <VideoFrame
         videoUrl={data.videoUrl}
         poster={data.poster}
+        crop={data.videoCrop}
         placeholderLabel="[Pilot demo video coming soon]"
-        title="Pilot demo video (placeholder)"
+        title={data.videoUrl ? "Pilot demo video" : "Pilot demo video (placeholder)"}
       />
+      {data.videoNote && (
+        <p className="text-xs text-gray-500" style={{ margin: "8px 0 0" }}>
+          {data.videoNote}
+        </p>
+      )}
 
       <p className="text-sm text-gray-800 leading-relaxed" style={{ marginTop: 40 }}>
         {data.intro}

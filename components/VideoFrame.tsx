@@ -19,19 +19,23 @@ export default function VideoFrame({
   poster,
   placeholderLabel,
   title,
+  crop,
 }: {
   videoUrl?: string;
   poster?: string;
   placeholderLabel: string;
   title: string; // accessible label / iframe title
+  // trims blank pixels baked into the top of an .mp4: source size and rows to cut
+  crop?: { width: number; height: number; top: number };
 }) {
+  const cropTop = crop && crop.top > 0 ? crop : undefined;
   const isMp4 = !!videoUrl && videoUrl.endsWith(".mp4");
   const embed = videoUrl && !isMp4 ? toEmbedUrl(videoUrl) : null;
   const showPlaceholder = !videoUrl || (!isMp4 && !embed);
 
   return (
     <div
-      className="aspect-video w-full"
+      className={cropTop ? "w-full" : "aspect-video w-full"}
       role={showPlaceholder ? "img" : undefined}
       aria-label={showPlaceholder ? title : undefined}
       style={{
@@ -39,6 +43,7 @@ export default function VideoFrame({
         background: showPlaceholder ? "#f9f9f7" : "#000",
         borderRadius: 4,
         overflow: "hidden",
+        ...(cropTop ? { aspectRatio: `${cropTop.width} / ${cropTop.height - cropTop.top}` } : {}),
       }}
     >
       {showPlaceholder ? (
@@ -54,7 +59,11 @@ export default function VideoFrame({
           aria-label={title}
           src={videoUrl}
           poster={poster || undefined}
-          style={{ width: "100%", height: "100%", display: "block" }}
+          style={
+            cropTop
+              ? { width: "100%", height: "auto", display: "block", marginTop: `${-(cropTop.top / cropTop.width) * 100}%` }
+              : { width: "100%", height: "100%", display: "block" }
+          }
         />
       ) : (
         <iframe

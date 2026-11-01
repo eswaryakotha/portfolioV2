@@ -604,6 +604,8 @@ export type PivotsData = {
 
 export type PilotData = {
   heading: string;
+  videoNote?: string; // small note shown right below the video
+  videoCrop?: { width: number; height: number; top: number }; // .mp4 size and blank rows to cut from its top
   videoUrl: string; // empty = placeholder; .mp4 path = <video>; YouTube / Vimeo / Loom link = iframe
   poster: string;
   intro: string;
@@ -622,7 +624,10 @@ export type WebsiteData = {
     caption: string;
     tags: string[];
   };
+  // video shown after "first"; replaces the "communicating" screenshots when those are hidden
+  second?: { videoUrl: string; poster: string; placeholderLabel: string; ariaLabel: string };
   communicating: {
+    show?: boolean; // set to false to hide the "Communicating the product" heading and screenshots
     subLabel: string;
     // src is a path under /public; a missing file shows the dashed placeholder
     blocks: Array<{ src: string; alt: string; width?: number; height?: number; placeholderLabel: string; caption: string }>;
@@ -1689,7 +1694,9 @@ export const caseStudies: Record<string, CaseStudy> = {
     showSections: { solution: false, evaluation: false }, // Solution is replaced by `pilot`; Evaluation is hidden for now
     pilot: {
       heading: "Building and validating the pilot",
-      videoUrl: "",
+      videoNote: "*directly from the VeraAI website",
+      videoUrl: "/veraai/pilot-demo.mp4",
+      videoCrop: { width: 1920, height: 1080, top: 107 },
       poster: "",
       intro: "The pilot focused on establishing technical feasibility for the core workflow.",
       stats: [
@@ -1714,14 +1721,21 @@ export const caseStudies: Record<string, CaseStudy> = {
         "Beyond defining the product, I built VeraAI’s website end-to-end, translating the product vision into a customer-facing experience for kitchen and bath remodeling professionals.",
       first: {
         subLabel: "01. The first impression",
-        videoUrl: "",
+        videoUrl: "/veraai/website-walkthrough.mp4",
         poster: "",
         placeholderLabel: "[Website walkthrough video, 10–20 seconds]",
         caption:
           "A look at the first draft of VeraAI’s website, from the homepage and value proposition to the presentation of its product capabilities.",
         tags: ["Website design and frontend development", "Early draft"],
       },
+      second: {
+        videoUrl: "/veraai/website-kitchen.mp4",
+        poster: "",
+        placeholderLabel: "[Kitchen video coming soon]",
+        ariaLabel: "VeraAI website kitchen video",
+      },
       communicating: {
+        show: false,
         subLabel: "02. Communicating the product",
         blocks: [
           {
