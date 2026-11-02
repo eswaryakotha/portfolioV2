@@ -4,7 +4,7 @@
 25s plot-twist case-study video for the Dolby Labs project in the portfolio.
 
 ## Output
-- Composition: `brag-output/composition/`; render: `brag-output/brag.mp4`; 1920x1080; 25s
+- Composition: `brag-output-Dolby-Labs/composition/`; render: `brag-output-Dolby-Labs/brag.mp4`; 1920x1080; 25s
 
 ## Source Material
 - Files read: data/content.ts (caseStudies["dolby-labs"]), app/globals.css, app/layout.tsx, public/dolby/*.mp4
