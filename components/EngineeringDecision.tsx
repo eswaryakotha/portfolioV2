@@ -51,7 +51,9 @@ function BlockRow({
               borderRadius: 2,
               border: `1px solid ${show && filled ? fillColor : CARD_BORDER}`,
               background: show && filled ? fillColor : "transparent",
-              transition: animate ? "background-color 0.12s ease, border-color 0.12s ease" : "none",
+              transitionProperty: animate ? "background-color, border-color" : "none",
+              transitionDuration: "0.12s",
+              transitionTimingFunction: "ease",
               transitionDelay: animate ? `${(i / (total - 1)) * 500}ms` : "0ms",
               flexShrink: 0,
             }}

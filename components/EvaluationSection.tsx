@@ -580,7 +580,7 @@ function RunHistory({ data }: { data: EvaluationData }) {
                 style={{
                   width: 12,
                   height: 12,
-                  background: color,
+                  backgroundColor: color,
                   backgroundImage: hatch,
                   borderRadius: 2,
                   flexShrink: 0,
@@ -626,7 +626,7 @@ function RunHistory({ data }: { data: EvaluationData }) {
                       key={label}
                       style={{
                         width: show ? `${pct(count)}%` : "0%",
-                        background: color,
+                        backgroundColor: color,
                         backgroundImage: hatch,
                         transition: animate ? "width 500ms ease" : "none",
                         display: "flex",
@@ -699,7 +699,7 @@ function RunHistory({ data }: { data: EvaluationData }) {
                 style={{
                   width: 12,
                   height: 12,
-                  background: color,
+                  backgroundColor: color,
                   backgroundImage: hatch,
                   borderRadius: 2,
                   flexShrink: 0,
@@ -764,7 +764,7 @@ function RunHistory({ data }: { data: EvaluationData }) {
                       key={label}
                       style={{
                         width: show ? `${pct(count)}%` : "0%",
-                        background: color,
+                        backgroundColor: color,
                         backgroundImage: hatch,
                         transition: animate ? "width 500ms ease" : "none",
                         display: "flex",

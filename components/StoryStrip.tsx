@@ -99,7 +99,7 @@ function Column({ col }: { col: StripColumn }) {
           )}
         </div>
       )}
-      {!col.icons && col.image && (
+      {!col.icons && col.image?.src && (
         <img
           src={col.image.src}
           alt={col.image.alt}
@@ -114,7 +114,7 @@ function Column({ col }: { col: StripColumn }) {
           }}
         />
       )}
-      {!col.icons && !col.image && (
+      {!col.icons && !col.image?.src && (
         <div
           role="img"
           aria-label="Illustration placeholder"

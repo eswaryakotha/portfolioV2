@@ -101,7 +101,7 @@ export default function BudgetHook({ data }: { data: BudgetHookData }) {
         <div
           style={{
             position: "relative",
-            background: PAPER,
+            backgroundColor: PAPER,
             backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${ROW - 1}px, rgba(110,140,175,0.28) ${ROW - 1}px, rgba(110,140,175,0.28) ${ROW}px)`,
             backgroundPositionY: ROW,
             padding: `${ROW}px 40px ${ROW + 12}px 64px`,
