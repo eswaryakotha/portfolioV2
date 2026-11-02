@@ -14,12 +14,18 @@ export default function PhoneVideo({
   label,
   ratio = [800, 1646],
   notes,
+  width = "min(300px, 72vw)",
+  margin = "18px auto 0",
+  playOnHover = false,
 }: {
   src: string;
   poster?: string;
   label: string; // accessible label
   ratio?: [number, number]; // video width and height
   notes?: MarginNote[]; // handwritten margin notes with an arrow into the phone (wide screens only)
+  width?: string; // CSS width of the whole phone
+  margin?: string;
+  playOnHover?: boolean; // plays (muted, looping) only while hovered or focused; a tap toggles it on touch screens
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -31,7 +37,7 @@ export default function PhoneVideo({
     if (!v) return;
     const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(rm);
-    if (rm || !("IntersectionObserver" in window)) return;
+    if (rm || playOnHover || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) v.play().catch(() => {});
@@ -41,7 +47,30 @@ export default function PhoneVideo({
     );
     io.observe(v);
     return () => io.disconnect();
-  }, []);
+  }, [playOnHover]);
+
+  const pointer = useRef("mouse");
+  const play = () => ref.current?.play().catch(() => {});
+  const pause = () => ref.current?.pause();
+  const hover: React.HTMLAttributes<HTMLDivElement> | undefined =
+    playOnHover && !reduced
+      ? {
+          tabIndex: 0,
+          role: "group",
+          "aria-label": label,
+          onPointerDown: (e) => { pointer.current = e.pointerType; },
+          onPointerEnter: (e) => { if (e.pointerType === "mouse") play(); },
+          onPointerLeave: (e) => { if (e.pointerType === "mouse") pause(); },
+          onFocus: (e) => { if (e.currentTarget.matches(":focus-visible")) play(); },
+          onBlur: pause,
+          onClick: () => {
+            if (pointer.current === "mouse") return;
+            const v = ref.current;
+            if (v) (v.paused ? play() : pause());
+          },
+          style: { cursor: "pointer", outlineOffset: 4 },
+        }
+      : undefined;
 
   useEffect(() => {
     const el = wrap.current;
@@ -64,7 +93,7 @@ export default function PhoneVideo({
   });
 
   return (
-    <div ref={wrap} style={{ width: "min(300px, 72vw)", margin: "18px auto 0", position: "relative" }}>
+    <div ref={wrap} {...hover} style={{ width, margin, position: "relative", ...hover?.style }}>
       {/* side buttons */}
       <span aria-hidden="true" style={button(72, 26, "left")} />
       <span aria-hidden="true" style={button(116, 46, "left")} />
@@ -81,13 +110,13 @@ export default function PhoneVideo({
         <div style={{ borderRadius: 38, overflow: "hidden", background: "#000", aspectRatio: `${ratio[0]} / ${ratio[1]}` }}>
           <video
             ref={ref}
-            src={src}
+            src={src ? (playOnHover && !poster ? `${src}#t=0.1` : src) : undefined}
             poster={poster || undefined}
             aria-label={label}
             muted
             loop
             playsInline
-            autoPlay={!reduced}
+            autoPlay={!reduced && !playOnHover}
             controls={reduced}
             preload="metadata"
             style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}

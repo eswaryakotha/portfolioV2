@@ -62,7 +62,22 @@ function Videos({ data }: { data: SolutionDemoData }) {
                 {v.text}
               </p>
             )}
-            {v.phone && v.videoUrl ? (
+            {v.phoneGrid ? (
+              <>
+              {v.phoneGridHint && (
+                <p className="font-mono text-gray-400" style={{ margin: "0 0 16px", fontSize: 12 }}>
+                  {v.phoneGridHint}
+                </p>
+              )}
+              <ul className="grid grid-cols-2 list-none p-0 m-0" style={{ gap: 32 }}>
+                {v.phoneGrid.map((g) => (
+                  <li key={g.ariaLabel}>
+                    <PhoneVideo src={g.videoUrl} poster={g.poster} label={g.ariaLabel} ratio={g.ratio} notes={g.notes} width="min(300px, 100%)" margin="0 auto" playOnHover />
+                  </li>
+                ))}
+              </ul>
+              </>
+            ) : v.phone && v.videoUrl ? (
               <PhoneVideo src={v.videoUrl} poster={v.poster} label={v.ariaLabel} notes={v.notes} />
             ) : (
               <VideoFrame

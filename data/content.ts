@@ -438,6 +438,15 @@ export type SolutionDemoData = {
     notes?: Array<{ text: string; side: "left" | "right"; target: [number, number]; labelY: number; reach?: number }>;
     textAbove?: boolean; // true = the description sits between the title and the video
     phone?: boolean; // true = portrait video shown inside a phone frame, autoplay, muted, looping
+    // several portrait videos in phone frames, 2 per row, each playing only while hovered; an empty videoUrl shows an empty frame
+    phoneGridHint?: string; // small line above the grid
+    phoneGrid?: Array<{
+      videoUrl: string;
+      poster: string;
+      ariaLabel: string;
+      ratio?: [number, number]; // video width and height
+      notes?: Array<{ text: string; side: "left" | "right"; target: [number, number]; labelY: number; reach?: number }>;
+    }>;
     text: string;
   }>;
   diagram: {
@@ -2205,6 +2214,52 @@ export const caseStudies: Record<string, CaseStudy> = {
           ariaLabel: "Group expense tracking video",
           videoUrl: "",
           poster: "",
+          textAbove: true,
+          phoneGridHint: "Hover over a screen to see its video play (tap on a touch screen).",
+          phoneGrid: [
+            {
+              videoUrl: "/metamint/group-expense-1.mp4",
+              poster: "/metamint/group-expense-1-poster.jpg", // the 14 second mark
+              ariaLabel: "Group expense tracking video 1 of 6: a brunch bill is split equally among the group",
+              ratio: [848, 1802],
+              notes: [{ text: "1. Brunch bill split equally among the group", side: "left", target: [45, 76], labelY: 66, reach: 70 }],
+            },
+            {
+              videoUrl: "/metamint/group-expense-2.mp4",
+              poster: "/metamint/group-expense-2-poster.jpg", // the 9 second mark
+              ariaLabel: "Group expense tracking video 2 of 6: the bill is split Dutch style, item by item",
+              ratio: [848, 1802],
+              notes: [{ text: "2. Or split it Dutch style, item by item", side: "right", target: [60, 70], labelY: 62, reach: 70 }],
+            },
+            {
+              videoUrl: "/metamint/group-expense-3.mp4",
+              poster: "/metamint/group-expense-3-poster.jpg", // the 6 second mark
+              ariaLabel: "Group expense tracking video 3 of 6: a personal payment sent to the group is not detected as a shared expense and is left out",
+              ratio: [848, 1802],
+              notes: [{ text: "3. Personal bills sent to the group are left out", side: "left", target: [18, 82], labelY: 74, reach: 70 }],
+            },
+            {
+              videoUrl: "/metamint/group-expense-4.mp4",
+              poster: "/metamint/group-expense-4-poster.jpg", // the 8 second mark
+              ariaLabel: "Group expense tracking video 4 of 6: a UPI receipt with no line items is split equally among the group",
+              ratio: [848, 1802],
+              notes: [{ text: "4. UPI receipts with no line items split equally", side: "right", target: [55, 76], labelY: 70, reach: 70 }],
+            },
+            {
+              videoUrl: "/metamint/group-expense-5.mp4",
+              poster: "/metamint/group-expense-5-poster.jpg", // the 14 second mark
+              ariaLabel: "Group expense tracking video 5 of 6: in a personal chat, MetaMint shows the trip budget, how much is spent and who owes what",
+              ratio: [848, 1802],
+              notes: [{ text: "5. Budget, spend and who owes you, in your own chat", side: "left", target: [30, 43], labelY: 46, reach: 70 }],
+            },
+            {
+              videoUrl: "/metamint/group-expense-6.mp4",
+              poster: "/metamint/group-expense-6-poster.jpg", // the 16 second mark
+              ariaLabel: "Group expense tracking video 6 of 6: a planned flight expense is tracked, then confirmed and added to who owes whom",
+              ratio: [848, 1802],
+              notes: [{ text: "6. Plan an expense, then confirm it to add it to who owes whom", side: "right", target: [55, 72], labelY: 66, reach: 70 }],
+            },
+          ],
           text: "Built a working prototype that uses AI to classify expense-related inputs, extract receipt details, and interpret user intent, with deterministic code handling expense splitting and balance tracking.",
         },
       ],
