@@ -16,12 +16,14 @@ export default function LoopClip({
   label,
   crop,
   notes,
+  restartOnEnter,
 }: {
   src: string;
   poster?: string;
   label: string; // accessible label
   crop?: { width: number; height: number; top: number; bottom?: number }; // blank rows to trim from the top and bottom
   notes?: MarginNote[];
+  restartOnEnter?: boolean; // start again from the beginning each time it scrolls back into view
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -36,14 +38,17 @@ export default function LoopClip({
     if (rm || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) v.play().catch(() => {});
+        if (e.isIntersecting) {
+          if (restartOnEnter) v.currentTime = 0;
+          v.play().catch(() => {});
+        }
         else v.pause();
       },
       { threshold: 0.3 }
     );
     io.observe(v);
     return () => io.disconnect();
-  }, []);
+  }, [restartOnEnter]);
 
   useEffect(() => {
     const el = wrap.current;

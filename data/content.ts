@@ -763,6 +763,7 @@ export type CaseStudy = {
   metaDescription?: string;
   accent: string;
   accentBright?: string;
+  heroVideo?: { src: string; poster: string; label: string }; // silent looping video at the top of the page
   hookImage?: { src: string; alt: string; width: number; height: number };
   hideSidebar?: boolean;
   summary?: string;
@@ -831,6 +832,7 @@ export const METAMINT_EVAL = {
 
 export const caseStudies: Record<string, CaseStudy> = {
   "dolby-labs": {
+    heroVideo: { src: "/dolby/hero.mp4", poster: "/dolby/hero-poster.jpg", label: "Dolby Labs case study highlight video" },
     pageTitle: "How might we help UGC authors confidently bring their stories to audio?",
     subtitle: "Dolby Labs X Purdue [2023] | Independent [2026]",
     tagline: "(Spoiler: Not the way Dolby originally thought)",
@@ -1366,6 +1368,7 @@ export const caseStudies: Record<string, CaseStudy> = {
   },
 
   "veraai": {
+    heroVideo: { src: "/veraai/hero.mp4", poster: "/veraai/hero-poster.jpg", label: "VeraAI case study highlight video" },
     pageTitle: "How can we reduce a 30-day sales cycle to a single day?",
     subtitle: "VeraAI Technologies Inc. [2025 - 2026]",
     accent: ACCENTS.veraai,
@@ -1863,6 +1866,7 @@ export const caseStudies: Record<string, CaseStudy> = {
   },
 
   "metamint": {
+    heroVideo: { src: "/metamint/hero.mp4", poster: "/metamint/hero-poster.jpg", label: "MetaMint case study highlight video" },
     pageTitle: "What if your money coach understood your financial life, not just your transactions?",
     accent: ACCENTS.metamint,
     accentBright: ACCENTS_BRIGHT.metamint,

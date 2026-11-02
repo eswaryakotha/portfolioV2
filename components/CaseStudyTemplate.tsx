@@ -29,6 +29,7 @@ import WireframePanel from "@/components/WireframePanel";
 import SolutionSection from "@/components/SolutionSection";
 import EvaluationsResults from "@/components/EvaluationsResults";
 import EvaluationSection from "@/components/EvaluationSection";
+import LoopClip from "@/components/LoopClip";
 
 const SHOW_FEATURE_PRIORITY = false; // Feature Prioritization hidden for now
 
@@ -52,8 +53,19 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
         ← Back to work
       </Link>
 
-      {/* hero placeholder */}
-      <div className="mt-8 bg-gray-100 w-full aspect-[21/9] border border-gray-200" />
+      {/* hero: silent video that plays on a loop while on screen; placeholder box until a video is set */}
+      {study.heroVideo ? (
+        <div className="mt-8">
+          <LoopClip
+            src={study.heroVideo.src}
+            poster={study.heroVideo.poster}
+            label={study.heroVideo.label}
+            restartOnEnter
+          />
+        </div>
+      ) : (
+        <div className="mt-8 bg-gray-100 w-full aspect-[21/9] border border-gray-200" />
+      )}
 
       <div className={`mt-10 border-t border-gray-200 ${study.hideSidebar ? "" : "grid grid-cols-1 md:grid-cols-[220px_1fr] gap-0"}`}>
         {/* sidebar */}
