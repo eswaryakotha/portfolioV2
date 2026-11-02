@@ -1,0 +1,2 @@
+# Hyperframes Composition Brief: MetaMint
+25s landscape 1920x1080, same motion language as the Dolby and VeraAI videos. Source: data/content.ts (caseStudies.metamint: budgetHook, solutionDemo, opportunity), public/metamint/*.mp4 (portrait phone clips, placed beside the text). Copy verbatim or trimmed from the case study; "$1,286" is the sum of the budgetHook line items. Palette: #f9f9f7 / #111 / #1F6B4F / #2E9E73. Static headers on cards (no motion). Audio: vol-1 bed + sparse SFX.

@@ -1,0 +1,2 @@
+# Hyperframes Composition Brief: VeraAI
+25s landscape 1920x1080, same layout and motion language as the Dolby Labs brag. Source: data/content.ts (caseStudies.veraai), public/veraai/pilot-clip-*.mp4 (cropped to remove browser chrome). Copy is verbatim from the case study (storyStrip, productJobs, featuresMvp JTBDs trimmed, pilot stats, hook image alt). Palette: #f9f9f7 / #111 / #081A4A / #2F6BFF. Audio: vol-1 bed + sparse SFX in composition/assets. No audio-reactive.

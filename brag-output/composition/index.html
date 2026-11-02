@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Dolby Labs — brag</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<style>
+  @font-face { font-family: "Advercase"; src: url("assets/fonts/Advercase-Regular.otf"); font-weight: 400; }
+  @font-face { font-family: "Advercase"; src: url("assets/fonts/Advercase-Bold.otf"); font-weight: 700; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; background: #f9f9f7; overflow: hidden; }
+  #root { position: relative; width: 1920px; height: 1080px; background: #f9f9f7; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #111111; overflow: hidden; }
+  .scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .dark { background: #0d0f12; }
+  .disp { font-family: "Advercase", Georgia, serif; font-weight: 700; letter-spacing: -0.01em; }
+  .eyebrow { font-size: 44px; font-weight: 500; color: #4a4a4a; margin-bottom: 36px; }
+  .big { font-size: 150px; line-height: 1.05; text-align: center; position: relative; display: inline-block; }
+  .strike { position: absolute; left: -2%; top: 54%; height: 12px; width: 104%; background: #E07B39; transform-origin: left center; transform: scaleX(0); border-radius: 6px; }
+  .quote { font-size: 124px; line-height: 1.12; text-align: center; color: #B5501A; max-width: 1560px; }
+  .quote-mark { color: #111; }
+  .hdr { font-size: 46px; font-weight: 500; color: #4a4a4a; max-width: 1400px; text-align: center; margin-bottom: 44px; }
+  .items { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  .item { font-size: 96px; line-height: 1.1; display: flex; align-items: center; gap: 28px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; background: #E07B39; flex: none; }
+  .closing { margin-top: 40px; font-size: 52px; font-weight: 500; color: #111; }
+  .closing b { color: #B5501A; font-weight: 700; }
+  .vid { position: absolute; left: 320px; top: 250px; width: 1280px; height: auto; border-radius: 16px; border: 2px solid #2a2f36; box-shadow: 0 40px 100px rgba(0,0,0,0.55); background: #000; z-index: 2; }
+  .frame-unused { width: 1500px; border-radius: 18px; overflow: hidden; border: 2px solid #2a2f36; box-shadow: 0 40px 100px rgba(0,0,0,0.55); background: #000; position: relative; }
+  .frame video { display: block; width: 1500px; height: auto; }
+  .chip { display: inline-block; background: #E07B39; color: #111; font-size: 40px; padding: 10px 28px; border-radius: 40px; }
+  .jt { font-weight: 500; opacity: .75; margin-right: 14px; }
+  .spoil { font-size: 104px; line-height: 1.12; text-align: center; max-width: 1600px; }
+  .spoil .o { color: #B5501A; }
+  .sub { margin-top: 44px; font-size: 44px; font-weight: 500; color: #4a4a4a; }
+  .glow { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; background: radial-gradient(circle, rgba(224,123,57,0.22), rgba(224,123,57,0) 65%); left: 410px; top: -10px; }
+  .jhead { position: absolute; left: 320px; top: 38px; width: 1280px; z-index: 6; color: #fff; }
+  .jhead .chip { margin-right: 24px; vertical-align: middle; }
+  .jhead .ft { display: inline; font-size: 46px; vertical-align: middle; }
+  .jhead .jl { margin-top: 20px; font-size: 27px; line-height: 1.35; color: #d5d9e0; font-weight: 400; }
+  .jhead .jl b { color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="root" data-width="1920" data-height="1080" data-start="0" data-duration="25">
+
+  <!-- S1: the brief (0 - 3.5) -->
+  <div id="s1" class="scene clip" data-start="0" data-duration="3">
+    <div class="eyebrow" id="s1a">Dolby Labs' brief:</div>
+    <div class="big disp" id="s1b">AI voice generation tool<div class="strike" id="s1strike"></div></div>
+  </div>
+
+  <!-- S2: the question (3.5 - 7) -->
+  <div id="s2" class="scene clip" data-start="3" data-duration="3">
+    <div class="glow" id="s2glow"></div>
+    <div class="quote disp" id="s2q"><span class="quote-mark">“</span>Why is AI chasing after our artistic careers?<span class="quote-mark">”</span></div>
+  </div>
+
+  <!-- JTBD cards 6-22 -->
+  <div id="j1" class="scene dark clip" data-start="6" data-duration="4"></div>
+  <video id="v1" class="vid clip" src="assets/video/j1.mp4" data-start="6" data-duration="4" data-media-start="0" muted playsinline></video>
+  <div id="h1" class="jhead clip" data-start="6" data-duration="4"><div class="chip disp">JTBD #1</div><div class="ft disp">AI Annotation Guide</div><div class="jl">When… <b>I want to create and organize detailed character and narration notes so I can stay consistent</b></div></div>
+  <div id="j2" class="scene dark clip" data-start="10" data-duration="4"></div>
+  <video id="v2" class="vid clip" src="assets/video/j2.mp4" data-start="10" data-duration="4" data-media-start="0" muted playsinline></video>
+  <div id="h2" class="jhead clip" data-start="10" data-duration="4"><div class="chip disp">JTBD #2</div><div class="ft disp">Teleprompter-guided audiobook recording</div><div class="jl">When… <b>I want to view my character and performance notes alongside the script while recording</b></div></div>
+  <div id="j3" class="scene dark clip" data-start="14" data-duration="4"></div>
+  <video id="v3" class="vid clip" src="assets/video/j3.mp4" data-start="14" data-duration="4" data-media-start="0" muted playsinline></video>
+  <div id="h3" class="jhead clip" data-start="14" data-duration="4"><div class="chip disp">JTBD #3</div><div class="ft disp">Punch & roll narration</div><div class="jl">When… <b>I want to quickly spot mistakes or weak performances and re-record only the affected lines</b></div></div>
+  <div id="j4" class="scene dark clip" data-start="18" data-duration="4"></div>
+  <video id="v4" class="vid clip" src="assets/video/j4.mp4" data-start="18" data-duration="4" data-media-start="0" muted playsinline></video>
+  <div id="h4" class="jhead clip" data-start="18" data-duration="4"><div class="chip disp">JTBD #4</div><div class="ft disp">AI Vocal Studio</div><div class="jl">When… <b>I want my recordings to sound studio-quality automatically</b></div></div>
+
+  <!-- S6: spoiler (17 - 20) -->
+  <div id="s6" class="scene clip" data-start="22" data-duration="3">
+    <div class="glow" id="s6glow"></div>
+    <div class="spoil disp" id="s6t"><span class="o">(Spoiler:</span> Not the way Dolby originally thought<span class="o">)</span></div>
+    <div class="sub" id="s6s">Dolby Labs X Purdue [2023]</div>
+  </div>
+
+  <!-- audio -->
+  <audio id="bed" src="assets/music/bed.mp3" data-start="0" data-duration="25" data-volume="0.55" data-fade-in="0.6" data-fade-out="1.5"></audio>
+  <audio id="sfx1" src="assets/sfx/click_003.ogg" data-start="1.9" data-duration="0.2" data-volume="0.9"></audio>
+  <audio id="sfx2" src="assets/sfx/bong_001.ogg" data-start="3.05" data-duration="0.3" data-volume="0.5"></audio>
+  <audio id="sfx3" src="assets/sfx/impactSoft_medium_001.ogg" data-start="6" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx4" src="assets/sfx/impactSoft_medium_001.ogg" data-start="10" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx5" src="assets/sfx/impactSoft_medium_001.ogg" data-start="14" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx6" src="assets/sfx/impactSoft_medium_001.ogg" data-start="18" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx7" src="assets/sfx/impactSoft_heavy_003.ogg" data-start="22.01" data-duration="0.6" data-volume="0.6"></audio>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    // S1 — brief, then strike it out
+    tl.from("#s1a", { opacity: 0, y: 24, duration: 0.45, ease: "power3.out" }, 0.1);
+    tl.from("#s1b", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 0.4);
+    tl.to("#s1strike", { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 1.9);
+    tl.to("#s1b", { opacity: 0.45, duration: 0.3, ease: "none" }, 2.1);
+    // S2 — the question (beat-grid: 3.02)
+    tl.from("#s2q", { opacity: 0, y: 50, scale: 0.97, duration: 0.55, ease: "power3.out" }, 3.05);
+    tl.from("#s2glow", { opacity: 0, scale: 0.8, duration: 1.2, ease: "power2.out" }, 3.05);
+    // JTBD cards (beat-grid: 6.03, 10.02, 14.02, 18.02)
+    tl.from("#v1", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 6);
+    tl.from("#h1", { opacity: 0, y: -20, duration: 0.45, ease: "power3.out" }, 6.1);
+    tl.from("#v2", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 10);
+    tl.from("#h2", { opacity: 0, y: -20, duration: 0.45, ease: "power3.out" }, 10.1);
+    tl.from("#v3", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 14);
+    tl.from("#h3", { opacity: 0, y: -20, duration: 0.45, ease: "power3.out" }, 14.1);
+    tl.from("#v4", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 18);
+    tl.from("#h4", { opacity: 0, y: -20, duration: 0.45, ease: "power3.out" }, 18.1);
+    // S6 — spoiler (beat-locked: 22.01s)
+    tl.from("#s6t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 22.01); // beat-locked: 22.01s
+    tl.from("#s6glow", { opacity: 0, scale: 0.8, duration: 1.2, ease: "power2.out" }, 22.01);
+    tl.from("#s6s", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, 23.2);
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines["root"] = tl;
+  </script>
+</div>
+</body>
+</html>

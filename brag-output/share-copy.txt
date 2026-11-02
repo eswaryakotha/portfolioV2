@@ -1,0 +1,2 @@
+Dolby Labs asked for AI that narrates audiobooks. Research said authors wanted to keep their own voice, so I built the tool around that.
+(Spoiler: Not the way Dolby originally thought.)

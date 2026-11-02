@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VeraAI — brag</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<style>
+  @font-face { font-family: "Advercase"; src: url("assets/fonts/Advercase-Regular.otf"); font-weight: 400; }
+  @font-face { font-family: "Advercase"; src: url("assets/fonts/Advercase-Bold.otf"); font-weight: 700; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; background: #f9f9f7; overflow: hidden; }
+  #root { position: relative; width: 1920px; height: 1080px; background: #f9f9f7; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #111111; overflow: hidden; }
+  .scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .dark { background: #0d0f12; }
+  .disp { font-family: "Advercase", Georgia, serif; font-weight: 700; letter-spacing: -0.01em; }
+  .big { font-size: 150px; line-height: 1.2; text-align: center; }
+  .big .b { color: #1F4FD8; }
+  .note { margin-top: 40px; font-size: 48px; font-weight: 500; color: #4a4a4a; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .quote { font-size: 112px; line-height: 1.12; text-align: center; max-width: 1640px; color: #081A4A; }
+  .quote .b { color: #1F4FD8; }
+  .glow { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; background: radial-gradient(circle, rgba(47,107,255,0.20), rgba(47,107,255,0) 65%); left: 410px; top: -10px; }
+  .vid { position: absolute; left: 320px; top: 250px; width: 1280px; height: auto; border-radius: 16px; border: 2px solid #2a2f36; box-shadow: 0 40px 100px rgba(0,0,0,0.55); background: #fff; z-index: 2; }
+  .jhead { position: absolute; left: 320px; top: 38px; width: 1280px; z-index: 6; color: #fff; }
+  .chip { display: inline-block; background: #2F6BFF; color: #fff; font-size: 40px; padding: 10px 28px; border-radius: 40px; margin-right: 24px; vertical-align: middle; }
+  .jhead .ft { display: inline; font-size: 46px; vertical-align: middle; }
+  .jhead .jl { margin-top: 20px; font-size: 27px; line-height: 1.35; color: #d5d9e0; }
+  .jhead .jl b { color: #fff; font-weight: 600; }
+  .yes { font-size: 190px; line-height: 1.05; text-align: center; color: #081A4A; }
+  .yes .b { color: #1F4FD8; }
+  .stat { margin-top: 36px; font-size: 54px; font-weight: 500; color: #111; text-align: center; }
+  .stat b { color: #1F4FD8; font-weight: 700; }
+  .sub { margin-top: 30px; font-size: 40px; font-weight: 500; color: #4a4a4a; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="root" data-width="1920" data-height="1080" data-start="0" data-duration="25">
+  <!-- S1 hook 0-3 -->
+  <div id="s1" class="scene clip" data-start="0" data-duration="3">
+    <div class="big disp" id="s1a">Thirty days of decisions,<br/>and <span class="b">no deal.</span></div>
+  </div>
+  <!-- S2 question 3-7 -->
+  <div id="s2" class="scene clip" data-start="3" data-duration="4">
+    <div class="glow" id="s2glow"></div>
+    <div class="quote disp" id="s2q">How can we reduce a 30-day sales cycle to a <span class="b">single day?</span></div>
+  </div>
+  <div id="j1" class="scene dark clip" data-start="7.02" data-duration="3.5"></div>
+  <video id="v1" class="vid clip" src="assets/video/v1.mp4" data-start="7.02" data-duration="3.5" data-media-start="0" muted playsinline></video>
+  <div id="h1" class="jhead clip" data-start="7.02" data-duration="3.5"><div class="chip disp">JTBD #1</div><div class="ft disp">Capture kitchen measurements</div><div class="jl">When… <b>I want to capture accurate measurements quickly</b></div></div>
+  <div id="j2" class="scene dark clip" data-start="10.52" data-duration="3.5"></div>
+  <video id="v2" class="vid clip" src="assets/video/v2.mp4" data-start="10.52" data-duration="3.5" data-media-start="0" muted playsinline></video>
+  <div id="h2" class="jhead clip" data-start="10.52" data-duration="3.5"><div class="chip disp">JTBD #2</div><div class="ft disp">Generate NKBA-compliant layouts</div><div class="jl">When… <b>I want NKBA‑compliant layouts, so I can avoid rework</b></div></div>
+  <div id="j3" class="scene dark clip" data-start="14.02" data-duration="3.5"></div>
+  <video id="v3" class="vid clip" src="assets/video/v3.mp4" data-start="14.02" data-duration="3.5" data-media-start="0" muted playsinline></video>
+  <div id="h3" class="jhead clip" data-start="14.02" data-duration="3.5"><div class="chip disp">JTBD #3</div><div class="ft disp">Produce 2D visuals using catalog items</div><div class="jl">When… <b>I want 2D &amp; 3D schematics generated from catalog items</b></div></div>
+  <div id="j4" class="scene dark clip" data-start="17.52" data-duration="3.5"></div>
+  <video id="v4" class="vid clip" src="assets/video/v4.mp4" data-start="17.52" data-duration="3.5" data-media-start="0" muted playsinline></video>
+  <div id="h4" class="jhead clip" data-start="17.52" data-duration="3.5"><div class="chip disp">JTBD #4</div><div class="ft disp">Generate a bill of materials and quotation</div><div class="jl">When… <b>I want a BOM and accurate quotation generated automatically</b></div></div>
+  <!-- outro 21-25 -->
+  <div id="s6" class="scene clip" data-start="21.02" data-duration="3.98">
+    <div class="glow" id="s6glow"></div>
+    <div class="yes disp" id="s6y">1 visit to <span class="b">yes?</span></div>
+    <div class="stat" id="s6s">Visualize the layout. Select materials. <b>Get a quote.</b></div>
+    <div class="sub" id="s6c">VeraAI Technologies Inc. [2025 - 2026]</div>
+  </div>
+
+  <audio id="bed" src="assets/music/bed.mp3" data-start="0" data-duration="25" data-volume="0.55" data-fade-in="0.6" data-fade-out="1.5"></audio>
+  <audio id="sfx2" src="assets/sfx/bong_001.ogg" data-start="3.05" data-duration="0.3" data-volume="0.5"></audio>
+  <audio id="sfx3" src="assets/sfx/impactSoft_medium_001.ogg" data-start="7.02" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx4" src="assets/sfx/impactSoft_medium_001.ogg" data-start="10.52" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx5" src="assets/sfx/impactSoft_medium_001.ogg" data-start="14.02" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx6" src="assets/sfx/impactSoft_medium_001.ogg" data-start="17.52" data-duration="0.3" data-volume="0.45"></audio>
+  <audio id="sfx7" src="assets/sfx/impactSoft_heavy_003.ogg" data-start="21.02" data-duration="0.6" data-volume="0.6"></audio>
+  <audio id="sfx8" src="assets/sfx/click_003.ogg" data-start="22.6" data-duration="0.2" data-volume="0.9"></audio>
+
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.from("#s1a", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 0.15);
+    tl.from("#s2q", { opacity: 0, y: 50, scale: 0.97, duration: 0.55, ease: "power3.out" }, 3.05); // beat-grid: 3.02
+    tl.from("#s2glow", { opacity: 0, scale: 0.8, duration: 1.2, ease: "power2.out" }, 3.05);
+    tl.from("#v1", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 7.02); // beat-grid: 7.02s
+    tl.from("#v2", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 10.52); // beat-grid: 10.52s
+    tl.from("#v3", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 14.02); // beat-grid: 14.02s
+    tl.from("#v4", { opacity: 0, y: 40, scale: 0.97, duration: 0.45, ease: "power3.out" }, 17.52); // beat-grid: 17.52s
+    tl.from("#s6y", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 21.05); // beat-locked: 21.01s
+    tl.from("#s6glow", { opacity: 0, scale: 0.8, duration: 1.2, ease: "power2.out" }, 21.05);
+    tl.from("#s6s", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, 22.6);
+    tl.from("#s6c", { opacity: 0, y: 16, duration: 0.5, ease: "power2.out" }, 23.5);
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines["root"] = tl;
+  </script>
+</div>
+</body>
+</html>
