@@ -445,6 +445,8 @@ export type SolutionDemoData = {
       poster: string;
       ariaLabel: string;
       ratio?: [number, number]; // video width and height
+      title?: string; // shown under the phone
+      caption?: string; // one short line under the title
       notes?: Array<{ text: string; side: "left" | "right"; target: [number, number]; labelY: number; reach?: number }>;
     }>;
     text: string;
@@ -524,6 +526,8 @@ export type FailureDecisionCase = {
   title: string;
   // the three parts, in order: the failure, the decision, the product implication
   parts: Array<{ icon: string; label: string; text: string }>;
+  // optional phone video under the three parts (autoplay, muted, loop)
+  video?: { videoUrl: string; ariaLabel: string; caption: string; ratio?: [number, number] };
   // shown inside the first part, under its text
   visual:
     | { kind: "runs"; rows: Array<{ label: string; counts: EvalCounts; expectedPercent: string; highlight?: boolean }>; srText: string }
@@ -2219,6 +2223,8 @@ export const caseStudies: Record<string, CaseStudy> = {
           phoneGrid: [
             {
               videoUrl: "/metamint/group-expense-1.mp4",
+              title: "01. Equal Expense Splitting",
+              caption: "MetaMint extracts the bill details and automatically splits the total equally among group members.",
               poster: "/metamint/group-expense-1-poster.jpg", // the 14 second mark
               ariaLabel: "Group expense tracking video 1 of 6: a brunch bill is split equally among the group",
               ratio: [848, 1802],
@@ -2226,6 +2232,8 @@ export const caseStudies: Record<string, CaseStudy> = {
             },
             {
               videoUrl: "/metamint/group-expense-2.mp4",
+              title: "02. Itemized Expense Splitting",
+              caption: "Members can split a bill based on individual items rather than dividing the total equally.",
               poster: "/metamint/group-expense-2-poster.jpg", // the 9 second mark
               ariaLabel: "Group expense tracking video 2 of 6: the bill is split Dutch style, item by item",
               ratio: [848, 1802],
@@ -2233,6 +2241,8 @@ export const caseStudies: Record<string, CaseStudy> = {
             },
             {
               videoUrl: "/metamint/group-expense-3.mp4",
+              title: "03. Intelligent Expense Filtering",
+              caption: "MetaMint distinguishes relevant restaurant and grocery bills from personal images and unrelated content, ignoring inputs that shouldn't be tracked.",
               poster: "/metamint/group-expense-3-poster.jpg", // the 6 second mark
               ariaLabel: "Group expense tracking video 3 of 6: a personal payment sent to the group is not detected as a shared expense and is left out",
               ratio: [848, 1802],
@@ -2240,6 +2250,8 @@ export const caseStudies: Record<string, CaseStudy> = {
             },
             {
               videoUrl: "/metamint/group-expense-4.mp4",
+              title: "04. UPI Payment Recognition",
+              caption: "MetaMint recognizes UPI payment confirmations made to businesses and converts eligible payments into equally split group expenses.",
               poster: "/metamint/group-expense-4-poster.jpg", // the 8 second mark
               ariaLabel: "Group expense tracking video 4 of 6: a UPI receipt with no line items is split equally among the group",
               ratio: [848, 1802],
@@ -2247,6 +2259,8 @@ export const caseStudies: Record<string, CaseStudy> = {
             },
             {
               videoUrl: "/metamint/group-expense-5.mp4",
+              title: "05. Personal Budget Tracking",
+              caption: "Users can track their spending, monitor remaining budgets, and view their financial position directly in their personal chat.",
               poster: "/metamint/group-expense-5-poster.jpg", // the 14 second mark
               ariaLabel: "Group expense tracking video 5 of 6: in a personal chat, MetaMint shows the trip budget, how much is spent and who owes what",
               ratio: [848, 1802],
@@ -2254,6 +2268,8 @@ export const caseStudies: Record<string, CaseStudy> = {
             },
             {
               videoUrl: "/metamint/group-expense-6.mp4",
+              title: "06. Planned Expense Tracking",
+              caption: "Users can mention an upcoming expense, track it as planned, and confirm it once the transaction actually happens.",
               poster: "/metamint/group-expense-6-poster.jpg", // the 16 second mark
               ariaLabel: "Group expense tracking video 6 of 6: a planned flight expense is tracked, then confirmed and added to who owes whom",
               ratio: [848, 1802],
@@ -2434,6 +2450,12 @@ export const caseStudies: Record<string, CaseStudy> = {
                   text: "When the classifier is uncertain, the safer behavior is to let the user explicitly request processing rather than automatically treat every payment screen as an expense.",
                 },
               ],
+              video: {
+                videoUrl: "/metamint/restaurant-not-recognized.mp4",
+                ariaLabel: "A UPI payment to a restaurant that MetaMint does not recognize as a restaurant from its name, so it replies that it won't process it",
+                caption: "A restaurant payment that MetaMint did not recognize as a restaurant from its name.",
+                ratio: [848, 1802],
+              },
               visual: {
                 kind: "runs",
                 rows: [

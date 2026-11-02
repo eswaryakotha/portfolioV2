@@ -73,6 +73,18 @@ function Videos({ data }: { data: SolutionDemoData }) {
                 {v.phoneGrid.map((g) => (
                   <li key={g.ariaLabel}>
                     <PhoneVideo src={g.videoUrl} poster={g.poster} label={g.ariaLabel} ratio={g.ratio} notes={g.notes} width="min(300px, 100%)" margin="0 auto" playOnHover />
+                    {g.title && (
+                      <div style={{ width: "min(360px, calc(100% + 24px))", margin: "14px auto 0", textAlign: "center" }}>
+                        <h5 className="font-semibold text-gray-900" style={{ margin: 0, fontSize: 13 }}>
+                          {g.title}
+                        </h5>
+                        {g.caption && (
+                          <p className="text-gray-800 leading-relaxed" style={{ margin: "4px 0 0", fontSize: 13 }}>
+                            {g.caption}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as LucideIcons from "lucide-react";
+import PhoneVideo from "@/components/PhoneVideo";
 import type { FailureDecisionCase, FailureDecisionSection } from "@/data/content";
 
 // One failure, one decision: a card per case with the failure, the decision and the
@@ -167,6 +168,13 @@ function Case({ c }: { c: FailureDecisionCase }) {
           </li>
         ))}
       </ul>
+
+      {c.video && (
+        <figure style={{ margin: "28px 0 0", textAlign: "center" }}>
+          <PhoneVideo src={c.video.videoUrl} label={c.video.ariaLabel} ratio={c.video.ratio} width="min(240px, 100%)" margin="0 auto" />
+          <figcaption style={{ margin: "14px auto 0", maxWidth: 360, fontSize: 13, lineHeight: 1.5, color: "#374151" }}>{c.video.caption}</figcaption>
+        </figure>
+      )}
     </li>
   );
 }
