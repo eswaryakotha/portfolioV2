@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import TransitionLayer from "@/components/transition/TransitionLayer";
 import { siteContent } from "@/data/content";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -29,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${advercase.variable} font-sans bg-[#f9f9f7] text-gray-900 antialiased`}
       >
         <Header />
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen">
+          <TransitionLayer>{children}</TransitionLayer>
+        </main>
         <Footer />
       </body>
     </html>

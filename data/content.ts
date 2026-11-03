@@ -1693,7 +1693,7 @@ export const caseStudies: Record<string, CaseStudy> = {
           label: "Pivot 1",
           title: "Predefined kitchen templates",
           body: "We started with a studio offering predefined templates and layouts for homeowners to choose from.",
-          calloutLabel: "What we learned",
+          calloutLabel: "What we learnt",
           calloutText: "The concept was already widely available, making differentiation difficult.",
           status: "dropped",
           statusLabel: "Dropped",
@@ -1703,7 +1703,7 @@ export const caseStudies: Record<string, CaseStudy> = {
           label: "Pivot 2",
           title: "Layering catalog items onto kitchen photos",
           body: "We explored segmenting kitchen photos and overlaying catalog materials to help homeowners visualize changes.",
-          calloutLabel: "What we learned",
+          calloutLabel: "What we learnt",
           calloutText: "Segmentation and layering were technically complex and inconsistent, and the approach struggled to support complete remodels.",
           status: "dropped",
           statusLabel: "Dropped",
@@ -1832,7 +1832,7 @@ export const caseStudies: Record<string, CaseStudy> = {
       { label: "03.", type: "screens", text: "[Add screens content]" },
     ],
     evaluationText: "[Add evaluation and observability content]",
-    learningsHeading: "What I learned",
+    learningsHeading: "What I learnt",
     learningItems: [
       {
         title: "Differentiate on the workflow, not just the interface.",
@@ -2611,4 +2611,547 @@ export const aboutContent = {
       "[Add your own]",
     ],
   },
+};
+
+// ---------------------------------------------------------------------------
+// Homepage book (interactive 3D book at "/"). All text and settings live here.
+// ---------------------------------------------------------------------------
+
+/** The book reads each project's hero video from that project's case study entry
+    (caseStudies[slug].heroVideo), so the book and the case study hero always use the same
+    file. `src` is the mp4. With no src, the book shows the dashed placeholder instead. */
+export type BookVideo = { src: string; poster: string; label: string };
+
+type BookSpreadBase = {
+  id: string; // URL hash, e.g. /#metamint
+  name: string; // announced to screen readers
+  label: string; // small monospace label on the page
+  tab?: string; // bookmark tab / dot label (omit for no jump target)
+};
+
+export type BookAboutSpread = BookSpreadBase & {
+  type: "about";
+  photoPlaceholder: string;
+  intro: string;
+  cta: { label: string; href: string };
+};
+
+/** A piece of text placed on a book page. Blocks stack from the page's top-left corner, in
+    order. sizePx is the size on a full-size desktop page (about 530px wide); on smaller
+    screens it scales down with the page. */
+export type BookTextBlock = {
+  kind?: "text";
+  text: string;
+  tag?: "h2" | "h3" | "p"; // the HTML element (for screen readers); default p
+  font?: "advercase" | "sans" | "mono" | "handwriting";
+  sizePx?: number;
+  weight?: number;
+  color?: string;
+  caps?: boolean; // small caps style label: uppercase with wide letter spacing
+  oneLine?: boolean; // never wraps; may run across the fold (first block of a left page only)
+  offsetYPx?: number; // move it down (or up, if negative) from where it would sit
+};
+
+/** A bulleted list on a page. */
+export type BookListBlock = {
+  kind: "list";
+  items: string[]; // **text** is bold
+  sizePx?: number;
+  color?: string;
+  offsetYPx?: number;
+};
+
+/** A box drawn on the page that holds other blocks. */
+export type BookBoxBlock = {
+  kind: "box";
+  children: (BookTextBlock | BookListBlock)[];
+  dashed?: boolean;
+  tiltDeg?: number; // a slight rotation; negative tilts it anticlockwise
+  widthPx?: number;
+  minHeightPx?: number; // leaves room under the last item
+  borderColor?: string;
+  offsetYPx?: number;
+};
+
+export type BookBlock = BookTextBlock | BookListBlock | BookBoxBlock;
+
+export type BookCaseStudySpread = BookSpreadBase & {
+  type: "case-study";
+  slug: string;
+  href: string;
+  title: string;
+  hook: string;
+  results: string[];
+  cta: string;
+  videoPlaceholder: string;
+  heroVideo?: BookVideo; // the same object as caseStudies[slug].heroVideo
+  accent: string; // pull tab colour, from the project's case study entry
+  pageTint: string; // the pages get a light pastel of this (the project's brighter accent)
+  pageColor?: string; // set to use this exact page colour instead of the mixed pastel
+  leftPage?: BookBlock[]; // when set, the left page shows these instead of the title, hook and results
+  keyImpact?: { label: string; items: string[]; ink?: string; footnote?: string }; // paper notes under the video, across the spread; **text** is bold
+  stickyNote?: { label: string; text: string; color: string; ink?: string; textSizePx?: number }; // beside the video on the right page
+  polaroid?: BookPolaroid; // taped photo near the right page's top-right corner
+};
+
+/** An instant photo taped to a page. Leave image empty to show the placeholder. */
+export type BookPolaroid = {
+  image?: string; // path under /public, for example "/veraai/polaroid.jpg"
+  alt?: string; // what the photo shows, for screen readers (needed once there is an image)
+  caption?: string; // optional handwritten caption in the bottom margin
+  position?: string; // which part of the image the square shows (CSS object-position)
+  zoom?: number; // 1 = fits the frame; above 1 zooms in
+  placeholder: string;
+};
+
+export type BookExperimentsSpread = BookSpreadBase & {
+  type: "experiments";
+  intro: string;
+  placeholder: string;
+  cells: number;
+  cta: { label: string; href: string };
+};
+
+export type BookComingSoonSpread = BookSpreadBase & {
+  type: "coming-soon";
+  heading: string;
+  sub: string;
+  backCover: string;
+};
+
+export type BookSpread =
+  | BookAboutSpread
+  | BookCaseStudySpread
+  | BookExperimentsSpread
+  | BookComingSoonSpread;
+
+type BookCaseStudyExtras = Pick<
+  BookCaseStudySpread,
+  "pageColor" | "leftPage" | "keyImpact" | "stickyNote" | "polaroid"
+>;
+
+const bookCaseStudy = (
+  id: string,
+  name: string,
+  label: string,
+  tab: string,
+  extras: BookCaseStudyExtras = {},
+): BookCaseStudySpread => ({
+  type: "case-study",
+  id,
+  name,
+  label,
+  tab,
+  slug: id,
+  href: `/work/${id}`,
+  title: "[Case study title]",
+  hook: "[One-line hook]",
+  results: ["[Key result 1]", "[Key result 2]"],
+  cta: "View case study",
+  videoPlaceholder: "[Video, 25s]",
+  // one source of truth per project: the case study's own hero video and accent
+  heroVideo: caseStudies[id]?.heroVideo,
+  accent: caseStudies[id]?.accent ?? ACCENTS.dolby,
+  pageTint: caseStudies[id]?.accentBright ?? caseStudies[id]?.accent ?? ACCENTS.dolby,
+  ...extras,
+});
+
+/** The case-study spread template: company name top left, a tilted dashed box with role,
+    timeline and skills, "Key impact" notes under the video, a sticky note beside it and a
+    taped photo in the top-right corner. `ink` is the project's tab colour (used for the
+    company name); `smallInk` is used for the small labels and handwriting, and defaults to
+    `ink` (set it darker when the tab colour is too light for small text). */
+const caseStudyPages = (o: {
+  company: string;
+  companyOneLine?: boolean; // keep the company name on one line, running across the fold if needed
+  role: string;
+  roleNote?: string; // a small line under the role
+  timeline: string;
+  ink: string;
+  smallInk?: string;
+  stickyColor: string;
+  photo?: string;
+  photoAlt?: string;
+  photoCaption?: string; // handwritten in the white space under the photo
+  photoPosition?: string; // which part of the image the square shows, e.g. "left center"; default the middle
+  photoZoom?: number; // zoom into the photo, e.g. 1.2 shows it 20% larger (cropped to the frame)
+  keyImpacts?: string[];
+  keyImpactFootnote?: string; // small print inside the note whose text has the * mark
+  skills?: string[];
+  learned?: string;
+  learnedSizePx?: number; // handwriting size on the sticky note, if the text is long
+}): BookCaseStudyExtras => {
+  const small = o.smallInk ?? o.ink;
+  const label = (text: string, offsetYPx?: number): BookTextBlock => ({
+    text,
+    font: "mono",
+    sizePx: 11,
+    caps: true,
+    color: small,
+    offsetYPx,
+  });
+  // role and timeline: the same size as the skills list
+  const value = (text: string): BookTextBlock => ({ text, font: "sans", sizePx: 14, offsetYPx: 4 });
+  return {
+    leftPage: [
+      {
+        text: o.company,
+        tag: "h2",
+        font: "advercase",
+        sizePx: 40,
+        color: o.ink,
+        offsetYPx: 15,
+        oneLine: o.companyOneLine,
+      },
+      {
+        kind: "box",
+        dashed: true,
+        tiltDeg: -2,
+        widthPx: 200, // stays clear of the video on this page
+        minHeightPx: 250, // room under Skills for what goes there next
+        borderColor: small,
+        offsetYPx: 14,
+        children: [
+          label("Role"),
+          value(o.role),
+          ...(o.roleNote
+            ? [{ text: o.roleNote, font: "sans" as const, sizePx: 11, color: "#6E6651", offsetYPx: 3 }]
+            : []),
+          label("Timeline", 16),
+          value(o.timeline),
+          label("Skills", 16),
+          ...(o.skills?.length
+            ? [{ kind: "list" as const, items: o.skills, sizePx: 14, offsetYPx: 5 }]
+            : []),
+        ],
+      },
+    ],
+    keyImpact: {
+      label: "Key impact",
+      items: o.keyImpacts ?? ["[Key impact 1]", "[Key impact 2]", "[Key impact 3]"],
+      ink: small,
+      footnote: o.keyImpactFootnote,
+    },
+    stickyNote: {
+      label: "What I learnt",
+      text: o.learned ?? "[One main thing I learnt]",
+      color: o.stickyColor,
+      ink: small,
+      textSizePx: o.learnedSizePx,
+    },
+    polaroid: {
+      image: o.photo ?? "",
+      alt: o.photoAlt ?? "",
+      caption: o.photoCaption,
+      position: o.photoPosition,
+      zoom: o.photoZoom,
+      placeholder: "[Photo]",
+    },
+  };
+};
+
+export const book = {
+  settings: {
+    // scope
+    mobileBook: false, // false: below 900px show the stacked list instead of the book
+    desktopOnlyQuery: "(min-width: 900px)", // where the book shows when mobileBook is false
+    // Mobile book only (unused while mobileBook is false). Mirrors CSS in components/book/book.css
+    desktopQuery: "(min-width: 900px), (orientation: landscape) and (max-height: 500px)",
+    mobileClosedCoverVw: 70, // closed cover width on mobile, % of viewport
+
+    // size and layout
+    bookAspect: 1.7, // open spread width to height
+    bookScale: 0.85, // the book is drawn at this share of the largest size that fits
+    maxBookWidthVw: 94,
+    maxBookWidthPx: 1500,
+    stageGapPx: 48, // stage height minus this, times bookAspect, also caps the width
+    sideArrows: true,
+    sideArrowWidthPx: 72,
+    sideArrowSpacePx: 96, // reserved on each side of the open book so arrows never overlap it
+
+    // state
+    startClosed: true, // no hash means closed; a hash opens straight to that spread
+
+    // object
+    showThickness: false, // solid page blocks behind the pages; only visible with a tilt
+    bookThickness: 0.09, // closed book depth as a share of the cover height
+    coverThickness: 1.5, // front cover and back board, in units where an inner leaf is 1
+    edgeShade: 0.08, // edge faces get at most this much darker toward the rear
+    cornerRadiusOfWidth: 0.03, // outer corner radius, share of the open spread width
+    cornerRadiusMinPx: 10,
+    cornerSegments: 4, // flat facets used to round each corner of the edge faces
+    hideDelayMs: 1400, // pages leaving the open spread stay painted this long, then are hidden
+
+    // view
+    perspectiveOfWidth: 4, // camera distance as a multiple of the open width; at 4 a turning page's corners grow about 14%, which stays inside the stage at every size
+    tiltClosed: { x: 0, y: 0 }, // degrees; flat. Was { x: 4, y: -14 }
+    tiltOpen: { x: 0, y: 0 }, // flat. Was { x: 6, y: -1.5 }
+    tiltMs: 700, // also the open and close slide
+    perspectiveOriginClosed: 0, // 0.25 moves the camera over the closed cover's edge (with a tilt) // closed: camera offset right by this share of the open width (over the cover's free edge)
+    mouseTilt: false, // true adds a small tilt that follows the pointer
+    mouseTiltDeg: 3, // extra tilt that follows a fine pointer, either way
+    mouseTiltEase: 0.08, // smoothing per frame, 0 to 1
+    stageGlow: true,
+    glowStrength: 0.06, // accent mixed into the glow at its centre
+    glowReachPct: 60, // glow fades out by this share of the stage width
+
+    // flip
+    flipMs: 800, // full 180 degree swing
+    minFlipMs: 260, // shortest swing when finishing a partial drag
+    settleDeg: 2, // rebound off the stack at landing
+    settleMs: 180, // ease back from the overshoot
+    liftPx: 26, // lift toward the viewer mid swing
+    shadeMax: 0.2, // darkest opacity of the moving face
+    castMax: 0.3, // darkest opacity of the cast shadow
+    leafGapPx: 1, // z offset between stacked leaves
+    jumpStaggerMs: 120,
+    maxVisibleJumpFlips: 3,
+
+    // input
+    wheelFlips: true,
+    wheelThreshold: 60, // accumulated wheel delta (px) per page turn
+    dragCommit: 0.35, // progress that finishes a drag flip
+    flickVelocity: 0.5, // px per ms that finishes a drag flip
+    dragSpanOfBook: 0.75, // horizontal drag distance for progress 0 to 1, as a share of book width
+
+    accentFallback: ACCENTS.dolby, // used when the page has no --accent
+
+    // pop-up video and pull tab on case-study spreads
+    pageTintPct: 12, // how much of the project's colour goes into its pages (a light pastel)
+    // "Key impact" row under the video: a label and three paper notes laid across the spread,
+    // flat on the pages (the middle one sits over the fold). Percent of the book's height
+    // (tops, note height) and of the spread's width (note width, spacing between centres).
+    // sticky note beside the video on the right page. Percent of the page: across (centre,
+    // width) and down (centre).
+    // taped instant photo in the right page's top-right corner. Percent of the page: from
+    // the right edge and the top, and the width.
+    polaroid: {
+      rightPct: 9, // 1% of the page is about 5px
+      topPct: 5,
+      widthPct: 28.5,
+      tiltDeg: -4,
+      tapeTiltDeg: -7,
+    },
+    stickyNote: {
+      centerXPct: 75,
+      centerYPct: 58.5,
+      widthPct: 40,
+      tiltDeg: 2,
+      textSizePx: 21, // the handwriting; the note grows taller to fit longer text
+    },
+    keyImpact: {
+      labelTopPct: 79,
+      notesTopPct: 82.5,
+      noteHeightPct: 14,
+      noteWidthPct: 23,
+      noteSpacingPct: 27,
+      tiltsDeg: [0, 0, 0], // straight; e.g. [-3, 1.5, 2.5] tilts them
+    },
+    foldShadePct: 22, // strength of the fold shading on case-study pages (cream pages use 32)
+    videoWidthOfSpread: 0.52, // printed across the fold, half on each page (0.465 before, now 12% bigger)
+    // Open and settled, one unsplit copy of the video stands off the pages like the piece
+    // of a pop-up greeting card. While pages turn, the video is printed on the pages instead
+    // (a half on each), so it turns with them.
+    cardLiftPx: 30, // how far the card stands forward
+    cardRiseMs: 420,
+    cardSinkMs: 160, // sinks back flat before handing over to the printed halves
+    tabPullOfPage: 0.12, // full pull distance, share of the page height
+    tabHint: true, // a handwritten "pull" note the first time per session
+    tabHintMs: 4000,
+    tabNudgeMs: 4000, // the tab nudges out a little every few seconds while idle
+    pullCommitAt: 0.4, // release past this share of the pull to open the case study
+    pullFlickVelocity: 0.8, // px per ms downward that also opens it
+    pullRubberPx: 16, // resistance beyond the full pull
+    autoPullMs: 250, // click or Enter on the tab pulls it this fast
+    videoLiftZ: 40,
+    videoLiftScale: 1.04,
+
+    // transition from the book into the case study
+    transition: {
+      flatten: 250,
+      lift: 300,
+      fly: 650,
+      contentFade: 400,
+      contentStagger: 80,
+      crossfade: 250, // used when the hero is not the same video
+      flyEase: "cubic-bezier(0.22, 1, 0.36, 1)",
+      liftScale: 1.06,
+      bookScale: 0.96,
+      bookOpacity: 0.55,
+      heroWaitMs: 1500,
+      hardTimeoutMs: 4000,
+      reducedFadeMs: 200,
+    },
+    reverseZoom: false, // placeholder: a reverse animation back into the book is not built
+  },
+  colors: {
+    page: "#F6F1E4",
+    cover: "#2B2B2B",
+    coverText: "#F6F1E4",
+    edge: "#E6DFCB", // solid edge faces of the page blocks and moving leaf
+    coverEdge: "#1F1F1D", // edge faces of the cover boards
+    edgeLine: "#CDC4A9",
+    hinge: "#353532", // cloth hinge band on the closed cover's spine edge
+    note: "#FAF6EC", // the "Key impact" paper notes: a light eggshell white
+    ink: "#2B2B2B",
+    muted: "#6E6651",
+    dash: "#B5AA8D",
+  },
+  ui: {
+    openLabel: "Open",
+    openNote: "open me",
+    prevLabel: "Previous page",
+    nextLabel: "Next page",
+    dotsLabel: "Jump to a stop",
+    coverDot: "Cover",
+    openBook: "Open the book",
+    tabLabel: "Open the {name} case study",
+    tabText: "View case study",
+    tabHint: "pull",
+    jumpPrefix: "Go to",
+    skipHeading: "Skip to case studies",
+    liveTemplate: "Spread {n} of {total}: {name}",
+    liveCover: "Book closed. Cover.",
+    noscriptHeading: "Portfolio contents",
+    resultsLabel: "Key results",
+  },
+  cover: {
+    title: "[Cover title]",
+    subtitle: "[Cover subtitle]",
+    // Type sizes are container query units of the cover width, with a floor and a cap.
+    titleSize: "clamp(24px, 17cqw, 96px)",
+    subtitleSize: "clamp(12px, 5cqw, 24px)",
+    titleColor: "#F6F1E4",
+    subtitleColor: "#D8D1BE",
+    titleFont: "var(--font-caveat), cursive",
+    subtitleFont: "var(--font-geist-sans), sans-serif",
+  },
+  skipLinks: [
+    { label: "About", href: "/about" },
+    { label: "VeraAI", href: "/work/veraai" },
+    { label: "MetaMint", href: "/work/metamint" },
+    { label: "Dolby Labs", href: "/work/dolby-labs" },
+    { label: "Play", href: "/play" },
+  ],
+  spreads: [
+    {
+      type: "about",
+      id: "about",
+      name: "About",
+      label: "ABOUT",
+      tab: "About",
+      photoPlaceholder: "[Your photo]",
+      intro: "[Short intro, 2 to 3 lines]",
+      cta: { label: "About me", href: "/about" },
+    },
+    // VeraAI: blue mixed into the warm paper reads grey, so it gets its own pastel blue
+    bookCaseStudy("veraai", "VeraAI", "VERAAI", "VeraAI", {
+      // blue mixed into the warm paper reads grey, so VeraAI gets its own pastel blue
+      pageColor: "#DCE7FB",
+      ...caseStudyPages({
+        company: "VeraAI Technologies Inc.",
+        role: "Product Manager",
+        timeline: "August 2025 to June 2026",
+        ink: ACCENTS.veraai,
+        stickyColor: "#F7E3A1", // butter yellow: the warm opposite of the blue page
+        learned:
+          "The roadmap is a hypothesis, not a marriage. Experiment, pivot, and keep your eyes on the North Star.",
+        skills: [
+          "Product strategy and roadmapping",
+          "Frontend development (Next.js, Tailwind CSS, Claude Code, and Google Antigravity)",
+          "Product ownership and zero-to-one execution",
+          "GTM strategy and pitch development",
+        ],
+        keyImpacts: [
+          // **like this** makes a phrase bold
+          "**Generated 10–15** NKBA-compliant L-shaped kitchen layouts during the pilot.",
+          "Built the **product frontend end-to-end**, translating product workflows into a functional user experience.",
+          "Created **VeraAI's website and go-to-market materials**, translating the product vision into customer-facing experiences.",
+        ],
+        photo: "/veraai/polaroid.png",
+        photoAlt: "A 3D render of an L-shaped kitchen with white cabinets, a sink, stove and fridge",
+        photoCaption: "three.js experimentation",
+      }),
+    }),
+    bookCaseStudy("metamint", "MetaMint", "METAMINT", "MetaMint", {
+      ...caseStudyPages({
+        company: "MetaMint",
+        role: "Independent Product Manager & Builder",
+        timeline: "May 2026 to October 2026",
+        ink: ACCENTS.metamint,
+        stickyColor: "#F5D2C9", // soft blush: the warm opposite of the sage page
+        skills: [
+          "Product Discovery & Strategy",
+          "AI Prototyping & LLM Integration",
+          "UX Research & Interaction Design",
+          "AI Evaluation & Testing",
+        ],
+        keyImpacts: [
+          "Built a working **AI-powered expense-tracking** prototype.",
+          "Achieved **92%** image classification and **96.6%** intent classification accuracy.*",
+          "Designed **end-to-end expense workflows** for bill splitting, budgeting, and planned expenses.",
+        ],
+        keyImpactFootnote: "*Accuracy figures reflect prototype evaluation results.",
+        learned:
+          "AI is smart, but maybe don't let it do your accounting. Let AI interpret; let code calculate.",
+        photo: "/metamint/polaroid.png",
+        photoAlt: "Me explaining my product idea on a video call, beside the Meta personal finance prompt",
+        photoCaption: "explaining my idea",
+        photoPosition: "left center", // keeps me and the prompt in the square crop
+      }),
+    }),
+    bookCaseStudy("dolby-labs", "Dolby Labs", "DOLBY LABS", "Dolby", {
+      ...caseStudyPages({
+        company: "Dolby Laboratories X Purdue University",
+        companyOneLine: true, // runs over the fold rather than wrapping
+        role: "Product AI Builder",
+        roleNote:
+          "Independent AI proof-of-concept (2026), building on an earlier Dolby Labs × Purdue collaboration (2023).",
+        timeline: "2023 Research\u00a0| 2026 AI Build", // keeps the | with the first part when it wraps
+        ink: ACCENTS.dolby,
+        smallInk: "#A34E1A", // deeper orange: the tab orange is too light for small text here
+        stickyColor: "#D2E2F4", // soft sky blue: the cool opposite of the peach page
+        skills: [
+          "Product Discovery & User Research",
+          "AI Prototyping & Integration",
+          "Prompt Engineering",
+          "AI Evaluation & Testing",
+        ],
+        keyImpacts: [
+          "Built an AI-assisted audiobook narration prototype with **author-controlled guidance and audio enhancement**.",
+          "Improved evaluation pass rates from **20% to 53%** across the same 15 test cases.*",
+          "Achieved **100% first-attempt structured-output** validity across 18 runs on six real manuscript excerpts.",
+        ],
+        keyImpactFootnote:
+          "*Results from prototype evaluation; the 53% result is 8 of 15 cases passing all three runs.",
+        learned:
+          "A great AI demo can fool you. Evals are where reality shows up. Build, test, break, repeat.",
+        photo: "/dolby/polaroid.png",
+        photoZoom: 1.2,
+        photoAlt:
+          "My thought process diagram: research questions and methods, a writer's workshop to challenge assumptions, and the design areas that came out of it",
+        photoCaption: "Thought process",
+      }),
+    }),
+    {
+      type: "experiments",
+      id: "experiments",
+      name: "Experiments",
+      label: "EXPERIMENTS",
+      tab: "Play",
+      intro: "[Tiny experiments intro]",
+      placeholder: "[Experiment]",
+      cells: 4,
+      cta: { label: "See experiments", href: "/play" },
+    },
+    {
+      type: "coming-soon",
+      id: "coming-soon",
+      name: "Coming soon",
+      label: "MORE",
+      heading: "Coming soon.",
+      sub: "[More case studies on the way]",
+      backCover: "[Back cover]",
+    },
+  ] satisfies BookSpread[],
 };

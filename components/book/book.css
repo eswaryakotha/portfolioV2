@@ -1,0 +1,1408 @@
+/* Homepage 3D book, desktop first (900px and wider).
+   Sizes come from custom properties set on .bk-root from book.settings in data/content.ts.
+   Below 900px, or with JavaScript off, the stacked list (.bk-list) shows instead. */
+
+/* ---------- which of the two shows ---------- */
+.bk-list {
+  display: block;
+}
+@media (min-width: 900px) {
+  .bk-home .bk-list {
+    display: none;
+  }
+}
+@media (max-width: 899.98px) {
+  .bk-home:not(.bk-mobile-book) .bk-root {
+    display: none;
+  }
+}
+.bk-mobile-book .bk-list {
+  display: none;
+}
+
+/* ---------- page frame on /: header on top, the book fills the rest, no scrolling ----------
+   With cacheComponents the homepage stays in the DOM after you navigate away, hidden with an
+   inline display: none on .bk-home. The :not() keeps these rules off every other page. */
+@media (min-width: 900px) {
+  body:has(.bk-home:not([style*="display: none"])) {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body:has(.bk-home:not([style*="display: none"])) > header {
+    flex: none;
+  }
+  body:has(.bk-home:not([style*="display: none"])) > main {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .bk-home {
+    height: 100%;
+  }
+}
+
+.bk-root {
+  --spine-ink: rgb(50 38 16); /* fold shading on cream paper; coloured spreads override it */
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--bk-ink);
+}
+
+/* The stage is a size container, so the book can size itself from the stage height. */
+.bk-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  --bw: calc(
+    min(
+        calc(var(--max-w-vw) * 1cqw),
+        var(--max-w),
+        calc((100cqh - var(--stage-gap)) * var(--aspect)),
+        calc(100cqw - var(--arrow-space) * 2)
+      ) * var(--book-scale)
+  );
+  --bh: calc(var(--bw) / var(--aspect));
+  --thick: calc(var(--bh) * var(--book-thickness));
+  --bk-r: max(var(--r-min), calc(var(--bw) * var(--r-of-w)));
+}
+.has-glow .bk-stage {
+  background: radial-gradient(
+    ellipse calc(var(--glow-reach) / 2) calc(var(--glow-reach) * 0.75) at 50% 50%,
+    color-mix(in srgb, var(--bk-accent) var(--glow-strength), transparent),
+    transparent
+  );
+}
+
+/* Camera and tilt in one transform, so opening and closing animate on the compositor.
+   Closed: the camera sits over the cover's free edge (the translateX pair moves the perspective
+   centre) so the thick edge reads, and the book is tilted. Open: camera centred, nearly flat. */
+.bk-tilt {
+  --po: calc(var(--bw) * var(--po-closed));
+  width: var(--bw);
+  height: var(--bh);
+  transform-style: preserve-3d;
+  transform: translateX(var(--po)) perspective(calc(var(--bw) * var(--persp-k)))
+    translateX(calc(var(--po) * -1)) rotateX(var(--tilt-closed-x)) rotateY(var(--tilt-closed-y));
+  transition: transform var(--tilt-ms) cubic-bezier(0.45, 0, 0.2, 1);
+}
+.is-open .bk-tilt {
+  transform: translateX(0px) perspective(calc(var(--bw) * var(--persp-k))) translateX(0px)
+    rotateX(var(--tilt-open-x)) rotateY(var(--tilt-open-y));
+}
+.bk-par {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.bk-book {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* closed: shift left by a quarter of the open width so the cover is centred */
+  transform: translateX(calc(var(--bw) * -0.25));
+  transition: transform var(--tilt-ms) cubic-bezier(0.45, 0, 0.2, 1);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.is-open .bk-book {
+  transform: none;
+}
+.bk-book.is-dragging {
+  cursor: grabbing;
+}
+
+/* ---------- leaves and faces ---------- */
+.bk-leaf {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: 0 50%;
+  --t: calc(var(--thick) * var(--w) / var(--wt));
+  transform: translateZ(calc(var(--t) * -0.5 + (var(--n) - var(--i)) * var(--eps)));
+}
+
+.bk-face {
+  --fold-ink: rgb(70 52 24); /* fold shading on cream paper */
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 1px;
+  background-color: var(--bk-page);
+  color: var(--bk-ink);
+}
+/* case-study pages: a very light pastel of the project's colour, mixed into the paper,
+   or an exact colour when a project sets one (pageColor). Their fold shading is a deeper
+   shade of the same colour, so it blends in. */
+.bk-face[style*="--page-color"] {
+  background-color: var(--page-color);
+  --fold-base: var(--page-color);
+}
+.bk-face[style*="--page-tint"] {
+  background-color: color-mix(in srgb, var(--page-tint) var(--page-tint-pct), var(--bk-page));
+  --fold-base: color-mix(in srgb, var(--page-tint) var(--page-tint-pct), var(--bk-page));
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Every leaf page stays painted. Pages outside the open spread are fully covered by the top
+     page of their block (same size, farther from the camera), so none of them shows, and a
+     flip or a jump never has to paint a page first, which is what caused the stutter. */
+}
+.bk-front {
+  transform: translateZ(calc(var(--t) / 2));
+  border-radius: 0 var(--bk-r) var(--bk-r) 0;
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fold-ink) 10%, transparent),
+    transparent 7%
+  );
+}
+.bk-back {
+  transform: translateZ(calc(var(--t) / -2)) rotateY(180deg);
+  border-radius: var(--bk-r) 0 0 var(--bk-r);
+  background-image: linear-gradient(
+    270deg,
+    color-mix(in srgb, var(--fold-ink) 10%, transparent),
+    transparent 7%
+  );
+}
+
+.bk-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--shade, 0);
+}
+.bk-front .bk-shade {
+  background: linear-gradient(90deg, rgb(70 52 24), rgb(70 52 24 / 0.45));
+}
+.bk-back .bk-shade {
+  background: linear-gradient(270deg, rgb(70 52 24), rgb(70 52 24 / 0.45));
+}
+
+/* cover, with a cloth hinge band down its spine edge */
+.bk-face.bk-cover {
+  background-color: var(--bk-cover);
+  background-image:
+    repeating-linear-gradient(0deg, rgb(246 241 228 / 0.035) 0 1px, transparent 1px 3px),
+    linear-gradient(
+      90deg,
+      var(--bk-hinge) 0 6.5%,
+      rgb(20 16 8 / 0.45) 6.5%,
+      rgb(20 16 8 / 0) 8.5%
+    );
+  background-size: 6.5% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  color: var(--bk-cover-text);
+  cursor: pointer;
+}
+.bk-cover-inner {
+  position: absolute;
+  inset: 0;
+  padding: 9cqw 9cqw 9cqw 13cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 3cqw;
+}
+.bk-cover-title {
+  margin: 0;
+  font-family: var(--cover-title-font);
+  font-weight: 400;
+  font-size: var(--cover-title-size);
+  line-height: 1.05;
+  color: var(--cover-title-color);
+}
+.bk-cover-sub {
+  margin: 0;
+  font-family: var(--cover-sub-font);
+  font-size: var(--cover-sub-size);
+  line-height: 1.35;
+  color: var(--cover-sub-color);
+}
+
+/* static back board (right page of the last spread) */
+.bk-board {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  container-type: inline-size;
+  overflow: hidden;
+  border-radius: 0 var(--bk-r) var(--bk-r) 0;
+  background: var(--bk-cover);
+  visibility: hidden;
+  transition: visibility 0s linear var(--hide-delay);
+}
+.bk-board[data-active="true"] {
+  visibility: visible;
+  transition-delay: 0s;
+}
+.bk-board-ph {
+  flex: 1;
+  width: 100%;
+  border-color: rgb(246 241 228 / 0.3) !important;
+  color: rgb(246 241 228 / 0.7) !important;
+}
+
+/* ---------- page content ---------- */
+.bk-content {
+  position: absolute;
+  inset: 0;
+  padding: 7cqw 7cqw 7cqw 8.5cqw;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 2.4cqw, 16px);
+  overflow: hidden;
+  /* lets the printed video halves reach 1px past the fold (see .bk-vhalf) */
+  overflow: clip;
+  overflow-clip-margin: 1px;
+  box-sizing: border-box;
+}
+.bk-back .bk-content {
+  padding: 7cqw 8.5cqw 7cqw 7cqw;
+}
+.bk-center {
+  justify-content: center;
+  align-items: center;
+}
+.bk-left-align {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.bk-label {
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(12px, 2.4cqw, 13px);
+  letter-spacing: 0.16em;
+  color: var(--bk-muted);
+}
+.bk-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(12px, 6.4cqw, 38px);
+  line-height: 1.12;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.bk-hook,
+.bk-intro {
+  margin: 0;
+  font-size: clamp(12px, 3.6cqw, 19px);
+  line-height: 1.4;
+  color: #4b4535;
+}
+.bk-hook {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.bk-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 1.2cqw, 8px);
+  font-size: clamp(12px, 3.2cqw, 17px);
+  line-height: 1.35;
+}
+.bk-results li {
+  position: relative;
+  padding-left: 1.1em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.bk-results li::before {
+  content: "";
+  position: absolute;
+  left: 0.1em;
+  top: 0.55em;
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 50%;
+  background: var(--bk-accent);
+}
+.bk-big {
+  margin: 0;
+  font-family: var(--font-advercase), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(12px, 12cqw, 72px);
+  line-height: 1.05;
+  text-align: center;
+}
+.bk-center .bk-hook {
+  text-align: center;
+}
+
+.bk-dashed {
+  border: 2px dashed var(--bk-dash);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2cqw;
+  box-sizing: border-box;
+  color: var(--bk-muted);
+  font-size: clamp(12px, 3cqw, 16px);
+}
+.bk-photo {
+  flex: 1;
+  width: 100%;
+}
+.bk-video {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.bk-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3cqw;
+}
+.bk-cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  padding: 1cqw;
+  font-size: clamp(12px, 2.8cqw, 14px);
+  overflow: hidden;
+}
+
+.bk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(12px, 2.4cqw, 13px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background: var(--bk-ink);
+  color: var(--bk-page);
+  padding: 0.8em 1.3em;
+  border-radius: 999px;
+  transition: background-color 0.2s;
+}
+.bk-btn:hover {
+  background: var(--bk-accent);
+}
+.bk-cta-desktop {
+  display: inline-flex;
+  margin-top: auto;
+  align-self: flex-start;
+}
+.bk-cta-mobile {
+  display: none;
+}
+
+
+/* ---------- the two solid blocks ----------
+   Each is a ring of flat edge faces (see EDGE_FACES in Book.tsx), all extruded backward by the
+   block depth: --s is the block depth as a share of the full book depth, --a and --b are where
+   the cover bands start and end along that depth. */
+.bk-slab {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  --s: 1;
+  --a: 18.75%;
+  --b: 81.25%;
+}
+.bk-slab-l {
+  --s: 0;
+  --a: 100%;
+  visibility: hidden; /* empty until a leaf is flipped; JS takes over after mount */
+}
+.bk-ef {
+  position: absolute;
+  display: block;
+  height: var(--thick);
+  transform-origin: 0 0;
+  transform: rotateZ(var(--ang)) rotateX(-90deg) scaleY(var(--s));
+}
+.bk-slab-r .bk-ef {
+  background:
+    linear-gradient(to bottom, transparent, rgb(70 52 24 / var(--edge-shade))),
+    linear-gradient(
+      to bottom,
+      var(--bk-cover-edge) 0 var(--a),
+      var(--bk-edge) var(--a) var(--b),
+      var(--bk-cover-edge) var(--b) 100%
+    );
+}
+.bk-slab-l .bk-ef {
+  background:
+    linear-gradient(to bottom, transparent, rgb(70 52 24 / var(--edge-shade))),
+    linear-gradient(to bottom, var(--bk-edge) 0 var(--a), var(--bk-cover-edge) var(--a) 100%);
+}
+
+/* the moving leaf shows its own thin solid edges; resting leaves show none */
+.bk-ledge {
+  position: absolute;
+  display: none;
+  background: var(--bk-edge);
+  opacity: var(--ledge, 0);
+}
+.bk-leaf[data-moving] .bk-ledge {
+  display: block;
+}
+.bk-leaf[data-leaf="0"] .bk-ledge {
+  background: var(--bk-cover-edge);
+}
+.bk-ledge-b {
+  left: 0;
+  top: 100%;
+  width: calc(100% - var(--bk-r));
+  height: var(--t);
+  transform-origin: 50% 0;
+  transform: translateZ(calc(var(--t) / 2)) rotateX(-90deg);
+}
+.bk-ledge-s {
+  left: 100%;
+  top: var(--bk-r);
+  width: var(--t);
+  height: calc(100% - var(--bk-r) * 2);
+  transform-origin: 0 50%;
+  transform: translateZ(calc(var(--t) / 2)) rotateY(90deg);
+}
+
+/* ---------- depth cues ---------- */
+.bk-floor {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 100%;
+  height: calc(var(--bh) * 0.14);
+  margin-top: calc(var(--bh) * -0.06);
+  background: radial-gradient(ellipse at center, rgb(50 38 16 / 0.3), transparent 68%);
+  transform: translateZ(calc(var(--thick) * -1)) translateX(25%) scaleX(0.5);
+  transition: transform var(--tilt-ms) cubic-bezier(0.45, 0, 0.2, 1);
+  pointer-events: none;
+}
+.is-open .bk-floor {
+  transform: translateZ(calc(var(--thick) * -1));
+}
+
+.bk-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 9%;
+  height: 100%;
+  /* --spine-ink and --spine-peak follow the open spread (set on .bk-root by the book), so on
+     coloured pages the fold is a deeper shade of that colour rather than a brown stripe */
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--spine-ink) calc(var(--spine-peak) * 0.35), transparent) 32%,
+    color-mix(in srgb, var(--spine-ink) var(--spine-peak), transparent) 50%,
+    color-mix(in srgb, var(--spine-ink) calc(var(--spine-peak) * 0.35), transparent) 68%,
+    transparent
+  );
+  transform: translateX(-50%) translateZ(calc((var(--n) + 3) * var(--eps)));
+  opacity: 0;
+  transition: opacity 400ms;
+  pointer-events: none;
+}
+.is-open .bk-spine {
+  opacity: 1;
+}
+/* on a case-study spread the fold shading skips the band where the video is printed and,
+   if the spread has one, the band of the middle "Key impact" note */
+.bk-root[data-video-spread] .bk-spine {
+  --gap: calc(var(--pop-w) * var(--aspect) * 28.125%); /* half the video's height */
+  --m: linear-gradient(
+    to bottom,
+    #000 calc(50% - var(--gap)),
+    transparent calc(50% - var(--gap)),
+    transparent calc(50% + var(--gap)),
+    #000 calc(50% + var(--gap))
+  );
+  -webkit-mask-image: var(--m);
+  mask-image: var(--m);
+}
+.bk-root[data-video-spread][data-key-impact] .bk-spine {
+  --m: linear-gradient(
+    to bottom,
+    #000 calc(50% - var(--gap)),
+    transparent calc(50% - var(--gap)),
+    transparent calc(50% + var(--gap)),
+    #000 calc(50% + var(--gap)),
+    #000 calc(var(--ki-top) - 1.5%),
+    transparent calc(var(--ki-top) - 1.5%),
+    transparent calc(var(--ki-bottom) + 1.5%),
+    #000 calc(var(--ki-bottom) + 1.5%)
+  );
+}
+
+.bk-cast {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateZ(calc((var(--n) + 2) * var(--eps)));
+}
+.bk-cast[data-side="r"] {
+  left: 50%;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, transparent, rgb(50 38 16));
+}
+.bk-cast[data-side="l"] {
+  left: 0;
+  transform-origin: 100% 50%;
+  background: linear-gradient(90deg, rgb(50 38 16), transparent);
+}
+
+/* ---------- "open me" note ---------- */
+.bk-note {
+  position: absolute;
+  left: calc(100% + var(--thick) * 0.5 + 18px);
+  top: 6%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: var(--font-caveat), cursive;
+  font-size: clamp(22px, calc(var(--bw) * 0.024), 34px);
+  line-height: 1;
+  color: var(--bk-accent);
+  white-space: nowrap;
+  transform: rotate(-6deg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms;
+}
+.bk-note svg {
+  width: 1.9em;
+  height: auto;
+  transform: scaleX(-1);
+  margin-left: -0.3em;
+}
+.bk-root:not(.is-open) .bk-note {
+  opacity: 1;
+}
+
+/* ---------- side arrows ---------- */
+.bk-side {
+  position: absolute;
+  top: 50%;
+  width: var(--arrow-w);
+  height: calc(var(--arrow-w) * 0.56);
+  margin-top: calc(var(--arrow-w) * -0.28);
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--bk-ink);
+  cursor: pointer;
+  z-index: 5;
+}
+.bk-side svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 200ms;
+}
+.bk-side-prev {
+  left: max(8px, calc((100% - var(--bw)) / 4 - var(--arrow-w) / 2));
+}
+.bk-side-prev svg {
+  transform: scaleX(-1);
+}
+.bk-side-next {
+  right: max(8px, calc((100% - var(--bw)) / 4 - var(--arrow-w) / 2));
+}
+.bk-side-next:hover:not(:disabled) svg {
+  transform: translateX(4px);
+}
+.bk-side-prev:hover:not(:disabled) svg {
+  transform: scaleX(-1) translateX(4px);
+}
+.bk-side:disabled {
+  opacity: 0.22;
+  cursor: default;
+}
+
+/* ---------- dots row ---------- */
+.bk-dots {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 2px 0 10px;
+}
+.bk-dots ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* 10px circles 16px apart; each button is a 26 by 44px column, so targets touch without overlap */
+.bk-dot {
+  position: relative;
+  width: 26px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.bk-dot::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bk-ink);
+  box-sizing: border-box;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.bk-dot[aria-current="true"]::before {
+  background: var(--bk-accent);
+  border-color: var(--bk-accent);
+}
+.bk-tip {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--bk-page);
+  background: var(--bk-ink);
+  padding: 4px 8px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+.bk-dot:hover .bk-tip,
+.bk-dot:focus-visible .bk-tip {
+  opacity: 1;
+}
+
+.bk-root button:focus-visible,
+.bk-root a:focus-visible,
+.bk-root [role="button"]:focus-visible {
+  outline: 2px solid var(--bk-accent);
+  outline-offset: 3px;
+}
+
+/* ---------- skip links ---------- */
+.bk-skip {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.bk-skip:focus-within {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  left: 12px;
+  top: 8px;
+  z-index: 50;
+  background: var(--bk-page);
+  border: 1px solid var(--bk-edge-line);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.bk-skip p {
+  margin: 0 0 4px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+.bk-skip ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 14px;
+}
+.bk-skip a {
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+/* ---------- stacked list (below 900px, or JavaScript off) ---------- */
+.bk-fallback {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  color: #2b2b2b;
+}
+.bk-fallback header h1 {
+  font-family: var(--font-caveat), cursive;
+  font-size: 2.25rem;
+  line-height: 1.1;
+}
+.bk-fallback header p {
+  color: #6e6651;
+  margin-top: 0.25rem;
+}
+.bk-fallback section {
+  border-top: 1px solid #ddd6c3;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+}
+.bk-fb-label {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: #6e6651;
+  margin-bottom: 0.5rem;
+}
+.bk-fallback h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.bk-fallback p,
+.bk-fallback li {
+  margin: 0.25rem 0;
+}
+.bk-fallback ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.bk-fallback a {
+  display: inline-block;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+}
+
+/* ---------- reduced motion: no 3D, no tilt, no parallax; crossfade between spreads ---------- */
+.bk-reduced .bk-tilt,
+.bk-reduced .bk-par,
+.bk-reduced .bk-book,
+.bk-reduced .bk-leaf {
+  transform-style: flat;
+  transition: none;
+}
+.bk-reduced .bk-tilt,
+.bk-reduced .bk-par {
+  transform: none !important;
+}
+.bk-reduced .bk-leaf {
+  transform: none !important;
+  will-change: auto !important;
+}
+.bk-reduced .bk-front {
+  transform: none;
+}
+.bk-reduced .bk-back {
+  transform: translateX(-100%);
+}
+.bk-reduced .bk-face,
+.bk-reduced .bk-board {
+  -webkit-backface-visibility: visible;
+  backface-visibility: visible;
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+.bk-reduced .bk-face[data-active="true"],
+.bk-reduced .bk-board[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bk-reduced .bk-slab,
+.bk-reduced .bk-ledge,
+.bk-reduced .bk-shade,
+.bk-reduced .bk-cast {
+  display: none !important;
+}
+.bk-reduced .bk-floor,
+.bk-reduced .bk-note {
+  transition: none;
+}
+
+/* ---------- mobile book (book.settings.mobileBook; off for now) ---------- */
+@media (max-width: 899.98px) {
+  .bk-mobile-book .bk-stage {
+    --bw: calc(100vw - 24px);
+    --aspect: 1.7;
+  }
+  .bk-mobile-book .bk-root:not(.is-open) .bk-book {
+    transform: translateX(calc(var(--bw) * -0.25 * var(--bk-fit, 1.45))) scale(var(--bk-fit, 1.45));
+  }
+  .bk-mobile-book .bk-video,
+  .bk-mobile-book .bk-cta-desktop,
+  .bk-mobile-book .bk-side {
+    display: none;
+  }
+  .bk-mobile-book .bk-cta-mobile {
+    display: inline-flex;
+  }
+}
+
+/* ======================================================================
+   Case-study spreads: the video printed across the fold, with a pull tab
+   ====================================================================== */
+/* Each page holds one half (sizes are container units of the page, which is 100cqw wide;
+   the spread is 200cqw). The halves meet at the fold, so each one turns with its page. */
+.bk-vhalf {
+  --vw: calc(var(--pop-w) * 200cqw); /* the whole video's width */
+  --vr: max(10px, 2.4cqw);
+  position: absolute;
+  top: 50%;
+  width: calc(var(--vw) / 2);
+  height: calc(var(--vw) * 9 / 16);
+  margin-top: calc(var(--vw) * -9 / 32);
+  z-index: 2;
+}
+.bk-vhalf-l {
+  /* each half reaches 1px past the fold so the two overlap: no hairline between them */
+  right: -1px;
+  width: calc(var(--vw) / 2 + 1px);
+  border-radius: var(--vr) 0 0 var(--vr);
+  transform-origin: 100% 50%; /* lifts around the centre of the whole video */
+}
+.bk-vhalf-r {
+  left: -1px;
+  width: calc(var(--vw) / 2 + 1px);
+  border-radius: 0 var(--vr) var(--vr) 0;
+  transform-origin: 0 50%;
+}
+.bk-vclip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: #1c1c1a;
+  cursor: pointer;
+  /* printed onto a slightly raised card; the shadow sits under the bottom edge only, so the
+     two halves meet at the fold without a line between them */
+  box-shadow: 0 5px 6px -4px rgb(50 38 16 / 0.3);
+}
+/* the box is half as wide as the 16:9 video, so cover crops it to exactly one half */
+.bk-vclip video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bk-vhalf-l .bk-vclip video {
+  object-position: 0% 50%;
+}
+.bk-vhalf-r .bk-vclip video {
+  object-position: 100% 50%;
+}
+.bk-vclip.bk-video-ph {
+  background: var(--bk-page);
+}
+.bk-vshadow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 14px 30px rgb(50 38 16 / 0.28),
+    0 3px 8px rgb(50 38 16 / 0.18);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* hidden while the raised card covers them */
+.bk-vhalf[data-covered] {
+  visibility: hidden;
+}
+.bk-vhalf .bk-tab {
+  pointer-events: none;
+}
+
+/* ---------- the raised card: one unsplit copy standing off the pages ---------- */
+.bk-card {
+  --z0: calc((var(--n) + 5) * var(--eps)); /* flush: just above the pages and the fold shading */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--bw) * var(--pop-w));
+  aspect-ratio: 16 / 9;
+  translate: -50% -50%;
+  transform: translateZ(var(--z0));
+  transform-style: preserve-3d;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform var(--card-sink-ms) ease-in;
+}
+.bk-card[data-phase="flush"],
+.bk-card[data-phase="raised"],
+.bk-card[data-phase="sinking"] {
+  visibility: visible;
+}
+.bk-card[data-phase="flush"] {
+  transition: none;
+}
+.bk-card[data-phase="raised"] {
+  transform: translateZ(calc(var(--z0) + var(--card-lift)));
+  transition: transform var(--card-rise-ms) cubic-bezier(0.25, 0.9, 0.3, 1.12);
+  pointer-events: auto;
+}
+.bk-card .bk-vwrap {
+  position: absolute;
+  inset: 0;
+  border-radius: max(10px, calc(var(--bw) * 0.012));
+  transform-origin: 50% 50%;
+}
+.bk-card .bk-vclip video {
+  object-position: 50% 50%;
+}
+/* its shadow stays down on the pages while the card stands forward */
+.bk-card-ground {
+  position: absolute;
+  inset: 5% 3% -2% 3%;
+  border-radius: 14px;
+  background: rgb(50 38 16 / 0.3);
+  filter: blur(12px);
+  opacity: 0;
+  transform: translateZ(0px) translate(0px, 0px);
+  transition:
+    opacity var(--card-sink-ms) ease-in,
+    transform var(--card-sink-ms) ease-in;
+  pointer-events: none;
+}
+.bk-card[data-phase="raised"] .bk-card-ground {
+  opacity: 1;
+  transform: translateZ(calc(var(--card-lift) * -1)) translate(6px, 12px);
+  transition:
+    opacity var(--card-rise-ms) ease-out,
+    transform var(--card-rise-ms) cubic-bezier(0.25, 0.9, 0.3, 1.12);
+}
+.bk-card .bk-tab-slot {
+  right: 6%; /* the same spot as on the printed right half */
+  cursor: grab;
+  touch-action: none;
+}
+/* hover the whole tab area (the wrapper is what receives the pointer) */
+.bk-card .bk-tab-slot:hover .bk-tab {
+  translate: 0 6px;
+}
+.bk-reduced .bk-card[data-phase="raised"] {
+  transform: none;
+}
+
+/* pull tab, tucked under the video's bottom-right corner (painted before the video, so the
+   video covers its top); pulling slides it further out */
+.bk-tab-slot {
+  --tab-hidden: calc(var(--bh) * var(--tab-pull) + 24px); /* the full pull plus the rubber band */
+  position: absolute;
+  right: 12%;
+  top: calc(100% - 22px - var(--tab-hidden));
+}
+.bk-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  /* The visible part is unchanged at rest. Above it, --tab-hidden of extra tab stays tucked
+     under the video and only slides out as you pull, so a full pull never shows its top. */
+  padding: calc(26px + var(--tab-hidden)) 12px 9px;
+  border: 0;
+  border-radius: 0 0 9px 9px;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent var(--tab-hidden),
+      rgb(20 16 8 / 0.25) var(--tab-hidden),
+      transparent calc(var(--tab-hidden) + 30px)
+    ),
+    var(--accent-tab, var(--bk-accent));
+  color: var(--bk-page);
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 3px 6px rgb(50 38 16 / 0.25);
+  transition: translate 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.bk-tab-grip {
+  width: 18px;
+  height: 4px;
+  border-top: 1px solid rgb(246 241 228 / 0.55);
+  border-bottom: 1px solid rgb(246 241 228 / 0.55);
+}
+.bk-tab-text {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bk-tab:hover,
+.bk-tab:focus-visible {
+  translate: 0 6px;
+}
+.bk-tab.is-pulling {
+  cursor: grabbing;
+  transition: none;
+}
+/* a small idle nudge so it reads as pullable */
+@media (prefers-reduced-motion: no-preference) {
+  .bk-card[data-phase="raised"] .bk-tab:not(.is-pulling):not(:hover) {
+    animation: bk-nudge var(--tab-nudge-ms) ease-in-out infinite;
+  }
+}
+@keyframes bk-nudge {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  88% {
+    transform: translateY(5px);
+  }
+}
+
+/* "pull" hint, once per session */
+.bk-pull-hint {
+  position: absolute;
+  top: 30px;
+  right: calc(100% + 8px);
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  font-family: var(--font-caveat), cursive;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--accent-tab, var(--bk-accent));
+  white-space: nowrap;
+  transform: rotate(-6deg);
+  opacity: 0;
+  pointer-events: none;
+  animation: bk-hint var(--tab-hint-ms) ease both;
+  animation-delay: var(--flip-ms);
+}
+.bk-pull-hint svg {
+  width: 1.4em;
+  height: auto;
+}
+@keyframes bk-hint {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+
+/* ---------- leaving for a case study ---------- */
+.bk-root.bk-leaving .bk-tilt {
+  transform: translateX(0px) perspective(calc(var(--bw) * var(--persp-k))) translateX(0px)
+    rotateX(0deg) rotateY(0deg);
+  transition: transform var(--tx-flatten) ease;
+}
+.bk-root.bk-leaving .bk-par {
+  transform: none !important;
+  transition: transform var(--tx-flatten) ease;
+}
+.bk-root.bk-leaving .bk-dots,
+.bk-root.bk-leaving .bk-side {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tx-flatten) ease;
+}
+.bk-root .bk-dots,
+.bk-root .bk-side {
+  transition: opacity 200ms ease;
+}
+.bk-stage {
+  transition: transform var(--tx-lift) cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity var(--tx-lift) ease;
+}
+.bk-root.bk-lifting .bk-stage {
+  transform: scale(var(--tx-book-scale));
+  opacity: var(--tx-book-opacity);
+}
+.bk-root.bk-leaving .bk-tab {
+  animation: none;
+}
+
+/* text blocks placed on a page from data (BookBlock); they stack from the top-left corner */
+.bk-block {
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.08;
+  color: var(--bk-ink);
+  text-wrap: balance; /* when a line wraps, split it evenly */
+}
+.bk-block.is-caps {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+/* a box drawn on the page that holds other blocks (BookBoxBlock) */
+.bk-box {
+  align-self: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: min(15px, 2.8cqw) min(16px, 3cqw);
+  border: 1.5px solid var(--bk-dash);
+  border-radius: 6px;
+  transform-origin: 50% 50%;
+}
+.bk-box.is-dashed {
+  border-style: dashed;
+}
+
+/* ---------- "Key impact" row: flat paper notes across the spread ----------
+   .bk-spread-layer is as wide as the whole spread (200cqw of a page). The left page places it
+   at its own left edge, the right page shifts it one page to the left; each page clips to
+   itself (1px past the fold, so the two halves meet with no hairline). */
+.bk-spread-layer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 200cqw;
+  pointer-events: none;
+  z-index: 1;
+}
+.bk-spread-layer-l {
+  left: 0;
+}
+.bk-spread-layer-r {
+  left: -100cqw;
+}
+.bk-ki-label {
+  position: absolute;
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: min(11px, 2.08cqw);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink, var(--bk-ink));
+}
+.bk-ki-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* a small piece of paper stuck flat to the page */
+.bk-ki-note {
+  position: absolute;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: min(8px, 1.5cqw) min(10px, 1.9cqw);
+  text-align: center;
+  font-size: min(12px, 2.26cqw);
+  line-height: 1.28;
+  text-wrap: balance;
+  color: var(--bk-ink);
+  background: var(--bk-note); /* light pastel yellow, book.colors.note */
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 0.5px rgb(50 38 16 / 0.12),
+    0 1px 2px rgb(50 38 16 / 0.12);
+}
+
+/* ---------- sticky note beside the video ---------- */
+.bk-sticky {
+  position: absolute;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: min(10px, 1.9cqw);
+  padding: min(26px, 4.9cqw) min(16px, 3cqw) min(16px, 3cqw);
+  color: var(--ink, var(--bk-ink));
+  /* a slightly deeper band where the sticky strip is, and a soft fall-off at the bottom */
+  background:
+    linear-gradient(to bottom, rgb(120 90 20 / 0.07), transparent min(22px, 4.2cqw)),
+    linear-gradient(to bottom, transparent 70%, rgb(120 90 20 / 0.05)),
+    var(--sticky);
+  border-radius: 1px 1px 3px 14px / 1px 1px 3px 6px; /* a little curl at one corner */
+  box-shadow:
+    0 1px 1px rgb(50 38 16 / 0.08),
+    2px 6px 8px -4px rgb(50 38 16 / 0.25);
+  z-index: 1;
+}
+.bk-sticky-label {
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: min(11px, 2.08cqw);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.bk-sticky-text {
+  margin: 0;
+  font-family: var(--font-caveat), cursive;
+  font-size: var(--sticky-text, min(24px, 4.5cqw));
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* ---------- taped instant photo ---------- */
+.bk-polaroid {
+  position: absolute;
+  margin: 0;
+  box-sizing: border-box;
+  /* the classic frame: an even border of 6% of the frame's width and a deeper bottom margin
+     of 22%. (Percent padding would be measured against the page, so it is set from the
+     frame's width in page units: --pw is the width as a share of the page.) */
+  --pw: calc(var(--polaroid-w) * 1cqw);
+  padding: calc(var(--pw) * 0.06) calc(var(--pw) * 0.06) calc(var(--pw) * 0.22);
+  background: #fbf9f3;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 0.5px rgb(50 38 16 / 0.1),
+    0 2px 3px rgb(50 38 16 / 0.12),
+    1px 6px 10px -4px rgb(50 38 16 / 0.22);
+  z-index: 1;
+}
+.bk-polaroid-photo {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #e7e3d8;
+  box-shadow: inset 0 0 0 0.5px rgb(50 38 16 / 0.15);
+  display: grid;
+  place-items: center;
+}
+.bk-polaroid-ph {
+  font-size: min(12px, 2.3cqw);
+  color: var(--bk-muted);
+}
+.bk-polaroid-caption {
+  /* centred in the white margin under the photo, on one line */
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 0;
+  height: calc(var(--pw) * 0.22);
+  display: grid;
+  place-items: center;
+  white-space: nowrap;
+  font-family: var(--font-caveat), cursive;
+  font-size: min(15px, 2.83cqw);
+  line-height: 1;
+  color: var(--bk-ink);
+}
+/* a strip of translucent paper tape across the top edge */
+.bk-tape {
+  position: absolute;
+  top: -7%;
+  left: 27%;
+  width: 46%;
+  height: 13%;
+  background: rgb(240 232 205 / 0.72);
+  box-shadow: 0 1px 1px rgb(50 38 16 / 0.08);
+  /* torn ends */
+  clip-path: polygon(
+    2% 0, 98% 0, 100% 18%, 97% 36%, 100% 55%, 97% 76%, 99% 100%,
+    1% 100%, 3% 80%, 0 60%, 3% 40%, 0 20%
+  );
+  z-index: 1;
+}
+
+/* a one-line title may run past the fold: the right page draws the overflow (see
+   FoldCrossingTitle). Both copies start at the left page's content corner. */
+.bk-block.is-one-line {
+  white-space: nowrap;
+  text-wrap: nowrap;
+}
+.bk-fold-title {
+  position: absolute;
+  top: 7cqw; /* the left page's top padding */
+  left: calc(7cqw - 100cqw); /* the left page's left padding, one page to the left */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Fold shading on coloured pages: a deeper, richer shade of the page's own hue, so it blends
+   into the page instead of reading grey. Browsers without relative colours fall back to
+   mixing the page colour with a dark tone. */
+.bk-face[style*="--page-color"],
+.bk-face[style*="--page-tint"] {
+  --fold-ink: color-mix(in srgb, var(--fold-base) 45%, rgb(24 26 34));
+}
+.bk-root[data-video-spread] {
+  --spine-ink: color-mix(in srgb, var(--spine-base) 45%, rgb(24 26 34));
+}
+@supports (color: oklch(from red l c h)) {
+  .bk-face[style*="--page-color"],
+  .bk-face[style*="--page-tint"] {
+    --fold-ink: oklch(from var(--fold-base) calc(l * 0.62) calc(c * 2.6) h);
+  }
+  .bk-root[data-video-spread] {
+    --spine-ink: oklch(from var(--spine-base) calc(l * 0.62) calc(c * 2.6) h);
+  }
+}
+.bk-ki-note strong {
+  font-weight: 600;
+}
+
+/* bulleted list placed on a page (BookListBlock) */
+.bk-list-block {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: min(4px, 0.75cqw);
+  line-height: 1.25;
+  color: var(--bk-ink);
+}
+.bk-list-block li {
+  position: relative;
+  padding-left: 0.95em;
+}
+.bk-list-block li::before {
+  content: "";
+  position: absolute;
+  left: 0.1em;
+  top: 0.55em;
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+.bk-ki-footnote {
+  display: block;
+  margin-top: min(4px, 0.75cqw);
+  font-size: min(9px, 1.7cqw);
+  line-height: 1.2;
+  color: var(--bk-muted);
+}
