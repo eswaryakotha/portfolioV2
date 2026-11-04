@@ -2704,18 +2704,36 @@ export type BookPolaroid = {
   placeholder: string;
 };
 
+/** "My Playground": side projects and life outside work (was the Experiments spread). */
+export type BookPlaygroundPhoto = { src: string; alt: string; caption: string };
+export type BookPlaygroundVideo = { src: string; caption: string; madeWith: string };
 export type BookExperimentsSpread = BookSpreadBase & {
   type: "experiments";
+  heading: string;
   intro: string;
-  placeholder: string;
-  cells: number;
-  cta: { label: string; href: string };
+  photos: BookPlaygroundPhoto[]; // left page, as small tilted prints with handwritten captions
+  videos: BookPlaygroundVideo[]; // right page, play while the spread is open
 };
 
+/** The last spread: "Contact" on the left page (was "Coming soon"); the back board's inside
+    is its right page. */
+/** a contact card; leave href empty to show the card without a link until it is ready */
+export type BookContactLink = {
+  kind: "email" | "linkedin" | "resume";
+  label: string;
+  value: string;
+  href: string;
+};
 export type BookComingSoonSpread = BookSpreadBase & {
   type: "coming-soon";
   heading: string;
-  sub: string;
+  /** heading size in px at the book's full size */
+  headingSizePx: number;
+  /** a small handwritten aside after the heading */
+  headingAside?: string;
+  /** pin the aside above the end of this word in the heading (else it follows the heading) */
+  headingAsideAfter?: string;
+  links: BookContactLink[];
   backCover: string;
 };
 
@@ -3004,6 +3022,7 @@ export const book = {
     nextLabel: "Next page",
     dotsLabel: "Jump to a stop",
     coverDot: "Cover",
+    backDot: "Back cover",
     openBook: "Open the book",
     tabLabel: "Open the {name} case study",
     tabText: "View case study",
@@ -3012,6 +3031,7 @@ export const book = {
     skipHeading: "Skip to case studies",
     liveTemplate: "Spread {n} of {total}: {name}",
     liveCover: "Book closed. Cover.",
+    liveBack: "Book closed. Back cover.",
     noscriptHeading: "Portfolio contents",
     resultsLabel: "Key results",
   },
@@ -3025,6 +3045,9 @@ export const book = {
     subtitleColor: "#D8D1BE",
     titleFont: "var(--font-caveat), cursive",
     subtitleFont: "var(--font-geist-sans), sans-serif",
+    // small handwritten note in the middle of the back cover, under a little heart
+    backNote: "Made with tired eyes and a restless brain.",
+    backNoteSizePx: 17,
   },
   skipLinks: [
     { label: "About", href: "/about" },
@@ -3134,23 +3157,81 @@ export const book = {
       }),
     }),
     {
+      // the Play section of the earlier portfolio
       type: "experiments",
-      id: "experiments",
-      name: "Experiments",
-      label: "EXPERIMENTS",
+      id: "playground",
+      name: "My Playground",
+      label: "MY PLAYGROUND",
       tab: "Play",
-      intro: "[Tiny experiments intro]",
-      placeholder: "[Experiment]",
-      cells: 4,
-      cta: { label: "See experiments", href: "/play" },
+      heading: "My Playground",
+      intro:
+        "A little corner of the internet where my curiosity takes over - this is what I get up to outside of work!",
+      photos: [
+        {
+          src: "/playground/pottery.jpg",
+          alt: "Two hand-painted pottery plates: sunflowers, and a swirling night sky with a boat",
+          caption: "Inspired Van Gogh Pottery Paintings",
+        },
+        {
+          src: "/playground/coins.jpg",
+          alt: "An album of coins from around the world",
+          caption: "Numismatist – Exploring global currencies, history, and design",
+        },
+        {
+          src: "/playground/kyoto-cafe.jpg",
+          alt: "Fluffy pancakes with strawberries and matcha at a cafe",
+          caption: "Cafe hopping at Kyoto",
+        },
+        {
+          src: "/playground/hike.jpg",
+          alt: "Hills at sunset with fog in the valley below",
+          caption: "Scenes from monthly hikes",
+        },
+      ],
+      videos: [
+        {
+          src: "/playground/ecokinetics.mp4",
+          caption:
+            "Ecokinetics - A data driven biomimetic installation that showcases 100 years of marine heatwaves on corals",
+          madeWith: "Made with Arduino + Figma",
+        },
+        {
+          src: "/playground/mindfulness-pockets.mp4",
+          caption: "My speculative design concept on mindfulness pockets in university spaces",
+          madeWith: "Made with p5.js + ml5.js + Arduino + Figma",
+        },
+      ],
     },
     {
+      // the contact section of the earlier portfolio
       type: "coming-soon",
-      id: "coming-soon",
-      name: "Coming soon",
-      label: "MORE",
-      heading: "Coming soon.",
-      sub: "[More case studies on the way]",
+      id: "contact",
+      name: "Contact",
+      label: "CONTACT",
+      heading: "I know where to get the\nbest food in Bangalore,\nLet's talk!",
+      headingSizePx: 36,
+      headingAside: "(not jk!)",
+      headingAsideAfter: "the",
+      links: [
+        {
+          kind: "email",
+          label: "Email",
+          value: "eswarya.k@gmail.com",
+          href: "mailto:eswarya.k@gmail.com",
+        },
+        {
+          kind: "linkedin",
+          label: "LinkedIn",
+          value: "/in/eswarya-kotha",
+          href: "https://www.linkedin.com/in/eswarya-kotha",
+        },
+        {
+          kind: "resume",
+          label: "Resume",
+          value: "",
+          href: "", // TODO: paste the resume link
+        },
+      ],
       backCover: "[Back cover]",
     },
   ] satisfies BookSpread[],

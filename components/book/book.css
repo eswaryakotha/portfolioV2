@@ -118,6 +118,10 @@
 .is-open .bk-book {
   transform: none;
 }
+/* closed at the end: shift right by a quarter so the back cover is centred */
+.is-back .bk-book {
+  transform: translateX(calc(var(--bw) * 0.25));
+}
 .bk-book.is-dragging {
   cursor: grabbing;
 }
@@ -511,6 +515,9 @@
 .is-open .bk-floor {
   transform: translateZ(calc(var(--thick) * -1));
 }
+.is-back .bk-floor {
+  transform: translateZ(calc(var(--thick) * -1)) translateX(-25%) scaleX(0.5);
+}
 
 .bk-spine {
   position: absolute;
@@ -608,7 +615,7 @@
   transform: scaleX(-1);
   margin-left: -0.3em;
 }
-.bk-root:not(.is-open) .bk-note {
+.bk-root:not(.is-open):not(.is-back) .bk-note {
   opacity: 1;
 }
 
@@ -1405,4 +1412,235 @@
   font-size: min(9px, 1.7cqw);
   line-height: 1.2;
   color: var(--bk-muted);
+}
+
+/* the back board: dark inside (the last spread's right page) and outside (the back cover) */
+.bk-face.bk-board-face {
+  background-color: var(--bk-cover);
+  background-image: none;
+}
+/* the outside of the back board: the cloth hinge sits on its spine edge, the right side */
+.bk-face.bk-back-cover {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(246 241 228 / 0.035) 0 1px, transparent 1px 3px),
+    linear-gradient(
+      270deg,
+      var(--bk-hinge) 0 6.5%,
+      rgb(20 16 8 / 0.45) 6.5%,
+      rgb(20 16 8 / 0) 8.5%
+    );
+  background-size: 6.5% 100%, 100% 100%;
+  background-position: right top, 0 0;
+  background-repeat: no-repeat;
+}
+/* small handwritten note in the middle of the back cover */
+.bk-back-note {
+  position: absolute;
+  inset: 0;
+  padding: 0 14cqw 0 10cqw; /* a little more room on the spine (right) side */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  text-align: center;
+  font-family: var(--font-caveat), cursive;
+  font-size: var(--back-note-size);
+  line-height: 1.2;
+  color: var(--cover-sub-color);
+}
+.bk-back-note svg {
+  width: 1.5em;
+  height: auto;
+  rotate: -6deg;
+}
+.bk-back-note p {
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ---------- "My Playground" spread ---------- */
+.bk-pg-intro {
+  margin: min(10px, 1.9cqw) 0 0;
+  max-width: 92%;
+  font-size: min(14px, 2.64cqw);
+  line-height: 1.45;
+  color: #4b4535;
+}
+/* four small prints, 2 by 2, each slightly tilted, captions handwritten underneath */
+.bk-pg-photos {
+  margin: min(20px, 3.8cqw) 0 0;
+  padding: 0;
+  list-style: none;
+  align-self: center;
+  width: 70%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: min(26px, 4.9cqw);
+  row-gap: min(12px, 2.3cqw);
+}
+.bk-pg-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bk-pg-photo[data-i="0"] .bk-pg-frame { rotate: -2.5deg; }
+.bk-pg-photo[data-i="1"] .bk-pg-frame { rotate: 2deg; }
+.bk-pg-photo[data-i="2"] .bk-pg-frame { rotate: 1.5deg; }
+.bk-pg-photo[data-i="3"] .bk-pg-frame { rotate: -1.5deg; }
+.bk-pg-frame {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6%;
+  background: #fbf9f3;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 0.5px rgb(50 38 16 / 0.1),
+    0 2px 3px rgb(50 38 16 / 0.12),
+    1px 5px 8px -4px rgb(50 38 16 / 0.22);
+}
+.bk-pg-img {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #e7e3d8;
+}
+.bk-pg-caption {
+  margin: min(6px, 1.1cqw) 0 0;
+  text-align: center;
+  font-family: var(--font-caveat), cursive;
+  font-size: min(15px, 2.83cqw);
+  line-height: 1.1;
+  color: var(--bk-muted);
+  text-wrap: balance;
+}
+/* right page: the two clips, stacked */
+.bk-pg-right {
+  justify-content: center;
+  align-items: center;
+  gap: min(22px, 4.2cqw);
+}
+.bk-pg-video {
+  margin: 0;
+  width: 80%;
+}
+.bk-pg-video-frame {
+  aspect-ratio: 16 / 9;
+  border-radius: min(10px, 1.9cqw);
+  overflow: hidden;
+  background: #1c1c1a;
+  box-shadow: 0 5px 6px -4px rgb(50 38 16 / 0.3);
+}
+.bk-pg-video-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bk-pg-video figcaption {
+  margin-top: min(8px, 1.5cqw);
+  display: flex;
+  flex-direction: column;
+  gap: min(3px, 0.6cqw);
+}
+.bk-pg-video-caption {
+  font-size: min(12px, 2.26cqw);
+  line-height: 1.4;
+  color: #4b4535;
+}
+.bk-pg-made-with {
+  font-family: var(--font-caveat), cursive;
+  font-size: min(16px, 3.02cqw);
+  line-height: 1.1;
+  color: var(--bk-accent);
+}
+
+/* ---------- contact (last spread, left page) ---------- */
+.bk-contact {
+  justify-content: center;
+  gap: 0;
+}
+.bk-contact .bk-block {
+  line-height: 1.2;
+  margin-bottom: min(26px, 4.9cqw);
+  white-space: pre-line; /* a \n in the heading starts a new line */
+}
+/* the handwritten "(not jk!)" */
+.bk-contact-aside {
+  font-family: var(--font-caveat), cursive;
+  font-size: 0.6em;
+  color: var(--bk-accent);
+  white-space: nowrap;
+}
+/* pinned to the top right of a word: takes no room in the line, so the heading wraps as if
+   it were not there */
+.bk-contact-pin {
+  white-space: nowrap;
+}
+.bk-contact-aside.is-pinned {
+  position: relative;
+  display: inline-block;
+  width: 0;
+}
+.bk-contact-aside.is-pinned > span {
+  position: absolute;
+  left: 0.1em;
+  bottom: 0.9em;
+  line-height: 1;
+  rotate: -6deg;
+  transform-origin: left bottom;
+}
+.bk-contact-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: min(12px, 2.3cqw);
+  width: 92%;
+}
+/* a small paper card per link */
+.bk-contact-link {
+  display: flex;
+  align-items: center;
+  gap: min(12px, 2.3cqw);
+  padding: min(14px, 2.6cqw) min(16px, 3cqw);
+  border-radius: min(10px, 1.9cqw);
+  background: #fbf9f3;
+  box-shadow:
+    0 0 0 0.5px rgb(50 38 16 / 0.12),
+    0 2px 4px rgb(50 38 16 / 0.1);
+  color: var(--bk-ink);
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.bk-contact-link:hover {
+  background: #fffdf7;
+  transform: translateY(-1px);
+}
+.bk-contact-icon,
+.bk-contact-arrow {
+  width: min(18px, 3.4cqw);
+  height: min(18px, 3.4cqw);
+  flex: none;
+  color: var(--bk-muted);
+}
+.bk-contact-name {
+  font-size: min(15px, 2.83cqw);
+  font-weight: 500;
+}
+.bk-contact-value {
+  margin-left: auto;
+  font-size: min(13px, 2.45cqw);
+  color: var(--bk-muted);
+}
+.bk-contact-link.is-pending {
+  cursor: default;
+}
+.bk-contact-link.is-pending:hover {
+  background: #fbf9f3;
+  transform: none;
+}
+.bk-contact-link:not(.is-pending):hover .bk-contact-arrow {
+  color: var(--bk-ink);
 }

@@ -22,16 +22,23 @@ import "./book.css";
 
 const S = book.settings;
 const SPREADS: BookSpread[] = book.spreads;
-/** Leaves: 0 is the cover, 1..n-1 are interior leaves. Spread k shows leaves 0..k-1 flipped. */
-const LEAVES = SPREADS.length;
-/** Spread index: 0 = closed cover, 1..LEAVES = open spreads. */
+/** Leaves: 0 is the cover, 1..n-2 are interior leaves and the last is the back board, which
+    can flip too, to close the book at the end. Stop k shows leaves 0..k-1 flipped. */
+const LEAVES = SPREADS.length + 1;
+/** Stops: 0 = closed on the cover, 1..SPREADS.length = open spreads, LAST = closed on the
+    back cover. */
 const LAST = LEAVES;
+const BACK = LAST;
+const BACK_ID = "back-cover";
+const stopId = (k: number) => (k === BACK ? BACK_ID : SPREADS[k - 1]?.id);
+const stopName = (k: number) =>
+  k === 0 ? book.ui.coverDot : k === BACK ? book.ui.backDot : (SPREADS[k - 1]?.name ?? "");
 const EPS = S.leafGapPx;
 const OVERSHOOT = S.settleDeg / 180;
 /** Board weights in units where an inner leaf is 1. Total includes the static back board. */
 const COVER_W = S.coverThickness;
-const LEAF_W = (i: number) => (i === 0 ? COVER_W : 1);
-const W_TOTAL = COVER_W * 2 + (LEAVES - 1);
+const LEAF_W = (i: number) => (i === 0 || i === LEAVES - 1 ? COVER_W : 1);
+const W_TOTAL = COVER_W * 2 + (LEAVES - 2);
 /** Block depth is written in steps of 1/SLAB_STEPS of a leaf unit (about 0.5px at desktop sizes). */
 const SLAB_STEPS = 16;
 
@@ -106,6 +113,7 @@ export const bookEnabled = () =>
 
 const hashToSpread = (hash: string): number => {
   const id = hash.replace(/^#/, "");
+  if (id === BACK_ID) return BACK;
   const idx = SPREADS.findIndex((s) => s.id === id);
   return idx === -1 ? 0 : idx + 1;
 };
@@ -228,14 +236,15 @@ export default function Book() {
     const P = prog.current.map((p) => clamp(p, 0, 1));
     let rMid = 0;
     let lMid = 0;
-    for (let i = 1; i < LEAVES; i++) {
+    for (let i = 1; i < LEAVES - 1; i++) {
       rMid += 1 - P[i];
       lMid += P[i];
     }
+    const back = P[LEAVES - 1]; // the back board, flipped only when the book closes at the end
     const rFront = COVER_W * (1 - P[0]); // cover board on top of the right block
-    const rTot = rFront + rMid + COVER_W; // plus the static back board at the rear
+    const rTot = rFront + rMid + COVER_W * (1 - back); // back board at the rear while it is there
     const lCover = COVER_W * P[0]; // flipped cover lies at the rear of the left block
-    const lTot = lMid + lCover;
+    const lTot = lMid + lCover + COVER_W * back;
     // Rescaling the edge faces makes the browser re-composite the whole 3D scene, so only
     // write when a block's depth has really changed (about half a pixel at desktop sizes).
     const q = (v: number) => Math.round(v * SLAB_STEPS) / SLAB_STEPS;
@@ -284,7 +293,8 @@ export default function Book() {
       // just above the page it falls on and just below the moving leaf, at every progress
       const castZ = (side === "r" ? LEAVES - i - 0.5 : i - 0.5) * EPS;
       cast.style.transform = `translateZ(${castZ}px) scaleX(${Math.abs(Math.cos(Math.PI * cl)).toFixed(4)})`;
-      const noPageBelow = i === 0 && side === "l";
+      // no page under the cover on the left, or under the back board on the right
+      const noPageBelow = (i === 0 && side === "l") || (i === LEAVES - 1 && side === "r");
       cast.style.opacity = noPageBelow ? "0" : (S.castMax * Math.sin(Math.PI * cl)).toFixed(3);
     }
   }, []);
@@ -379,9 +389,7 @@ export default function Book() {
     spreadRef.current = target;
     setSpread(target);
     const url =
-      target === 0
-        ? window.location.pathname + window.location.search
-        : `#${SPREADS[target - 1].id}`;
+      target === 0 ? window.location.pathname + window.location.search : `#${stopId(target)}`;
     window.history.replaceState(null, "", url);
     // one-time "pull" hint, the first time per session a case-study spread is reached
     if (S.tabHint && SPREADS[target - 1]?.type === "case-study") {
@@ -402,10 +410,12 @@ export default function Book() {
       setAnnounce(
         target === 0
           ? book.ui.liveCover
-          : book.ui.liveTemplate
-              .replace("{n}", String(target))
-              .replace("{total}", String(LAST))
-              .replace("{name}", SPREADS[target - 1].name),
+          : target === BACK
+            ? book.ui.liveBack
+            : book.ui.liveTemplate
+                .replace("{n}", String(target))
+                .replace("{total}", String(SPREADS.length))
+                .replace("{name}", SPREADS[target - 1].name),
       );
     }
   }, []);
@@ -759,13 +769,15 @@ export default function Book() {
 
 
   /* ---------- derived view state ---------- */
-  const stops = [
-    { id: "cover", name: book.ui.coverDot, target: 0 },
-    ...SPREADS.map((s, idx) => ({ id: s.id, name: s.name, target: idx + 1 })),
-  ];
+  const stops = Array.from({ length: LAST + 1 }, (_, k) => ({
+    id: k === 0 ? "cover" : stopId(k),
+    name: stopName(k),
+    target: k,
+  }));
   const frontActive = (i: number) => spread === i;
   const backActive = (i: number) => spread === i + 1;
-  const isOpen = spread > 0;
+  const isOpen = spread > 0 && spread < BACK;
+  const isBack = spread === BACK;
 
   const rootStyle = {
     "--bk-page": book.colors.page,
@@ -845,7 +857,7 @@ export default function Book() {
     [spread, settled, reduced, hintFor, openCaseStudy, router, tx],
   );
 
-  const comingSoon = SPREADS[LEAVES - 1] as Extract<BookSpread, { type: "coming-soon" }>;
+  const comingSoon = SPREADS[SPREADS.length - 1] as Extract<BookSpread, { type: "coming-soon" }>;
 
   const arrow = (
     <svg viewBox="0 0 72 40" fill="none" aria-hidden="true">
@@ -872,6 +884,7 @@ export default function Book() {
         "bk-root",
         reduced ? "bk-reduced" : "",
         isOpen ? "is-open" : "",
+        isBack ? "is-back" : "",
         S.stageGlow ? "has-glow" : "",
       ]
         .filter(Boolean)
@@ -952,18 +965,6 @@ export default function Book() {
                 </div>
               ))}
 
-              {/* static back board: right page of the last spread */}
-              <div
-                className="bk-board"
-                data-active={spread === LAST}
-                aria-hidden={spread !== LAST}
-                inert={spread !== LAST}
-              >
-                <div className="bk-content bk-fill">
-                  <div className="bk-dashed bk-board-ph">{comingSoon.backCover}</div>
-                </div>
-              </div>
-
               {Array.from({ length: LEAVES }, (_, i) => (
                 <div
                   key={i}
@@ -989,14 +990,55 @@ export default function Book() {
                         <p className="bk-cover-sub">{book.cover.subtitle}</p>
                       </div>
                     </Face>
+                  ) : i === LEAVES - 1 ? (
+                    // the back board: the inside is the last spread's right page
+                    <Face side="front" className="bk-board-face" active={frontActive(i)}>
+                      <div className="bk-content bk-fill">
+                        <div className="bk-dashed bk-board-ph">{comingSoon.backCover}</div>
+                      </div>
+                    </Face>
                   ) : (
                     <Face side="front" active={frontActive(i)} tint={tintOf(SPREADS[i - 1])}>
                       <RightPage spread={SPREADS[i - 1]} stop={i} />
                     </Face>
                   )}
-                  <Face side="back" active={backActive(i)} tint={tintOf(SPREADS[i])}>
-                    <LeftPage spread={SPREADS[i]} stop={i + 1} />
-                  </Face>
+                  {i === LEAVES - 1 ? (
+                    // the outside of the back board: shows when the book is closed at the end
+                    <Face
+                      side="back"
+                      className="bk-cover bk-back-cover"
+                      active={backActive(i)}
+                      button={book.ui.openBook}
+                      onClick={() => spreadRef.current === BACK && goTo(BACK - 1)}
+                    >
+                      <div
+                        className="bk-back-note"
+                        style={
+                          {
+                            "--back-note-size": `min(${book.cover.backNoteSizePx}px, ${(
+                              (book.cover.backNoteSizePx / 530) *
+                              100
+                            ).toFixed(3)}cqw)`,
+                          } as CSSProperties
+                        }
+                      >
+                        <svg viewBox="0 0 32 28" fill="none" aria-hidden="true">
+                          <path
+                            d="M16 25 C 9 19, 3 14, 4 8.5 C 5 4, 10 2.5, 13 5.5 C 14.5 7, 15.5 8.5, 16 10 C 16.8 7.6, 18.5 5, 21.5 4 C 26 2.8, 29.5 6.5, 28 11.5 C 26.5 16.5, 21 20.5, 16 25 Z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <p>{book.cover.backNote}</p>
+                      </div>
+                    </Face>
+                  ) : (
+                    <Face side="back" active={backActive(i)} tint={tintOf(SPREADS[i])}>
+                      <LeftPage spread={SPREADS[i]} stop={i + 1} />
+                    </Face>
+                  )}
                 </div>
               ))}
 
