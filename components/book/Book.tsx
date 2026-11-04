@@ -879,6 +879,7 @@ export default function Book() {
     "--bk-muted": book.colors.muted,
     "--bk-dash": book.colors.dash,
     "--bk-accent": `var(--accent, ${S.accentFallback})`,
+    "--bk-green": ID.settings.colors.accent, // the ID card's green, used for a few notes
     "--aspect": S.bookAspect,
     "--book-scale": S.bookScale,
     "--pop-w": S.videoWidthOfSpread,

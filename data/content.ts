@@ -2632,8 +2632,14 @@ type BookSpreadBase = {
 export type BookAboutSpread = BookSpreadBase & {
   type: "about";
   photoPlaceholder: string;
+  headline: string;
+  /** the word in the headline circled by hand, and its definition written beside it */
+  circled: { word: string; definition: string };
   intro: string;
-  cta: { label: string; href: string };
+  /** the path so far, left to right with arrows between; note is shown in brackets below */
+  journey: { title: string; note?: string }[];
+  /** the last line; the link turns the page to the first case study */
+  outro: { text: string; link: string; href: string };
 };
 
 /** A piece of text placed on a book page. Blocks stack from the page's top-left corner, in
@@ -3215,11 +3221,21 @@ export const book = {
       type: "about",
       id: "about",
       name: "About",
-      label: "ABOUT",
+      label: "About me",
       tab: "About",
       photoPlaceholder: "[Your photo]",
-      intro: "[Short intro, 2 to 3 lines]",
-      cta: { label: "About me", href: "/about" },
+      headline: "I'm a philomath.",
+      circled: { word: "philomath", definition: "a lover of learning" },
+      intro:
+        "I want to learn about anything and everything (and graciously fail at most things the first time).",
+      journey: [
+        { title: "Engineering", note: "Born tinkerer" },
+        { title: "Change Management", note: "How to adapt to people?" },
+        { title: "UX & HCI", note: "How to build for people?" },
+        { title: "Product Management", note: "How to build it successfully?" },
+        { title: "And next?" },
+      ],
+      outro: { text: "Need proof?", link: "Check out my projects.", href: "#veraai" },
     },
     // VeraAI: blue mixed into the warm paper reads grey, so it gets its own pastel blue
     bookCaseStudy("veraai", "VeraAI", "VERAAI", "VeraAI", {

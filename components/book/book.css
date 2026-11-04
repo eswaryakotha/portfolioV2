@@ -596,7 +596,7 @@
   font-family: var(--font-caveat), cursive;
   font-size: clamp(22px, calc(var(--bw) * 0.024), 34px);
   line-height: 1;
-  color: var(--bk-accent);
+  color: var(--bk-green);
   white-space: nowrap;
   transform: rotate(-6deg);
   opacity: 0;
@@ -688,8 +688,8 @@
   transition: background-color 0.2s, border-color 0.2s;
 }
 .bk-dot[aria-current="true"]::before {
-  background: var(--bk-accent);
-  border-color: var(--bk-accent);
+  background: var(--bk-green);
+  border-color: var(--bk-green);
 }
 .bk-tip {
   position: absolute;
@@ -1571,7 +1571,7 @@
   font-family: var(--font-caveat), cursive;
   font-size: min(16px, 3.02cqw);
   line-height: 1.1;
-  color: var(--bk-accent);
+  color: var(--bk-green);
 }
 
 /* ---------- contact (last spread, left page) ---------- */
@@ -1588,7 +1588,7 @@
 .bk-contact-aside {
   font-family: var(--font-caveat), cursive;
   font-size: 0.6em;
-  color: var(--bk-accent);
+  color: var(--bk-green);
   white-space: nowrap;
 }
 /* pinned to the top right of a word: takes no room in the line, so the heading wraps as if
@@ -1873,4 +1873,122 @@
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.18em;
+}
+
+/* About spread, right page: the intro sits a little above the middle of the page */
+.bk-about-right {
+  padding-bottom: 20cqw;
+  text-align: center;
+}
+.bk-about-right .bk-intro {
+  max-width: 34ch;
+  font-size: clamp(11px, 3cqw, 16px);
+}
+.bk-about-headline {
+  color: var(--bk-ink);
+  margin-top: 4cqw; /* room for the handwritten definition above */
+}
+/* the hand-drawn circle around the word, and its definition above to the right */
+.bk-circled {
+  position: relative;
+  display: inline-block;
+}
+.bk-circle {
+  position: absolute;
+  left: -0.34em;
+  top: -0.46em;
+  width: calc(100% + 0.68em);
+  height: calc(100% + 0.8em);
+  overflow: visible;
+  color: var(--bk-accent);
+  pointer-events: none;
+}
+.bk-definition {
+  position: absolute;
+  left: 80%;
+  bottom: 100%;
+  margin-bottom: 0.38em;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: row-reverse;
+  gap: 0.15em;
+  font-family: var(--font-caveat), cursive;
+  font-size: 0.62em;
+  line-height: 1;
+  color: var(--bk-accent);
+  white-space: nowrap;
+  rotate: -4deg;
+}
+.bk-definition svg {
+  width: 1.3em;
+  height: auto;
+  translate: 0 0.55em;
+}
+/* the path so far: steps in a row with arrows between, each with a bracketed note below */
+.bk-journey {
+  margin: 5cqw 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+}
+.bk-journey li {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.bk-journey li:first-child {
+  flex: 0.8 1 0;
+}
+.bk-journey-arrow {
+  flex: none;
+  padding: 0 0.6cqw;
+  font-size: min(13px, 2.5cqw);
+  line-height: 1.25;
+  color: var(--bk-muted);
+}
+.bk-journey-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6cqw;
+  flex: 1;
+  min-width: 0;
+}
+.bk-journey-title {
+  font-size: min(12px, 2.3cqw);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--bk-ink);
+  text-wrap: balance;
+}
+.bk-journey-note {
+  font-family: var(--font-caveat), cursive;
+  font-size: min(15px, 2.85cqw);
+  line-height: 1.05;
+  color: var(--bk-muted);
+  text-wrap: balance;
+}
+.bk-journey li.is-next .bk-journey-title {
+  color: var(--bk-accent);
+}
+.bk-about-outro {
+  margin: 6cqw 0 0;
+  font-size: min(15px, 2.85cqw);
+  line-height: 1.4;
+  color: #4b4535;
+}
+.bk-about-outro a {
+  color: var(--bk-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--bk-accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+.bk-about-outro a:hover {
+  color: var(--bk-accent);
 }

@@ -122,6 +122,46 @@ function ContactHeading({ spread }: { spread: BookComingSoonSpread }) {
   );
 }
 
+/** The About headline, with one word circled by hand and its definition written beside it. */
+function AboutHeadline({ spread }: { spread: Extract<BookSpread, { type: "about" }> }) {
+  const { word, definition } = spread.circled;
+  const at = spread.headline.indexOf(word);
+  const plain = (
+    <h2 className="bk-block bk-about-headline" style={{ fontFamily: FONTS.advercase, fontSize: scaled(30) }}>
+      {spread.headline}
+    </h2>
+  );
+  if (at < 0) return plain;
+  return (
+    <h2 className="bk-block bk-about-headline" style={{ fontFamily: FONTS.advercase, fontSize: scaled(30) }}>
+      {spread.headline.slice(0, at)}
+      <span className="bk-circled">
+        {word}
+        <svg className="bk-circle" viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true">
+          <path
+            d="M70 6 C 40 3, 8 10, 5 25 C 2 41, 40 47, 66 45 C 96 43, 117 36, 115 22 C 113 9, 88 4, 58 7"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <span className="bk-definition">
+          <span className="sr-only"> (</span>
+          {definition}
+          <span className="sr-only">)</span>
+          <svg viewBox="0 0 30 24" fill="none" aria-hidden="true">
+            <path d="M26 3 C 18 4, 10 9, 6 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M3 13 L6 20 L12 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </span>
+      {spread.headline.slice(at + word.length)}
+    </h2>
+  );
+}
+
 /** The part of a one-line title that runs past the fold. The left page clips the title at
     the fold, so the right page draws the same title in the same place (shifted one page to
     the left) and shows the rest of it. Hidden from screen readers: the left copy is read. */
@@ -231,12 +271,33 @@ export function RightPage({ spread, stop }: { spread: BookSpread; stop: number }
   switch (spread.type) {
     case "about":
       return (
-        <div className="bk-content bk-center bk-left-align">
+        <div
+          className="bk-content bk-center bk-about-right"
+          // the ID card's green, instead of the site's orange, for this page's accents
+          style={{ "--bk-accent": book.aboutSpread.settings.colors.accent } as CSSProperties}
+        >
           <p className="bk-label">{spread.label}</p>
+          <AboutHeadline spread={spread} />
           <p className="bk-intro">{spread.intro}</p>
-          <Link href={spread.cta.href} className="bk-btn">
-            {spread.cta.label}
-          </Link>
+          <ol className="bk-journey">
+            {spread.journey.map((j, i) => (
+              <li key={j.title} className={i === spread.journey.length - 1 ? "is-next" : undefined}>
+                {i > 0 ? (
+                  <span className="bk-journey-arrow" aria-hidden="true">
+                    →
+                  </span>
+                ) : null}
+                <span className="bk-journey-step">
+                  <span className="bk-journey-title">{j.title}</span>
+                  {j.note ? <span className="bk-journey-note">({j.note})</span> : null}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="bk-about-outro">
+            {spread.outro.text}{" "}
+            <a href={spread.outro.href}>{spread.outro.link}</a>
+          </p>
         </div>
       );
     case "case-study":
@@ -292,8 +353,22 @@ export function BookFallback() {
                 {book.aboutSpread.card.name}, {book.aboutSpread.card.role},{" "}
                 {book.aboutSpread.card.company}
               </p>
+              <h2>{s.headline}</h2>
+              <p>
+                {s.circled.word}: {s.circled.definition}
+              </p>
               <p>{s.intro}</p>
-              <Link href={s.cta.href}>{s.cta.label}</Link>
+              <ol>
+                {s.journey.map((j) => (
+                  <li key={j.title}>
+                    {j.title}
+                    {j.note ? ` (${j.note})` : ""}
+                  </li>
+                ))}
+              </ol>
+              <p>
+                {s.outro.text} <Link href="/work">{s.outro.link}</Link>
+              </p>
             </>
           )}
           {s.type === "case-study" && (
