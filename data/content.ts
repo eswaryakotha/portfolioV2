@@ -2734,7 +2734,6 @@ export type BookComingSoonSpread = BookSpreadBase & {
   /** pin the aside above the end of this word in the heading (else it follows the heading) */
   headingAsideAfter?: string;
   links: BookContactLink[];
-  backCover: string;
 };
 
 export type BookSpread =
@@ -2742,6 +2741,81 @@ export type BookSpread =
   | BookCaseStudySpread
   | BookExperimentsSpread
   | BookComingSoonSpread;
+
+/** The live back-cover scene on the last spread's right page (BackCoverScene). */
+export type SkyCondition = "clear" | "partly-cloudy" | "cloudy" | "rain";
+export type BackCoverSettings = {
+  sketch: {
+    src: string; // empty shows a dashed placeholder
+    width: number; // the file's real size, in px
+    height: number;
+    alt: string;
+    placeholder: string;
+  };
+  /** the sketch's background, sampled from its corners; the page takes it when it is
+      within 8 levels per channel of the board colour, so the image has no visible edge */
+  sketchBg: string;
+  chalk: string; // stroke colour of the sky, matched to the sketch's lines
+  location: { name: string; landmark: string; lat: number; lon: number };
+  refreshMinutes: number;
+  rainCount: number;
+  starCount: number;
+  credit: { text: string; href: string };
+  /** handwritten line at the top: {word} is filled in from the sky */
+  caption: {
+    template: string;
+    words: Record<"sunny" | "rainy" | "cloudy" | "clear", string>;
+  };
+  /** phrases for the scene's accessible name */
+  label: {
+    template: string; // {landmark}, {name} and {sky} are filled in
+    sky: Record<"clear-day" | "clear-night" | "partly-cloudy" | "cloudy" | "rain", string>;
+  };
+};
+
+/** The ID card in its desk holder (IdCardHolder). Content: */
+export type IdCardData = {
+  company: string;
+  name: string;
+  role: string;
+  idNumber: string;
+  photo: string; // path under /public; empty shows the accent panel with a placeholder
+  photoAlt: string;
+  photoPlaceholder: string;
+  ui: {
+    takeOut: string; // the card's button while it sits in the holder
+    putBack: string; // the card's button while it is out
+    srLine: string; // one visually hidden line; {name}, {role}, {company} are filled in
+    hint: string; // handwritten note shown once per session
+    caption: string; // small line under the slot
+  };
+};
+/** How the ID card and holder are sized and move. Shares are of the card height unless noted. */
+export type IdCardSettings = {
+  cardAspect: number; // width to height
+  cardHeight: number; // share of the page height
+  seat: number; // share of the card height inside the holder's groove
+  restLean: number; // deg the card leans back at rest
+  liftUp: number; // card heights the card rises when it comes out
+  outScale: number;
+  outZ: number; // px toward the viewer when out
+  headerClearance: number; // px kept below the site header when out
+  cardThickness: number; // px (one edge layer per px)
+  tiltMax: number; // deg of pointer tilt on each axis when out
+  sheen: boolean;
+  hint: boolean;
+  autoShowMs: number; // when the spread opens, the card comes out by itself for this long (0: off)
+  liftMs: number;
+  returnMs: number;
+  reducedMs: number; // lift and return with reduced motion: a plain slide
+  colors: {
+    card: string; // the card's paper
+    edge: string; // its thickness, seen at the edges as it tilts
+    ink: string; // text, frame, arrow and barcode
+    accent: string; // the photo frame's fill and the role pill
+    accentInk: string; // text on the accent
+  };
+};
 
 type BookCaseStudyExtras = Pick<
   BookCaseStudySpread,
@@ -3027,6 +3101,8 @@ export const book = {
     tabLabel: "Open the {name} case study",
     tabText: "View case study",
     tabHint: "pull",
+    /** handwritten note printed above the top right of each case-study video */
+    videoNote: "(t:25s)",
     jumpPrefix: "Go to",
     skipHeading: "Skip to case studies",
     liveTemplate: "Spread {n} of {total}: {name}",
@@ -3048,6 +3124,84 @@ export const book = {
     // small handwritten note in the middle of the back cover, under a little heart
     backNote: "Made with tired eyes and a restless brain.",
     backNoteSizePx: 17,
+  },
+  /** Right page of the last spread: a chalk sketch of Vidhana Soudha under a sky that
+      follows the current weather in Bengaluru (from /api/sky). */
+  backCover: {
+    sketch: {
+      src: "/back-cover/vidhana-soudha.jpeg",
+      width: 2752,
+      height: 1536,
+      alt: "Line sketch of Vidhana Soudha, Bengaluru",
+      placeholder: "[Vidhana Soudha sketch: /public/back-cover/]",
+    },
+    sketchBg: "#292929",
+    chalk: "#EFECE4",
+    location: { name: "Bengaluru", landmark: "Vidhana Soudha", lat: 12.9797, lon: 77.5907 },
+    refreshMinutes: 10,
+    rainCount: 30,
+    starCount: 14,
+    credit: { text: "Weather data by Open-Meteo.com", href: "https://open-meteo.com/" },
+    // sunny: clear or partly cloudy by day; clear: the same at night
+    caption: {
+      template: "Looks like Bangalore is {word}",
+      words: { sunny: "sunny", rainy: "rainy", cloudy: "cloudy", clear: "clear" },
+    },
+    label: {
+      template: "Line sketch of {landmark}, {name}, under {sky}",
+      sky: {
+        "clear-day": "a clear sky in the day",
+        "clear-night": "a clear sky at night",
+        "partly-cloudy": "a partly cloudy sky",
+        cloudy: "a cloudy sky",
+        rain: "a rainy sky",
+      },
+    },
+  } satisfies BackCoverSettings as BackCoverSettings,
+  /** Left page of the About spread: an ID card standing in a desk holder. */
+  aboutSpread: {
+    card: {
+      company: "One Good Offer Away Inc.",
+      name: "Eswarya Kotha",
+      role: "Product Manager & AI Builder",
+      idNumber: "ID 001-HIRE-ME",
+      photo: "/about/me.png", // a cut-out on a transparent background
+      photoAlt: "Portrait of Eswarya Kotha",
+      photoPlaceholder: "[Your photo]",
+      ui: {
+        takeOut: "Take the ID card out of the holder",
+        putBack: "Put the ID card back",
+        srLine: "ID card: {name}, {role}, {company}",
+        hint: "pick me up",
+        caption: "Meet your potential hire",
+      },
+    } satisfies IdCardData as IdCardData,
+    settings: {
+      cardAspect: 0.6,
+      cardHeight: 0.5,
+      seat: 0.1,
+      restLean: 6,
+      liftUp: 0.3, // 0.2 left the scaled card's bottom behind the lip; 0.3 clears it
+      outScale: 1.2,
+      outZ: 60,
+      headerClearance: 8,
+      cardThickness: 3,
+      tiltMax: 10,
+      sheen: true,
+      hint: true,
+      autoShowMs: 20000,
+      liftMs: 900,
+      returnMs: 600,
+      reducedMs: 150,
+      // off-white paper with a deep green frame and pill
+      colors: {
+        card: "#F3F1EC",
+        edge: "#D2CCBF",
+        ink: "#1C1C1A",
+        accent: "#1F5C45",
+        accentInk: "#F3F1EC",
+      },
+    } satisfies IdCardSettings as IdCardSettings,
   },
   skipLinks: [
     { label: "About", href: "/about" },
@@ -3232,7 +3386,6 @@ export const book = {
           href: "", // TODO: paste the resume link
         },
       ],
-      backCover: "[Back cover]",
     },
   ] satisfies BookSpread[],
 };

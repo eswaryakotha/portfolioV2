@@ -1,5 +1,6 @@
 "use client";
 
+import { type CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowUpRight, FileText, Mail } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ import { richText } from "./richText";
 import StickyNote from "./StickyNote";
 import Polaroid from "./Polaroid";
 import { PlaygroundLeft, PlaygroundRight } from "./Playground";
+import AboutIdCard from "./AboutIdCard";
 
 const FONTS: Record<NonNullable<BookTextBlock["font"]>, string> = {
   advercase: "var(--font-advercase), Georgia, serif",
@@ -157,11 +159,8 @@ function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
 export function LeftPage({ spread, stop }: { spread: BookSpread; stop: number }) {
   switch (spread.type) {
     case "about":
-      return (
-        <div className="bk-content bk-fill">
-          <div className="bk-dashed bk-photo">{spread.photoPlaceholder}</div>
-        </div>
-      );
+      // an ID card standing in a desk holder (see AboutIdCard)
+      return <AboutIdCard stop={stop} />;
     case "case-study":
       return (
         <div className="bk-content">
@@ -245,6 +244,16 @@ export function RightPage({ spread, stop }: { spread: BookSpread; stop: number }
       return (
         <div className="bk-content bk-center">
           <VideoHalf spread={spread} stop={stop} side="r" />
+          {book.ui.videoNote ? (
+            // printed on the page, so it stays put when the video card lifts
+            <div
+              className="bk-vnote-box"
+              aria-hidden="true"
+              style={{ "--vnote-ink": spread.accent } as CSSProperties}
+            >
+              <span className="bk-vnote">{book.ui.videoNote}</span>
+            </div>
+          ) : null}
           <KeyImpact spread={spread} side="r" />
           <FoldCrossingTitle spread={spread} />
           <StickyNote spread={spread} />
@@ -279,6 +288,10 @@ export function BookFallback() {
           <p className="bk-fb-label">{s.label}</p>
           {s.type === "about" && (
             <>
+              <p>
+                {book.aboutSpread.card.name}, {book.aboutSpread.card.role},{" "}
+                {book.aboutSpread.card.company}
+              </p>
               <p>{s.intro}</p>
               <Link href={s.cta.href}>{s.cta.label}</Link>
             </>

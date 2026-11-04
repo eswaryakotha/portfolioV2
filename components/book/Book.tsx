@@ -18,6 +18,9 @@ import { BookPageCtx, type BookPageApi } from "./bookCtx";
 import { book, type BookSpread } from "@/data/content";
 import { LeftPage, RightPage } from "./BookPages";
 import SpreadCard from "./SpreadCard";
+import BackCoverScene, { BACK_COVER_BG } from "./BackCoverScene";
+import IdCardHolder from "@/components/idcard/IdCardHolder";
+import { useIdCard } from "@/components/idcard/useIdCard";
 import "./book.css";
 
 const S = book.settings;
@@ -34,6 +37,13 @@ const stopId = (k: number) => (k === BACK ? BACK_ID : SPREADS[k - 1]?.id);
 const stopName = (k: number) =>
   k === 0 ? book.ui.coverDot : k === BACK ? book.ui.backDot : (SPREADS[k - 1]?.name ?? "");
 const EPS = S.leafGapPx;
+/** The About spread: its left page (the back of leaf ABOUT_STOP - 1) holds the ID card. */
+const ABOUT_STOP = SPREADS.findIndex((s) => s.type === "about") + 1; // 0 if there is none
+const ABOUT_LEAF = ABOUT_STOP - 1;
+const ID = book.aboutSpread;
+const ID_CARD_ID = "bk-id-card";
+/** The ID card's overlay sits this far above the pages (see .idc-layer in book.css). */
+const ID_LAYER_Z = (SPREADS.length + 1 + 5) * S.leafGapPx;
 const OVERSHOOT = S.settleDeg / 180;
 /** Board weights in units where an inner leaf is 1. Total includes the static back board. */
 const COVER_W = S.coverThickness;
@@ -105,6 +115,7 @@ type Drag = {
   p0: number;
   started: boolean;
   samples: { t: number; x: number }[];
+  raw: number; // where the pointer would have put the leaf (it may be held back, see below)
 };
 
 /** With mobileBook off, the book only runs at desktop widths; below that the list is shown. */
@@ -227,6 +238,21 @@ export default function Book() {
   const tickRef = useRef<FrameRequestCallback>(() => {});
   const drag = useRef<Drag | null>(null);
   const suppressClick = useRef(false);
+  const pendingTurn = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  /* the ID card on the About spread's left page */
+  const desktop = useMedia(S.desktopOnlyQuery, true);
+  const idCard = useIdCard({
+    settings: ID.settings,
+    reduced,
+    active: ABOUT_STOP > 0 && spread === ABOUT_STOP && (S.mobileBook || desktop),
+    scopeRef: rootRef,
+    perspectiveOfBox: 2 * S.perspectiveOfWidth, // the book's perspective, in page widths
+  });
+  const idCardRef = useRef(idCard);
+  useEffect(() => {
+    idCardRef.current = idCard;
+  }, [idCard]);
 
   /* ---------- the two solid blocks: depth follows how many leaves each side holds ---------- */
   const applySlabs = useCallback((exact = false) => {
@@ -420,13 +446,10 @@ export default function Book() {
     }
   }, []);
 
-  const goTo = useCallback(
-    (raw: number, instant = false) => {
-      const target = clamp(raw, 0, LAST);
-      const from = spreadRef.current;
-      if (target === from && !instant) return;
-      commit(target);
-      if (instant || reducedRef.current) {
+  /** Turns the leaves to show `target`. `delay` holds back every flip (ms). */
+  const runFlips = useCallback(
+    (target: number, from: number, delay = 0) => {
+      if (reducedRef.current) {
         for (let i = 0; i < LEAVES; i++) snap(i, i < target ? 1 : 0);
         return;
       }
@@ -441,10 +464,51 @@ export default function Book() {
       changed.forEach((i, n) => {
         const want = i < target ? 1 : 0;
         if (n < split) snap(i, want);
-        else flipTo(i, want, { delay: (n - split) * S.jumpStaggerMs });
+        else flipTo(i, want, { delay: delay + (n - split) * S.jumpStaggerMs });
       });
     },
-    [commit, flipTo, snap],
+    [flipTo, snap],
+  );
+
+  const goTo = useCallback(
+    (raw: number, instant = false) => {
+      const target = clamp(raw, 0, LAST);
+      const from = spreadRef.current;
+      if (target === from && !instant) return;
+      clearTimeout(pendingTurn.current);
+      commit(target);
+      if (instant) {
+        idCardRef.current.reset();
+        for (let i = 0; i < LEAVES; i++) snap(i, i < target ? 1 : 0);
+        return;
+      }
+      // The ID card goes back into its holder first. A turn that flips the About page itself,
+      // or covers it at once (a long jump snaps the far leaves), waits until the card is
+      // seated. Other turns start together with the return, held back just enough (at most
+      // 200ms) that the card is seated before the turning leaf reaches the left page, which
+      // happens halfway through the swing.
+      const wait = idCardRef.current.beginReturn();
+      if (wait > 0) {
+        let moves = 0;
+        let flipsAbout = false;
+        for (let i = 0; i < LEAVES; i++) {
+          const cur = anims.current.get(i)?.final ?? prog.current[i];
+          if (cur !== (i < target ? 1 : 0)) {
+            moves++;
+            if (i === ABOUT_LEAF) flipsAbout = true;
+          }
+        }
+        if (flipsAbout || reducedRef.current || moves > S.maxVisibleJumpFlips) {
+          // + two frames: the card's last frame lands on the next animation frame after `wait`
+          pendingTurn.current = setTimeout(() => runFlips(spreadRef.current, from), wait + 40);
+          return;
+        }
+        runFlips(target, from, clamp(wait - S.flipMs / 2, 0, 200));
+        return;
+      }
+      runFlips(target, from);
+    },
+    [commit, runFlips, snap],
   );
 
   /* ---------- the URL hash is the source of truth ----------
@@ -570,6 +634,12 @@ export default function Book() {
     const update = () => {
       // bookThickness is a share of the cover height, which is the book's height
       thickPx.current = el.offsetHeight * S.bookThickness;
+      // the ID card overlay floats ID_LAYER_Z above the page: scale it back so it projects at
+      // exactly the page's size (the camera is over the spine)
+      const persp = el.offsetWidth * S.perspectiveOfWidth;
+      if (persp > ID_LAYER_Z) {
+        root.style.setProperty("--idc-comp", ((persp - ID_LAYER_Z) / persp).toFixed(5));
+      }
       for (let i = 0; i < LEAVES; i++) applyLeaf(i);
       applySlabs(true);
       if (!S.mobileBook || mql.matches) {
@@ -700,7 +770,7 @@ export default function Book() {
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedRef.current) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    if ((e.target as Element).closest("a, button")) return;
+    if ((e.target as Element).closest("a, button, [data-nodrag]")) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const onRight = e.clientX > rect.left + rect.width / 2;
     const leaf = onRight ? spreadRef.current : spreadRef.current - 1;
@@ -713,6 +783,7 @@ export default function Book() {
       p0: prog.current[leaf] >= 0.5 ? 1 : 0,
       started: false,
       samples: [{ t: e.timeStamp, x: e.clientX }],
+      raw: prog.current[leaf] >= 0.5 ? 1 : 0,
     };
   };
 
@@ -738,9 +809,17 @@ export default function Book() {
         /* capture is best effort */
       }
       e.currentTarget.classList.add("is-dragging");
+      idCardRef.current.beginReturn(); // the ID card goes back as the page starts to turn
     }
     const span = e.currentTarget.offsetWidth * S.dragSpanOfBook;
-    prog.current[d.leaf] = clamp(d.p0 - dx / span, 0, 1);
+    let p = clamp(d.p0 - dx / span, 0, 1);
+    d.raw = p;
+    if (idCardRef.current.remaining() > 0) {
+      // until the card is seated: the About page itself stays down, and a leaf turning toward
+      // it stops short of the fold
+      p = d.leaf === ABOUT_LEAF ? d.p0 : d.p0 === 0 ? Math.min(p, 0.45) : Math.max(p, 0.55);
+    }
+    prog.current[d.leaf] = p;
     applyLeaf(d.leaf);
     applySlabs();
     d.samples.push({ t: e.timeStamp, x: e.clientX });
@@ -755,7 +834,8 @@ export default function Book() {
     e.currentTarget.classList.remove("is-dragging");
     suppressClick.current = true;
     setTimeout(() => (suppressClick.current = false), 0);
-    const p = prog.current[d.leaf];
+    // decide from the drag the user made, even if the leaf was held back for the ID card
+    const p = d.raw;
     const first = d.samples[0];
     const last = d.samples[d.samples.length - 1];
     const v = last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0;
@@ -764,7 +844,9 @@ export default function Book() {
     const finish = !cancelled && (moved > S.dragCommit || fast);
     const to = finish ? 1 - d.p0 : d.p0;
     if (finish) commit(d.p0 === 0 ? d.leaf + 1 : d.leaf);
-    flipTo(d.leaf, to, { settle: finish });
+    // a turn released while the ID card is still going back waits until it is seated
+    const wait = finish ? idCardRef.current.remaining() : 0;
+    flipTo(d.leaf, to, { settle: finish, delay: wait > 0 ? wait + 40 : 0 });
   };
 
 
@@ -789,6 +871,7 @@ export default function Book() {
     "--bk-cover-text": book.colors.coverText,
     "--bk-edge": book.colors.edge,
     "--bk-cover-edge": book.colors.coverEdge,
+    "--backcover-bg": BACK_COVER_BG,
     "--bk-edge-line": book.colors.edgeLine,
     "--bk-hinge": book.colors.hinge,
     "--bk-note": book.colors.note,
@@ -853,11 +936,11 @@ export default function Book() {
         if (r) tabs.current.set(stop, r);
         else tabs.current.delete(stop);
       },
+      idCard,
+      idCardId: ID_CARD_ID,
     }),
-    [spread, settled, reduced, hintFor, openCaseStudy, router, tx],
+    [spread, settled, reduced, hintFor, openCaseStudy, router, tx, idCard],
   );
-
-  const comingSoon = SPREADS[SPREADS.length - 1] as Extract<BookSpread, { type: "coming-soon" }>;
 
   const arrow = (
     <svg viewBox="0 0 72 40" fill="none" aria-hidden="true">
@@ -991,11 +1074,10 @@ export default function Book() {
                       </div>
                     </Face>
                   ) : i === LEAVES - 1 ? (
-                    // the back board: the inside is the last spread's right page
+                    // the back board: the inside is the last spread's right page, a chalk
+                    // sketch of Vidhana Soudha under the current Bengaluru sky
                     <Face side="front" className="bk-board-face" active={frontActive(i)}>
-                      <div className="bk-content bk-fill">
-                        <div className="bk-dashed bk-board-ph">{comingSoon.backCover}</div>
-                      </div>
+                      <BackCoverScene stop={i} />
                     </Face>
                   ) : (
                     <Face side="front" active={frontActive(i)} tint={tintOf(SPREADS[i - 1])}>
@@ -1061,6 +1143,19 @@ export default function Book() {
                 sp.type === "case-study" ? (
                   <SpreadCard key={sp.id} spread={sp} stop={idx + 1} />
                 ) : null,
+              )}
+              {/* the ID card while it is out of its holder: over the About spread's left page,
+                  outside the page so nothing clips it (see IdCardHolder) */}
+              {ABOUT_STOP > 0 && (
+                <div className="idc-layer" inert={spread !== ABOUT_STOP}>
+                  <IdCardHolder
+                    data={ID.card}
+                    settings={ID.settings}
+                    ctl={idCard}
+                    layer="overlay"
+                    cardId={ID_CARD_ID}
+                  />
+                </div>
               )}
               <div className="bk-note" aria-hidden="true">
                 <span>{book.ui.openNote}</span>

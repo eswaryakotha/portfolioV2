@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import type { IdCardCtl } from "@/components/idcard/useIdCard";
 
 /** What the page components inside the book need from the book. */
 export type BookPageApi = {
@@ -12,6 +13,9 @@ export type BookPageApi = {
   isBusy: () => boolean;
   /** each case-study page registers how to finish and how to undo its tab pull */
   registerTab: (stop: number, r: { finish: (ms: number) => void; reset: () => void } | null) => void;
+  /** the ID card on the About spread (its overlay is drawn by the book) */
+  idCard: IdCardCtl;
+  idCardId: string;
 };
 
 export const BookPageCtx = createContext<BookPageApi | null>(null);
