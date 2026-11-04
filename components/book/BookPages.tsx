@@ -345,7 +345,7 @@ export function BookFallback() {
         <p>{book.cover.subtitle}</p>
       </header>
       {spreads.map((s) => (
-        <section key={s.id} aria-label={s.name}>
+        <section key={s.id} id={s.id} aria-label={s.name}>
           <p className="bk-fb-label">{s.label}</p>
           {s.type === "about" && (
             <>

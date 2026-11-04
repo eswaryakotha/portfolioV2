@@ -11,6 +11,8 @@ export type BookPageApi = {
   openCaseStudy: (stop: number) => void;
   prefetch: (href: string) => void;
   isBusy: () => boolean;
+  /** arriving back from a case study: the video card stays down until the book settles */
+  arriving: boolean;
   /** each case-study page registers how to finish and how to undo its tab pull */
   registerTab: (stop: number, r: { finish: (ms: number) => void; reset: () => void } | null) => void;
   /** the ID card on the About spread (its overlay is drawn by the book) */

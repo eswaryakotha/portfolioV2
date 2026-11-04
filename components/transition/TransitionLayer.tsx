@@ -1,9 +1,14 @@
 "use client";
 
-/* Persistent layer for the book to case study transition. It lives in the root layout so it
-   survives the navigation: the book hands it the video's rect, it flies a copy of the video
-   (or the placeholder) to the hero of the case study page that registers itself, then hands
-   over and removes itself. If anything goes wrong it still navigates and never stays on screen. */
+/* Persistent layer for the book to case study transition, both ways. It lives in the root
+   layout so it survives the navigation.
+   Forward (run): the book hands it the video's rect, it flies a copy of the video (or the
+   placeholder) to the hero of the case study page that registers itself, then hands over.
+   Reverse (runReverse, "Back to Book"): it flies a copy of the hero back into the video slot of
+   that project's spread. The pending hand over is kept here and in sessionStorage, so the book
+   can read it on its very first render and arrive already open, flat and receded; the book
+   then tells the layer where the slot is (bookReady), takes the video over and settles.
+   Either way, if anything goes wrong it still navigates and never stays on screen. */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -11,6 +16,32 @@ import { book } from "@/data/content";
 import "./transition.css";
 
 const T = book.settings.transition;
+const R = T.reverse;
+const ARRIVAL_KEY = "bk-arrival";
+
+/** A hand over back into the book, waiting for the book to arrive. fly: false arrives
+    without a flying video (the book just fades and grows in). */
+export type Arrival = {
+  direction: "reverse";
+  slug: string;
+  fly: boolean;
+  reduced: boolean;
+  startedAt: number;
+  rect?: { left: number; top: number; width: number; height: number };
+  radius?: number;
+  src?: string;
+  time?: number;
+};
+
+/** What the book gives the layer once it is open, receded and measurable. */
+export type BookArrivalHandle = {
+  /** the slot's box, on the receded book */
+  measureSlot: () => { rect: DOMRect; radius: number } | null;
+  /** show the real slot (video at `time`, or its placeholder) under the overlay */
+  handover: (time: number | null) => void;
+  /** grow back to rest, chrome in, input back; resolves when done */
+  settle: () => Promise<void>;
+};
 
 export type TxSource = {
   href: string;
@@ -32,9 +63,21 @@ export type TxSource = {
 
 type TxApi = {
   run: (src: TxSource) => boolean;
+  /** "Back to Book" from a case study; false if a transition is already running */
+  runReverse: (opts: { href: string; slug: string; placeholder: string }) => boolean;
   isBusy: () => boolean;
   registerHero: (el: HTMLElement) => void;
   unregisterHero: (el: HTMLElement) => void;
+  /** the page has no hero (for example a password page): a waiting flight lets go at once */
+  noHero: () => void;
+  /** the pending hand over back into the book, if any (read on the book's first render) */
+  readArrival: () => Arrival | null;
+  /** the path shown before the current one (to tell an arrival from a case study) */
+  previousPath: () => string | null;
+  /** the book is open, receded and measurable */
+  bookReady: (h: BookArrivalHandle) => void;
+  /** the arrival is over: forget it */
+  endArrival: () => void;
 };
 
 const TxContext = createContext<TxApi | null>(null);
@@ -122,12 +165,29 @@ function buildOverlay(m: ReturnType<TxSource["measure"]>) {
   return { root, shadow, video };
 }
 
+function readStoredArrival(): Arrival | null {
+  try {
+    const raw = window.sessionStorage.getItem(ARRIVAL_KEY);
+    if (!raw) return null;
+    const a = JSON.parse(raw) as Arrival;
+    if (a?.direction !== "reverse" || typeof a.slug !== "string") return null;
+    return a;
+  } catch {
+    return null;
+  }
+}
+
 export default function TransitionLayer({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const busy = useRef(false);
+  const arrival = useRef<Arrival | null>(null);
+  const bookWaiter = useRef<((h: BookArrivalHandle) => void) | null>(null);
+  const shownPath = useRef<string | null>(null);
+  const prevPath = useRef<string | null>(null);
   const hero = useRef<HTMLElement | null>(null);
   const heroWaiters = useRef<Array<(el: HTMLElement) => void>>([]);
+  const noHeroWaiters = useRef<Array<() => void>>([]);
   const finishRef = useRef<() => void>(() => {});
   const target = useRef<string | null>(null);
 
@@ -138,6 +198,9 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
   const unregisterHero = useCallback((el: HTMLElement) => {
     if (hero.current === el) hero.current = null;
   }, []);
+  const noHero = useCallback(() => {
+    noHeroWaiters.current.splice(0).forEach((f) => f());
+  }, []);
 
   const waitForHero = useCallback(
     (ms: number) =>
@@ -147,6 +210,10 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
         heroWaiters.current.push((el) => {
           clearTimeout(t);
           resolve(el);
+        });
+        noHeroWaiters.current.push(() => {
+          clearTimeout(t);
+          resolve(null);
         });
       }),
     [],
@@ -178,6 +245,7 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
         anims.forEach((a) => a.cancel());
         html.classList.remove("tx-pending", "tx-hero-hidden");
         heroWaiters.current = [];
+        noHeroWaiters.current = [];
         target.current = null;
         busy.current = false;
         finishRef.current = () => {};
@@ -359,6 +427,272 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
     [router, waitForHero],
   );
 
+  const endArrival = useCallback(() => {
+    arrival.current = null;
+    try {
+      window.sessionStorage.removeItem(ARRIVAL_KEY);
+    } catch {
+      /* storage blocked */
+    }
+  }, []);
+
+  const readArrival = useCallback(() => {
+    const a = arrival.current ?? readStoredArrival();
+    if (!a) return null;
+    if (Date.now() - a.startedAt > R.maxAgeMs) {
+      endArrival();
+      return null;
+    }
+    return a;
+  }, [endArrival]);
+
+  const bookReady = useCallback((h: BookArrivalHandle) => {
+    const w = bookWaiter.current;
+    bookWaiter.current = null;
+    if (w) w(h);
+    else void h.settle(); // nothing is flying: just come to rest
+  }, []);
+
+  const runReverse = useCallback(
+    ({ href, slug, placeholder }: { href: string; slug: string; placeholder: string }) => {
+      if (busy.current) return false;
+      busy.current = true;
+      const html = document.documentElement;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      // the case study's hero on screen (pages kept alive in the background are display: none)
+      const heroEl =
+        [...document.querySelectorAll<HTMLElement>("[data-hero-media]")].find(
+          (el) => el.getClientRects().length > 0,
+        ) ?? null;
+      const anims: Animation[] = [];
+      let overlay: ReturnType<typeof buildOverlay> | null = null;
+      let pushed = false;
+      let done = false;
+
+      const store = (a: Arrival) => {
+        arrival.current = a;
+        try {
+          window.sessionStorage.setItem(ARRIVAL_KEY, JSON.stringify(a));
+        } catch {
+          /* storage blocked: the ref above still carries it */
+        }
+      };
+      const push = () => {
+        if (pushed) return;
+        pushed = true;
+        target.current = "/";
+        router.push(href);
+        window.scrollTo(0, 0);
+      };
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(hard);
+        bookWaiter.current = null;
+        overlay?.root.remove();
+        anims.forEach((a) => a.cancel()); // the case study (kept alive, hidden) looks normal again
+        if (heroEl) heroEl.style.visibility = "";
+        html.classList.remove("tx-lock");
+        target.current = null;
+        busy.current = false;
+        finishRef.current = () => {};
+      };
+      const hard = setTimeout(() => {
+        if (!pushed) push();
+        endArrival();
+        finish();
+      }, T.hardTimeoutMs);
+      finishRef.current = finish;
+
+      /** fade the page out from the bottom up (everything but the hero and the header) */
+      const fadePage = (skip: Element | null) => {
+        const root = (heroEl?.parentElement ?? document.querySelector("main > *")) as HTMLElement | null;
+        const els = [
+          ...(root ? [...root.children].filter((c) => c !== skip) : []),
+          ...[document.querySelector("body > footer")].filter(Boolean),
+        ].reverse() as HTMLElement[];
+        const list = els.map((el, i) =>
+          el.animate(
+            [
+              { opacity: 1, transform: "none" },
+              { opacity: 0, transform: `translateY(${R.contentSlidePx}px)` },
+            ],
+            {
+              duration: R.contentFade,
+              delay: i * R.contentStagger,
+              easing: "ease-in",
+              fill: "forwards",
+            },
+          ),
+        );
+        anims.push(...list);
+        return Promise.all(list.map((a) => a.finished)).then(() => undefined);
+      };
+
+      (async () => {
+        try {
+          html.classList.add("tx-lock");
+          const startedAt = Date.now();
+
+          if (reduced) {
+            // no flight, no slide: the page fades out and the book fades in (200ms each)
+            store({ direction: "reverse", slug, fly: false, reduced: true, startedAt });
+            const main = document.querySelector("main");
+            if (main) {
+              const out = main.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: T.reducedFadeMs,
+                fill: "forwards",
+              });
+              anims.push(out);
+              await out.finished;
+            }
+            push();
+            await nextFrame();
+            await nextFrame();
+            finish(); // the book fades itself in from here
+            return;
+          }
+
+          // fly only from a hero that is mostly on screen
+          const box = heroEl ? heroBox(heroEl) : null;
+          const visible = box
+            ? Math.max(0, Math.min(box.rect.bottom, window.innerHeight) - Math.max(box.rect.top, 0)) /
+              Math.max(1, box.rect.height)
+            : 0;
+          if (!heroEl || !box || visible < R.minVisible) {
+            store({ direction: "reverse", slug, fly: false, reduced: false, startedAt });
+            await fadePage(null);
+            push();
+            await nextFrame();
+            finish();
+            return;
+          }
+
+          // a) the overlay over the hero: the same video (shown at once), or the stand-in
+          const heroVideo = heroEl.querySelector("video");
+          overlay = buildOverlay({ rect: box.rect, radius: box.radius, video: heroVideo, placeholder });
+          const ov = overlay;
+          if (!heroVideo) {
+            const fadeIn = ov.root.animate([{ opacity: 0 }, { opacity: 1 }], {
+              duration: R.overlayFadeIn,
+              fill: "backwards",
+            });
+            await fadeIn.finished;
+          } else {
+            await nextFrame();
+          }
+          heroEl.style.visibility = "hidden";
+          store({
+            direction: "reverse",
+            slug,
+            fly: true,
+            reduced: false,
+            startedAt,
+            rect: { left: box.rect.left, top: box.rect.top, width: box.rect.width, height: box.rect.height },
+            radius: box.radius,
+            src: heroVideo ? heroVideo.currentSrc || heroVideo.src : undefined,
+            time: heroVideo?.currentTime,
+          });
+
+          // b) the page fades out, then c) navigate; the overlay stays (it lives in <body>)
+          const ready = new Promise<BookArrivalHandle | null>((resolve) => {
+            bookWaiter.current = resolve;
+            setTimeout(() => resolve(null), R.contentFade + R.readyTimeoutMs + 600);
+          });
+          await fadePage(heroEl);
+          push();
+
+          // d) the book arrives receded and tells us where the slot is
+          const handle = await ready;
+          const slot = handle?.measureSlot() ?? null;
+          if (!handle || !slot) {
+            await ov.root.animate([{ opacity: 1 }, { opacity: 0 }], {
+              duration: T.crossfade,
+              fill: "forwards",
+            }).finished;
+            if (handle) {
+              handle.handover(null);
+              await handle.settle();
+            }
+            finish();
+            return;
+          }
+
+          // e) fly from the hero's box to the slot's (same technique as the forward fly)
+          const to = slot;
+          const from = box.rect;
+          const sx = from.width / to.rect.width;
+          const sy = from.height / to.rect.height;
+          Object.assign(ov.root.style, {
+            left: `${to.rect.left}px`,
+            top: `${to.rect.top}px`,
+            width: `${to.rect.width}px`,
+            height: `${to.rect.height}px`,
+            transformOrigin: "0 0",
+          });
+          const fly = ov.root.animate(
+            [
+              {
+                transform: `translate(${from.left - to.rect.left}px, ${from.top - to.rect.top}px) scale(${sx}, ${sy})`,
+                borderRadius: `${box.radius / sx}px / ${box.radius / sy}px`,
+              },
+              { transform: "none", borderRadius: `${to.radius}px` },
+            ],
+            { duration: R.fly, easing: T.flyEase, fill: "forwards" },
+          );
+          anims.push(fly);
+          await fly.finished;
+          if (process.env.NODE_ENV !== "production") {
+            const a = ov.root.getBoundingClientRect();
+            const b = handle.measureSlot()?.rect;
+            if (b) {
+              (window as unknown as { __txLanding?: object }).__txLanding = {
+                dx: +(a.left - b.left).toFixed(2),
+                dy: +(a.top - b.top).toFixed(2),
+                dw: +(a.width - b.width).toFixed(2),
+                dh: +(a.height - b.height).toFixed(2),
+              };
+            }
+          }
+
+          // f) hand over: the same video at the same time, then the overlay goes
+          handle.handover(ov.video ? ov.video.currentTime : null);
+          if (ov.video) {
+            await nextFrame();
+            ov.root.remove();
+          } else {
+            await ov.root.animate([{ opacity: 1 }, { opacity: 0 }], {
+              duration: T.crossfade,
+              fill: "forwards",
+            }).finished;
+            ov.root.remove();
+          }
+
+          // g) the book settles to rest
+          await handle.settle();
+          finish();
+        } catch {
+          // never strand the reader: go to the book and clean up
+          if (!pushed) {
+            endArrival();
+            push();
+          }
+          finish();
+        }
+      })();
+      return true;
+    },
+    [router, endArrival],
+  );
+
+  // remember the path shown before this one (an arrival from a case study, e.g. browser Back)
+  useEffect(() => {
+    if (shownPath.current !== pathname) {
+      prevPath.current = shownPath.current;
+      shownPath.current = pathname;
+    }
+  }, [pathname]);
+
   // if the reader ends up somewhere else, stop at once
   useEffect(() => {
     if (busy.current && target.current && pathname !== target.current && pathname !== "/") {
@@ -369,8 +703,21 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
   useEffect(() => () => finishRef.current(), []);
 
   const api = useMemo<TxApi>(
-    () => ({ run, isBusy: () => busy.current, registerHero, unregisterHero }),
-    [run, registerHero, unregisterHero],
+    () => ({
+      run,
+      runReverse,
+      isBusy: () => busy.current,
+      registerHero,
+      unregisterHero,
+      noHero,
+      readArrival,
+      // children read this before this layer's effect records the new path, so while the
+      // book arrives it still names the page it came from
+      previousPath: () => (shownPath.current !== pathname ? shownPath.current : prevPath.current),
+      bookReady,
+      endArrival,
+    }),
+    [run, runReverse, registerHero, unregisterHero, noHero, readArrival, bookReady, endArrival, pathname],
   );
   return <TxContext.Provider value={api}>{children}</TxContext.Provider>;
 }

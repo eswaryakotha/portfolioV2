@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import type { CaseStudy } from "@/data/content";
 import SummaryGrid from "@/components/SummaryGrid";
@@ -31,11 +30,12 @@ import EvaluationsResults from "@/components/EvaluationsResults";
 import EvaluationSection from "@/components/EvaluationSection";
 import LoopClip from "@/components/LoopClip";
 import HeroMedia from "@/components/transition/HeroMedia";
+import BackToBook from "@/components/transition/BackToBook";
 
 const SHOW_FEATURE_PRIORITY = false; // Feature Prioritization hidden for now
 
 const SHOW_MARKET_RESEARCH = false; // Market Research hidden for now
-export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
+export default function CaseStudyTemplate({ study, slug }: { study: CaseStudy; slug: string }) {
   const show = (key: keyof NonNullable<CaseStudy["showSections"]>) =>
     study.showSections?.[key] !== false;
 
@@ -47,12 +47,7 @@ export default function CaseStudyTemplate({ study }: { study: CaseStudy }) {
         "--accent-bright": study.accentBright ?? study.accent,
       } as React.CSSProperties}
     >
-      <Link
-        href="/work"
-        className="font-mono text-xs text-gray-500 hover:text-gray-900 uppercase tracking-widest"
-      >
-        ← Back to work
-      </Link>
+      <BackToBook slug={slug} />
 
       {/* hero: silent video that plays on a loop while on screen; placeholder box until a video is set */}
       {study.heroVideo ? (

@@ -55,3 +55,8 @@ html.tx-pending main div:has(> [data-hero-media]) > :not([data-hero-media]) {
 html.tx-hero-hidden [data-hero-media] {
   opacity: 0;
 }
+
+/* while the page fades out for "Back to Book", nothing on it takes input */
+html.tx-lock body {
+  pointer-events: none;
+}

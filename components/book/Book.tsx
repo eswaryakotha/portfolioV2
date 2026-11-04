@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -122,6 +123,12 @@ type Drag = {
 export const bookEnabled = () =>
   S.mobileBook || window.matchMedia(S.desktopOnlyQuery).matches;
 
+const stopForSlug = (slug: string): number => {
+  const idx = SPREADS.findIndex((s) => s.type === "case-study" && s.slug === slug);
+  return idx === -1 ? 0 : idx + 1;
+};
+const RV = book.settings.transition.reverse;
+
 const hashToSpread = (hash: string): number => {
   const id = hash.replace(/^#/, "");
   if (id === BACK_ID) return BACK;
@@ -239,6 +246,9 @@ export default function Book() {
   const drag = useRef<Drag | null>(null);
   const suppressClick = useRef(false);
   const pendingTurn = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /* arriving back from a case study: open, flat, receded, controls hidden, input off */
+  const [arriving, setArriving] = useState(false);
+  const arrivingRef = useRef(false);
 
   /* the ID card on the About spread's left page */
   const desktop = useMedia(S.desktopOnlyQuery, true);
@@ -520,6 +530,10 @@ export default function Book() {
     const root = rootRef.current;
     if (!root) return;
     root.classList.remove("bk-leaving", "bk-lifting");
+    if (arrivingRef.current) {
+      tabs.current.forEach((r) => r.reset());
+      return; // the arriving slot stays hidden under the overlay until the hand over
+    }
     root.querySelectorAll<HTMLElement>("[data-media-for]").forEach((m) => {
       m.style.visibility = "";
     });
@@ -590,6 +604,145 @@ export default function Book() {
     },
     [router, tx, resetLeaving],
   );
+
+  /* ---------- arriving back from a case study ----------
+     Runs before the first paint, also when the cached homepage is shown again: the book is
+     put open at the project's spread, flat and receded with its controls hidden, so the very
+     first frame is already in that state. Then, once fonts are in and the slot holds still,
+     it tells the transition layer where the slot is (or, with nothing flying, just settles). */
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || !tx || !bookEnabled()) return;
+    const a = tx.readArrival();
+    const fromCase = (tx.previousPath() ?? "").startsWith("/work/");
+    if (!a && !fromCase) return;
+    const hashStop = hashToSpread(window.location.hash);
+    const stop = (a ? stopForSlug(a.slug) : 0) || hashStop;
+    if (!stop) {
+      tx.endArrival();
+      return; // unknown: the normal path (closed, or the hash) takes over
+    }
+    const fly = !!a?.fly;
+    const quiet = !!a?.reduced || reducedRef.current;
+    const s = SPREADS[stop - 1];
+    const medias = () =>
+      s ? [...root.querySelectorAll<HTMLElement>(`[data-media-for="${s.id}"]:not([data-side="c"])`)] : [];
+
+    arrivingRef.current = true;
+    root.classList.remove("bk-leaving", "bk-lifting", "bk-settling");
+    root.classList.add("bk-arriving");
+    root.classList.toggle("bk-arriving-quiet", quiet);
+    tabs.current.forEach((r) => r.reset());
+    root.querySelectorAll<HTMLElement>("[data-media-for]").forEach((m) => (m.style.visibility = ""));
+    if (fly) medias().forEach((m) => (m.style.visibility = "hidden"));
+    goTo(stop, true);
+    // this must land before the first paint (the video card has to be down in that frame)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setArriving(true);
+
+    let cancelled = false;
+    let settled = false;
+    const settle = () =>
+      new Promise<void>((resolve) => {
+        if (settled) return resolve();
+        settled = true;
+        root.classList.add("bk-settling");
+        root.classList.remove("bk-arriving");
+        window.setTimeout(() => {
+          root.classList.remove("bk-settling", "bk-arriving-quiet");
+          arrivingRef.current = false;
+          setArriving(false);
+          tx.endArrival();
+          // focus the book's current page controls, and say where we are
+          root
+            .querySelector<HTMLElement>('.bk-dot[aria-current="true"]')
+            ?.focus({ preventScroll: true });
+          setAnnounce(
+            book.ui.liveTemplate
+              .replace("{n}", String(stop))
+              .replace("{total}", String(SPREADS.length))
+              .replace("{name}", SPREADS[stop - 1]?.name ?? ""),
+          );
+          resolve();
+        }, quiet ? book.settings.transition.reducedFadeMs : RV.settle);
+      });
+
+    const slotBox = () => {
+      const list = medias();
+      if (!list.length) return null;
+      const rects = list.map((m) => m.getBoundingClientRect());
+      const left = Math.min(...rects.map((r) => r.left));
+      const top = Math.min(...rects.map((r) => r.top));
+      const right = Math.max(...rects.map((r) => r.right));
+      const bottom = Math.max(...rects.map((r) => r.bottom));
+      const main = list.find((m) => m.dataset.side === "r") ?? list[0];
+      const clip = main.querySelector(".bk-vclip") ?? main;
+      const scale = main.offsetWidth ? rects[list.indexOf(main)].width / main.offsetWidth : 1;
+      return {
+        rect: new DOMRect(left, top, right - left, bottom - top),
+        radius: (parseFloat(getComputedStyle(clip).borderTopRightRadius) || 0) * scale,
+      };
+    };
+
+    (async () => {
+      // ready: fonts loaded, two frames, and the slot in the same place for two frames
+      const t0 = performance.now();
+      try {
+        await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, RV.readyTimeoutMs))]);
+      } catch {
+        /* ignore */
+      }
+      const frame = () => new Promise((r) => requestAnimationFrame(r));
+      await frame();
+      await frame();
+      let last = "";
+      let same = 0;
+      while (!cancelled && performance.now() - t0 < RV.readyTimeoutMs) {
+        const b = slotBox()?.rect;
+        const key = b ? [b.left, b.top, b.width, b.height].map((v) => v.toFixed(1)).join() : "none";
+        same = key === last ? same + 1 : 0;
+        last = key;
+        if (same >= 2) break;
+        await frame();
+      }
+      if (cancelled) return;
+      if (!fly) {
+        tx.endArrival();
+        void settle();
+        return;
+      }
+      tx.bookReady({
+        measureSlot: slotBox,
+        handover: (time) => {
+          const list = medias();
+          list.forEach((m) => {
+            const v = m.querySelector("video");
+            if (v && time != null) {
+              try {
+                v.currentTime = time;
+              } catch {
+                /* ignore */
+              }
+            }
+          });
+          list.forEach((m) => (m.style.visibility = ""));
+        },
+        settle,
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      if (!settled) {
+        // left before it finished (or a dev double run): come back to normal
+        root.classList.remove("bk-arriving", "bk-settling", "bk-arriving-quiet");
+        medias().forEach((m) => (m.style.visibility = ""));
+        arrivingRef.current = false;
+      }
+    };
+    // runs once per showing of the page
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     resetLeaving(); // shown again (for example after Back): the book looks normal
@@ -705,7 +858,7 @@ export default function Book() {
   /* ---------- keyboard ---------- */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!bookEnabled()) return;
+      if (!bookEnabled() || arrivingRef.current) return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
@@ -894,6 +1047,8 @@ export default function Book() {
     "--tx-lift": `${S.transition.lift}ms`,
     "--tx-book-scale": S.transition.bookScale,
     "--tx-book-opacity": S.transition.bookOpacity,
+    "--rv-settle": `${S.transition.reverse.settle}ms`,
+    "--tx-reduced-fade": `${S.transition.reducedFadeMs}ms`,
     "--max-w-vw": S.maxBookWidthVw,
     "--max-w": `${S.maxBookWidthPx}px`,
     "--stage-gap": `${S.stageGapPx}px`,
@@ -932,7 +1087,8 @@ export default function Book() {
       hintFor,
       openCaseStudy,
       prefetch: (href) => router.prefetch(href),
-      isBusy: () => tx?.isBusy() ?? false,
+      isBusy: () => (tx?.isBusy() ?? false) || arrivingRef.current,
+      arriving,
       registerTab: (stop, r) => {
         if (r) tabs.current.set(stop, r);
         else tabs.current.delete(stop);
@@ -940,7 +1096,7 @@ export default function Book() {
       idCard,
       idCardId: ID_CARD_ID,
     }),
-    [spread, settled, reduced, hintFor, openCaseStudy, router, tx, idCard],
+    [spread, settled, reduced, hintFor, openCaseStudy, router, tx, idCard, arriving],
   );
 
   const arrow = (

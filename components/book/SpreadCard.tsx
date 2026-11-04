@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { book, type BookCaseStudySpread } from "@/data/content";
 import { useBookPage } from "./bookCtx";
 
@@ -45,7 +45,8 @@ export default function SpreadCard({
   const api = useBookPage();
   const active = api?.spread === stop;
   const near = api ? Math.abs(api.spread - stop) <= 1 : false;
-  const wantUp = active && !!api?.settled;
+  const arriving = !!api?.arriving;
+  const wantUp = active && !!api?.settled && !arriving;
   const hero = spread.heroVideo;
   const [phase, setPhase] = useState<Phase>("hidden");
   const phaseRef = useRef<Phase>("hidden");
@@ -83,6 +84,16 @@ export default function SpreadCard({
     phaseRef.current = p;
     setPhase(p);
   }, []);
+
+  /* arriving back from a case study: straight down to the page, before the first paint, with
+     no sinking motion (the video flies into the printed slot, then the card rises as usual) */
+  useLayoutEffect(() => {
+    if (!arriving || phaseRef.current === "hidden") return;
+    videoRef.current?.pause();
+    cover(false);
+    phaseRef.current = "hidden";
+    setPhase("hidden"); // in a layout effect: this lands before the first paint
+  }, [arriving, cover]);
 
   /* ---------- rise when the spread settles, sink and hand over when a page turns ---------- */
   useEffect(() => {

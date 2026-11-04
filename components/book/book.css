@@ -1992,3 +1992,48 @@
 .bk-about-outro a:hover {
   color: var(--bk-accent);
 }
+
+/* ---------- arriving back from a case study ----------
+   bk-arriving: the first frame is already open at the spread, flat, receded (the same values
+   the book recedes to on the way out) and without its controls, with no transition into it.
+   bk-settling: from there back to rest over the reverse settle time. Quiet (reduced motion):
+   no scaling, the book just fades in. */
+.bk-root.bk-arriving,
+.bk-root.bk-settling {
+  pointer-events: none;
+}
+.bk-root.bk-arriving .bk-stage {
+  transform: scale(var(--tx-book-scale));
+  opacity: var(--tx-book-opacity);
+  transition: none;
+}
+.bk-root.bk-arriving .bk-tilt,
+.bk-root.bk-arriving .bk-book {
+  transition: none;
+}
+.bk-root.bk-arriving .bk-dots,
+.bk-root.bk-arriving .bk-side {
+  opacity: 0;
+  transition: none;
+}
+.bk-root.bk-settling .bk-stage {
+  transition:
+    transform var(--rv-settle) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--rv-settle) ease;
+}
+.bk-root.bk-settling .bk-tilt {
+  transition: transform var(--rv-settle) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bk-root.bk-settling .bk-dots,
+.bk-root.bk-settling .bk-side {
+  transition: opacity var(--rv-settle) ease;
+}
+.bk-root.bk-arriving-quiet.bk-arriving .bk-stage {
+  transform: none;
+  opacity: 0;
+}
+.bk-root.bk-arriving-quiet.bk-settling .bk-stage,
+.bk-root.bk-arriving-quiet.bk-settling .bk-dots,
+.bk-root.bk-arriving-quiet.bk-settling .bk-side {
+  transition: opacity var(--tx-reduced-fade) linear;
+}

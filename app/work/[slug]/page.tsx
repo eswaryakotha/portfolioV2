@@ -1,18 +1,24 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { caseStudies } from "@/data/content";
+import { book, caseStudies, type CaseStudy } from "@/data/content";
+import { veraai } from "@/data/veraai.server";
+import { isProtected, isUnlocked } from "@/lib/caseStudyAccess";
 import CaseStudyTemplate from "@/components/CaseStudyTemplate";
+import PasswordGate from "@/components/PasswordGate";
+
+/** Every case study, including the password-protected ones kept in server-only modules. */
+const allCaseStudies: Record<string, CaseStudy> = { ...caseStudies, veraai };
 
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  return Object.keys(caseStudies).map((slug) => ({ slug }));
+  return Object.keys(allCaseStudies).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const study = caseStudies[slug];
+  const study = allCaseStudies[slug];
   if (!study) return {};
   return {
     title: study.metaTitle ?? study.pageTitle,
@@ -32,7 +38,12 @@ export default function CaseStudyPage({ params }: Props) {
 
 async function CaseStudy({ params }: Props) {
   const { slug } = await params;
-  const study = caseStudies[slug];
+  const study = allCaseStudies[slug];
   if (!study) notFound();
-  return <CaseStudyTemplate study={study} />;
+  // a protected study is only rendered (and so only sent) once its password has been entered
+  if (isProtected(slug) && !(await isUnlocked(slug))) {
+    const name = book.spreads.find((s) => s.type === "case-study" && s.slug === slug)?.name ?? slug;
+    return <PasswordGate slug={slug} name={name} />;
+  }
+  return <CaseStudyTemplate study={study} slug={slug} />;
 }
