@@ -2,6 +2,11 @@ export const siteContent = {
   name: "Eswarya Kotha",
   title: "Eswarya Kotha's Portfolio", // the browser tab title
   status: "Open to opportunities", // the capsule next to the name in the header
+  // shown on phones held upright: the site is made for landscape
+  rotatePrompt: {
+    title: "Turn your phone sideways",
+    sub: "This portfolio is best viewed in landscape.",
+  },
   role: "[Your one-line role, e.g. Product Manager · Building at the intersection of X and Y]",
   bio: [
     "[Your bio paragraph one. e.g. I'm a product manager with 5+ years of experience shipping 0→1 and growth-stage products.]",
@@ -2481,8 +2486,10 @@ const caseStudyPages = (o: {
 export const book = {
   settings: {
     // scope
-    mobileBook: false, // false: below 900px show the stacked list instead of the book
-    desktopOnlyQuery: "(min-width: 900px)", // where the book shows when mobileBook is false
+    mobileBook: false, // false: where the query below fails, show the stacked list instead
+    // where the book shows: desktops and tablets, and phones turned sideways (phones held
+    // upright are asked to rotate, see components/RotatePrompt.tsx). Mirrored in book.css.
+    desktopOnlyQuery: "(min-width: 600px), (orientation: landscape) and (min-width: 480px)",
     // Mobile book only (unused while mobileBook is false). Mirrors CSS in components/book/book.css
     desktopQuery: "(min-width: 900px), (orientation: landscape) and (max-height: 500px)",
     mobileClosedCoverVw: 70, // closed cover width on mobile, % of viewport
@@ -2663,18 +2670,51 @@ export const book = {
     resultsLabel: "Key results",
   },
   cover: {
-    title: "[Cover title]",
-    subtitle: "[Cover subtitle]",
-    // Type sizes are container query units of the cover width, with a floor and a cap.
-    titleSize: "clamp(24px, 17cqw, 96px)",
-    subtitleSize: "clamp(12px, 5cqw, 24px)",
-    titleColor: "#F6F1E4",
-    subtitleColor: "#D8D1BE",
-    titleFont: "var(--font-caveat), cursive",
-    subtitleFont: "var(--font-geist-sans), sans-serif",
+    noteColor: "#D8D1BE", // the handwritten note on the back cover
     // small handwritten note in the middle of the back cover, under a little heart
     backNote: "Made with tired eyes and a restless brain.",
     backNoteSizePx: 17,
+    /** two sticky notes on the cover: a yellow one with a line about me (Advercase), and a
+        pink one, overlapping it, with my core strengths as pills (Geist) */
+    notes: {
+      tagline: "Decoding problems, shaping human-AI experiences, building with trust.",
+      strengthsHeading: "my core strengths:",
+      strengths: [
+        "0→1 AI product development",
+        "Ambiguous problem framing",
+        "Agentic workflow prototyping",
+        "Human-centred AI evaluation",
+      ],
+      yellow: "#FAF6BC",
+      pink: "#DBA0D8",
+      /** a small blue note in handwriting, over the yellow note's top right corner */
+      corner: "AI x Design x Product Builder",
+      blue: "#BCD6F2",
+      /** a vintage postage stamp (Lalbagh Glass House, Bengaluru), cut out of its sheet,
+          overlapping the yellow note's bottom edge */
+      postStamp: {
+        src: "/cover/lalbagh-stamp.png",
+        width: 1423,
+        height: 943,
+        alt: "Vintage postage stamp of the Lalbagh Glass House, Bengaluru",
+      },
+      /** stickers on the cover, cut out of their sheet; position and size in % of the cover's
+          width, tilt in degrees */
+      stickers: [
+        { src: "/cover/coffee-sticker.png", width: 480, height: 597, alt: "Filter coffee sticker", leftPct: 77, topPct: 26, widthPct: 13, tiltDeg: 8 },
+        { src: "/cover/purdue-sticker.png", width: 551, height: 615, alt: "Purdue bell tower sticker", leftPct: 15, topPct: 66, widthPct: 14, tiltDeg: -7 },
+      ],
+      /** a round stamp on the pink note's top right corner */
+      roundStamp: { center: "4YOE", ring: "YEARS OF EXPERIENCE" },
+    },
+    /** a torn paper strip near the bottom of the cover with this year's GitHub contribution
+        graph, read live from the public profile (/api/github); hidden if that fails */
+    contributions: {
+      username: "eswaryakotha",
+      label: "My contributions",
+      source: "[GitHub]",
+      totalTemplate: "{n} contributions in {year}",
+    },
   },
   /** Right page of the last spread: a chalk sketch of Vidhana Soudha under a sky that
       follows the current weather in Bengaluru (from /api/sky). */
@@ -2944,7 +2984,7 @@ export const book = {
           kind: "resume",
           label: "Resume",
           value: "",
-          href: "", // TODO: paste the resume link
+          href: "https://drive.google.com/file/d/1rOvWiMLrKbiYkleX0nfjWc7b89FkLekN/view?usp=sharing",
         },
       ],
     },

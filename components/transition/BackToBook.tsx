@@ -9,7 +9,7 @@ const S = book.settings;
 
 /** "Back to Book" at the top of a case study: a real link to this project's spread in the
     homepage book. On desktop a plain click plays the zoom back into the book; with a modifier
-    key, a middle click, or below 900px it is an ordinary link. */
+    key, a middle click, or where the book is not shown (a phone held upright) it is an ordinary link. */
 export default function BackToBook({ slug }: { slug: string }) {
   const router = useRouter();
   const tx = useBookTransition();
@@ -22,7 +22,7 @@ export default function BackToBook({ slug }: { slug: string }) {
   const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (e.defaultPrevented || e.button !== 0) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new tab, window, download
-    if (!window.matchMedia(S.desktopOnlyQuery).matches) return; // plain navigation below 900px
+    if (!window.matchMedia(S.desktopOnlyQuery).matches) return; // plain navigation where the book is not shown
     e.preventDefault();
     if (tx?.isBusy()) return; // one transition at a time
     if (!S.reverseZoom || !tx || !hash) {

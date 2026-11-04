@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, FileText, Mail } from "lucide-react";
 import {
   book,
+  siteContent,
   type BookBlock,
   type BookComingSoonSpread,
   type BookSpread,
@@ -341,8 +342,7 @@ export function BookFallback() {
   return (
     <div className="bk-fallback">
       <header>
-        <h1>{book.cover.title}</h1>
-        <p>{book.cover.subtitle}</p>
+        <h1>{siteContent.name}</h1>
       </header>
       {spreads.map((s) => (
         <section key={s.id} id={s.id} aria-label={s.name}>

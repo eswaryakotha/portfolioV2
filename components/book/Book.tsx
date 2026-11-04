@@ -16,10 +16,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBookTransition } from "@/components/transition/TransitionLayer";
 import { BookPageCtx, type BookPageApi } from "./bookCtx";
-import { book, type BookSpread } from "@/data/content";
+import { book, siteContent, type BookSpread } from "@/data/content";
 import { LeftPage, RightPage } from "./BookPages";
 import SpreadCard from "./SpreadCard";
 import BackCoverScene, { BACK_COVER_BG } from "./BackCoverScene";
+import CoverContributions from "./CoverContributions";
+import CoverNotes from "./CoverNotes";
 import IdCardHolder from "@/components/idcard/IdCardHolder";
 import { useIdCard } from "@/components/idcard/useIdCard";
 import "./book.css";
@@ -1071,12 +1073,7 @@ export default function Book() {
     "--eps": `${EPS}px`,
     "--persp-k": S.perspectiveOfWidth,
     "--po-closed": S.perspectiveOriginClosed,
-    "--cover-title-size": book.cover.titleSize,
-    "--cover-sub-size": book.cover.subtitleSize,
-    "--cover-title-color": book.cover.titleColor,
-    "--cover-sub-color": book.cover.subtitleColor,
-    "--cover-title-font": book.cover.titleFont,
-    "--cover-sub-font": book.cover.subtitleFont,
+    "--cover-note-color": book.cover.noteColor,
   } as CSSProperties;
 
   const pageApi = useMemo<BookPageApi>(
@@ -1137,6 +1134,8 @@ export default function Book() {
       style={{ ...rootStyle, ...spineStyle(SPREADS[spread - 1]) } as CSSProperties}
     >
       <BookPageCtx.Provider value={pageApi}>
+      {/* the page's heading, for screen readers (the cover itself carries no title) */}
+      <h1 className="sr-only">{siteContent.title}</h1>
       <nav className="bk-skip" aria-label={book.ui.skipHeading}>
         <p>{book.ui.skipHeading}</p>
         <ul>
@@ -1225,10 +1224,8 @@ export default function Book() {
                       button={book.ui.openBook}
                       onClick={() => spreadRef.current === 0 && goTo(1)}
                     >
-                      <div className="bk-cover-inner">
-                        <h1 className="bk-cover-title">{book.cover.title}</h1>
-                        <p className="bk-cover-sub">{book.cover.subtitle}</p>
-                      </div>
+                      <CoverNotes />
+                      <CoverContributions />
                     </Face>
                   ) : i === LEAVES - 1 ? (
                     // the back board: the inside is the last spread's right page, a chalk

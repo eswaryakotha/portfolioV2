@@ -1,17 +1,19 @@
-/* Homepage 3D book, desktop first (900px and wider).
+/* Homepage 3D book: desktops, tablets, and phones turned sideways.
    Sizes come from custom properties set on .bk-root from book.settings in data/content.ts.
-   Below 900px, or with JavaScript off, the stacked list (.bk-list) shows instead. */
+   On phones held upright (where the site asks them to rotate), or with JavaScript off, the
+   stacked list (.bk-list) shows instead. The book's media query mirrors
+   book.settings.desktopOnlyQuery: (min-width: 600px), (orientation: landscape) and (min-width: 480px). */
 
 /* ---------- which of the two shows ---------- */
 .bk-list {
   display: block;
 }
-@media (min-width: 900px) {
+@media (min-width: 600px), (orientation: landscape) and (min-width: 480px) {
   .bk-home .bk-list {
     display: none;
   }
 }
-@media (max-width: 899.98px) {
+@media (max-width: 599.98px) and (orientation: portrait), (max-width: 479.98px) {
   .bk-home:not(.bk-mobile-book) .bk-root {
     display: none;
   }
@@ -23,7 +25,7 @@
 /* ---------- page frame on /: header on top, the book fills the rest, no scrolling ----------
    With cacheComponents the homepage stays in the DOM after you navigate away, hidden with an
    inline display: none on .bk-home. The :not() keeps these rules off every other page. */
-@media (min-width: 900px) {
+@media (min-width: 600px), (orientation: landscape) and (min-width: 480px) {
   body:has(.bk-home:not([style*="display: none"])) {
     height: 100dvh;
     overflow: hidden;
@@ -213,32 +215,6 @@
   background-repeat: no-repeat;
   color: var(--bk-cover-text);
   cursor: pointer;
-}
-.bk-cover-inner {
-  position: absolute;
-  inset: 0;
-  padding: 9cqw 9cqw 9cqw 13cqw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 3cqw;
-}
-.bk-cover-title {
-  margin: 0;
-  font-family: var(--cover-title-font);
-  font-weight: 400;
-  font-size: var(--cover-title-size);
-  line-height: 1.05;
-  color: var(--cover-title-color);
-}
-.bk-cover-sub {
-  margin: 0;
-  font-family: var(--cover-sub-font);
-  font-size: var(--cover-sub-size);
-  line-height: 1.35;
-  color: var(--cover-sub-color);
 }
 
 /* static back board (right page of the last spread) */
@@ -759,7 +735,7 @@
   text-decoration: underline;
 }
 
-/* ---------- stacked list (below 900px, or JavaScript off) ---------- */
+/* ---------- stacked list (phones held upright, or JavaScript off) ---------- */
 .bk-fallback {
   max-width: 40rem;
   margin: 0 auto;
@@ -1466,7 +1442,7 @@
   font-family: var(--font-caveat), cursive;
   font-size: var(--back-note-size);
   line-height: 1.2;
-  color: var(--cover-sub-color);
+  color: var(--cover-note-color);
 }
 .bk-back-note svg {
   width: 1.5em;
@@ -2036,4 +2012,270 @@
 .bk-root.bk-arriving-quiet.bk-settling .bk-dots,
 .bk-root.bk-arriving-quiet.bk-settling .bk-side {
   transition: opacity var(--tx-reduced-fade) linear;
+}
+
+/* ---------- smaller screens: tablets and phones turned sideways ----------
+   The same book, scaled to fit. Below desktop width the side arrows take less room and the
+   book may fill a little more of its stage; on short screens (phones in landscape) the gap
+   around the book and the dots under it get tighter too. Desktop is unchanged. */
+@media (max-width: 899.98px) {
+  .bk-stage {
+    --book-scale: 0.94;
+    --arrow-space: 48px;
+    --arrow-w: 40px;
+  }
+}
+@media (max-height: 520px) {
+  .bk-stage {
+    --stage-gap: 12px;
+    --book-scale: 0.97;
+  }
+  .bk-dots {
+    padding: 0 0 2px;
+  }
+  .bk-dot {
+    height: 28px;
+  }
+}
+
+/* ---------- cover: a torn paper strip with the GitHub contribution graph ----------
+   Sizes are container units of the cover (100cqw wide); the cloth hinge takes its left 6.5%. */
+.bk-gh {
+  position: absolute;
+  left: 12cqw;
+  right: 6cqw;
+  bottom: 8cqw;
+  rotate: -1.2deg;
+  filter: drop-shadow(0 0.5cqw 0.7cqw rgb(0 0 0 / 0.35));
+  animation: sky-in 600ms ease both;
+}
+.bk-gh-paper {
+  padding: 3.2cqw 3.6cqw 3cqw;
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 0.5), transparent 60%),
+    linear-gradient(176deg, rgb(120 100 60 / 0.04), rgb(120 100 60 / 0.09)),
+    #f3ecdc;
+  color: #2b2b2b;
+}
+.bk-gh-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2cqw;
+  margin: 0 0 1.4cqw;
+  white-space: nowrap;
+}
+.bk-gh-label {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: min(12px, 2.6cqw);
+  font-weight: 400;
+  line-height: 1;
+  color: #2b2b2b;
+}
+.bk-gh-source {
+  color: #6b6457;
+}
+.bk-gh-total {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: min(9px, 1.9cqw);
+  letter-spacing: 0.02em;
+  color: #6b6457;
+}
+.bk-gh-months,
+.bk-gh-grid {
+  display: grid;
+  grid-template-columns: repeat(53, 1fr);
+  column-gap: 0.28cqw;
+}
+.bk-gh-months {
+  margin-bottom: 0.6cqw;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: min(7.5px, 1.55cqw);
+  line-height: 1;
+  color: #8a8270;
+}
+.bk-gh-grid {
+  grid-template-rows: repeat(7, auto);
+  row-gap: 0.28cqw;
+}
+.bk-gh-grid i {
+  aspect-ratio: 1;
+  border-radius: 0.22cqw;
+  background: rgb(80 66 40 / 0.1); /* no contributions */
+}
+/* GitHub's greens, one per level */
+.bk-gh-grid i[data-l="1"] {
+  background: #9be9a8;
+}
+.bk-gh-grid i[data-l="2"] {
+  background: #40c463;
+}
+.bk-gh-grid i[data-l="3"] {
+  background: #30a14e;
+}
+.bk-gh-grid i[data-l="4"] {
+  background: #216e39;
+}
+/* very subtle washi tape over the top left and bottom right corners: soft sage, faintly striped, see-through */
+.bk-gh-tape {
+  position: absolute;
+  top: -1.6cqw;
+  z-index: 1;
+  width: 13cqw;
+  height: 3.8cqw;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(196 214 190 / 0.55) 0 0.9cqw,
+    rgb(214 228 208 / 0.45) 0.9cqw 1.8cqw
+  );
+  opacity: 0.8;
+  /* the short ends torn in little zigzags */
+  clip-path: polygon(
+    0 8%, 3% 0, 97% 0, 100% 10%, 97% 25%, 100% 42%, 97% 58%, 100% 75%, 97% 90%, 100% 100%,
+    3% 100%, 0 88%, 3% 72%, 0 55%, 3% 40%, 0 24%
+  );
+}
+.bk-gh-tape-l {
+  left: -2.5cqw;
+  rotate: -14deg;
+}
+.bk-gh-tape-r {
+  top: auto;
+  bottom: -1.6cqw;
+  right: -2.5cqw;
+  rotate: -12deg;
+}
+
+/* ---------- cover: two sticky notes (book.cover.notes) ----------
+   Placed in container units of the cover (100cqw wide), as in the reference: the yellow
+   one upper left, the pink one overlapping its lower right corner. */
+.bk-cnote {
+  position: absolute;
+  margin: 0;
+  box-sizing: border-box;
+  color: #26241f;
+  box-shadow:
+    0 0.3cqw 0.6cqw rgb(0 0 0 / 0.22),
+    0 1.4cqw 2.4cqw -1cqw rgb(0 0 0 / 0.3);
+}
+/* the same size; the yellow one lies on top, over the pink one's upper left corner. That
+   corner only covers the pink one's empty top strip, so its text lines up on one left edge. */
+.bk-cnote-yellow,
+.bk-cnote-pink {
+  width: 40cqw;
+  height: 37cqw;
+}
+.bk-cnote-yellow {
+  z-index: 2;
+  left: 16cqw;
+  top: 16cqw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3cqw 3.6cqw;
+  text-align: center; /* centred both ways on the note */
+  background: var(--note-yellow);
+  font-family: var(--font-advercase), Georgia, serif;
+  font-size: min(15px, 3.2cqw);
+  line-height: 1.3;
+}
+.bk-cnote-pink {
+  z-index: 1;
+  left: 46cqw;
+  top: 47cqw;
+  padding: 9cqw 3cqw 2.4cqw; /* the top 6cqw sit under the yellow note */
+  background: var(--note-pink);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+.bk-cnote-head {
+  margin: 0 0 2.2cqw;
+  font-size: min(13px, 2.8cqw);
+  line-height: 1.2;
+}
+.bk-cnote-pills {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bk-cnote-pills li {
+  padding: 0.7cqw 1.9cqw;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.55);
+  box-shadow: inset 0 0 0 1px rgb(90 40 90 / 0.12);
+  font-size: min(11px, 2.3cqw);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* round rubber stamp on the pink note's top right corner, almost all of it on the note (in
+   its empty top right, clear of the heading and the pills) so the green ink reads */
+.bk-roundstamp {
+  position: absolute;
+  z-index: 3;
+  left: 72.5cqw;
+  top: 45.5cqw;
+  width: 14cqw;
+  height: 14cqw;
+  rotate: -14deg;
+  color: rgb(31 92 69 / 0.88);
+  overflow: visible;
+  pointer-events: none;
+}
+.bk-roundstamp-ring {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 8.4px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: currentColor;
+}
+.bk-roundstamp-center {
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  fill: currentColor;
+}
+/* a small blue note, handwritten and straight, lying over the yellow note's top right corner */
+.bk-cnote-blue span {
+  text-wrap: balance; /* two even lines */
+}
+.bk-cnote-blue {
+  z-index: 3;
+  left: 44cqw;
+  top: 10cqw;
+  width: 30cqw;
+  height: 10.5cqw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2cqw 2.4cqw;
+  text-align: center;
+  background: var(--note-blue);
+  font-family: var(--font-caveat), cursive;
+  font-size: min(15px, 3.2cqw);
+  line-height: 1.1;
+}
+/* the Lalbagh postage stamp, stuck across the yellow note's bottom edge */
+.bk-poststamp {
+  position: absolute;
+  z-index: 3;
+  left: 19cqw;
+  top: 47cqw;
+  width: 24cqw;
+  height: auto;
+  rotate: -4deg;
+  pointer-events: none;
+  filter: drop-shadow(0 0.35cqw 0.6cqw rgb(0 0 0 / 0.35));
+}
+/* stickers on the cover (book.cover.notes.stickers) */
+.bk-sticker {
+  position: absolute;
+  z-index: 4;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 0.35cqw 0.5cqw rgb(0 0 0 / 0.35));
 }

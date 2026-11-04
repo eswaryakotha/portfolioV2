@@ -11,7 +11,8 @@ const NO_JS_CSS =
   ".bk-root{display:none!important}.bk-list{display:block!important}" +
   "body:has(.bk-home){height:auto!important;overflow:visible!important;display:block!important}";
 
-/** Homepage. At 900px and wider (with JS) the 3D book; below that, or with JS off, the stacked
+/** Homepage. Where book.settings.desktopOnlyQuery matches (with JS) the 3D book; elsewhere (a
+    phone held upright), or with JS off, the stacked
     list. The list is one server rendered markup; CSS decides which of the two shows, so there
     is no flash in either direction. With mobileBook on, the book shows at every width. */
 export default function HomeBook() {
