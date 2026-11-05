@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { book, caseStudies, type CaseStudy } from "@/data/content";
+import { book, caseStudies, siteContent, type CaseStudy } from "@/data/content";
 import { veraai } from "@/data/veraai.server";
 import { isProtected, isUnlocked } from "@/lib/caseStudyAccess";
 import CaseStudyTemplate from "@/components/CaseStudyTemplate";
@@ -20,9 +20,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const study = allCaseStudies[slug];
   if (!study) return {};
+  const title = study.metaTitle ?? study.pageTitle;
+  const description = study.metaDescription ?? study.summary;
+  // the case study's hero poster, the same picture the book shows on its spread
+  const image = study.heroVideo?.poster || siteContent.shareImage;
   return {
-    title: study.metaTitle ?? study.pageTitle,
-    description: study.metaDescription ?? study.summary,
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      siteName: siteContent.title,
+      title,
+      description,
+      url: `/work/${slug}`,
+      images: [{ url: image, width: 1920, height: 1080, alt: title }],
+    },
   };
 }
 

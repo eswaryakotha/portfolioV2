@@ -1,6 +1,11 @@
 export const siteContent = {
   name: "Eswarya Kotha",
   title: "Eswarya Kotha's Portfolio", // the browser tab title
+  /** the homepage's description for search results and link previews */
+  description:
+    "Eswarya Kotha, Product Manager and AI Builder. Case studies on AI evals, human-AI experiences and 0-to-1 products.",
+  /** the image link previews show for the homepage (a case study's hero poster, 1920 x 1080) */
+  shareImage: "/veraai/hero-poster.jpg",
   status: "Open to opportunities", // the capsule next to the name in the header
   role: "[Your one-line role, e.g. Product Manager · Building at the intersection of X and Y]",
   bio: [
@@ -11,7 +16,7 @@ export const siteContent = {
   email: "[your@email.com]",
   linkedin: "[https://linkedin.com/in/yourhandle]",
   github: "[https://github.com/yourhandle]",
-  copyright: `© ${new Date().getFullYear()} [Your Name]. All rights reserved.`,
+  copyright: `© ${new Date().getFullYear()} Eswarya Kotha. All rights reserved.`,
 };
 
 export const ACCENTS = {
@@ -836,6 +841,8 @@ export const caseStudies: Record<string, CaseStudy> = {
   "dolby-labs": {
     heroVideo: { src: "/dolby/hero.mp4", poster: "/dolby/hero-poster.jpg", label: "Dolby Labs case study highlight video" },
     pageTitle: "How might we help UGC authors confidently bring their stories to audio?",
+    metaDescription:
+      "How I reframed an AI voice-generation brief into an author-led audiobook workflow, and tested it with an 18-case AI evaluation.",
     subtitle: "Dolby Labs X Purdue [2023] | Independent [2026]",
     tagline: "(Spoiler: Not the way Dolby originally thought)",
     accent: ACCENTS.dolby,

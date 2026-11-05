@@ -19,9 +19,21 @@ const advercase = localFont({
   fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
+/** The site's address, for the full URLs link previews need: Netlify sets URL at build time. */
+const SITE_URL = process.env.URL ?? process.env.DEPLOY_PRIME_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: siteContent.title,
-  description: siteContent.role,
+  description: siteContent.description,
+  // link previews; each case study replaces these with its own (app/work/[slug]/page.tsx)
+  openGraph: {
+    type: "website",
+    siteName: siteContent.title,
+    title: siteContent.title,
+    description: siteContent.description,
+    images: [{ url: siteContent.shareImage, width: 1920, height: 1080, alt: siteContent.title }],
+  },
   // the "EK" monogram from the earlier portfolio
   icons: { icon: "/favicon/favicon.svg" },
 };
