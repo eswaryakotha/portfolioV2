@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { book, type BookCaseStudySpread } from "@/data/content";
 import { useBookPage } from "./bookCtx";
+import { playsOnce, VIDEO_START } from "@/lib/video";
 
 const S = book.settings;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -48,6 +49,8 @@ export default function SpreadCard({
   const arriving = !!api?.arriving;
   const wantUp = active && !!api?.settled && !arriving;
   const hero = spread.heroVideo;
+  // MetaMint and Dolby show their real frame at VIDEO_START, never the poster, once loaded
+  const startAt = playsOnce(spread.slug);
   const [phase, setPhase] = useState<Phase>("hidden");
   const phaseRef = useRef<Phase>("hidden");
 
@@ -320,6 +323,11 @@ export default function SpreadCard({
               playsInline
               preload={near ? "auto" : "none"}
               aria-label={hero.label}
+              onLoadedData={startAt ? (e) => {
+                // jump past the opening frame: this also swaps the poster for the real frame
+                const v = e.currentTarget;
+                if (v.currentTime < VIDEO_START) v.currentTime = VIDEO_START;
+              } : undefined}
             />
           </div>
         ) : (

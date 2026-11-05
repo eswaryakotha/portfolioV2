@@ -13,6 +13,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { book } from "@/data/content";
+import { VIDEO_START, PLAY_ONCE_HEROES } from "@/lib/video";
 import "./transition.css";
 
 const T = book.settings.transition;
@@ -101,7 +102,7 @@ function heroBox(hero: HTMLElement) {
   return { rect: hero.getBoundingClientRect(), radius: radiusOf(media) };
 }
 
-function buildOverlay(m: ReturnType<TxSource["measure"]>) {
+function buildOverlay(m: ReturnType<TxSource["measure"]>, fromStart = false) {
   const root = document.createElement("div");
   root.className = "tx-overlay";
   root.setAttribute("aria-hidden", "true");
@@ -132,7 +133,7 @@ function buildOverlay(m: ReturnType<TxSource["measure"]>) {
     }
     video = document.createElement("video");
     video.muted = true;
-    video.loop = true;
+    video.loop = !fromStart;
     video.playsInline = true;
     video.preload = "auto";
     if (m.video.poster) video.poster = m.video.poster;
@@ -146,7 +147,7 @@ function buildOverlay(m: ReturnType<TxSource["measure"]>) {
       "loadedmetadata",
       () => {
         try {
-          v.currentTime = m.video?.currentTime ?? 0;
+          v.currentTime = fromStart ? VIDEO_START : (m.video?.currentTime ?? 0);
         } catch {
           /* ignore */
         }
@@ -296,7 +297,8 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
 
           // b) lift
           const m = src.measure();
-          overlay = buildOverlay(m);
+          // heroes that play once start from VIDEO_START; the rest carry on from the book's frame
+          overlay = buildOverlay(m, PLAY_ONCE_HEROES.some((s) => src.href === `/work/${s}`));
           const ov = overlay;
           await nextFrame();
           src.hideSource();

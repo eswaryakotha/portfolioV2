@@ -3,6 +3,7 @@
 import { type CSSProperties } from "react";
 import { book, type BookCaseStudySpread } from "@/data/content";
 import { useBookPage } from "./bookCtx";
+import { playsOnce, VIDEO_START } from "@/lib/video";
 
 /** One printed half of a case-study spread's video. The left half sits on the left page and
     the right half on the right page, so each half turns with its page. These are only what
@@ -21,6 +22,8 @@ export default function VideoHalf({
   const api = useBookPage();
   const near = api ? Math.abs(api.spread - stop) <= 1 : false;
   const hero = spread.heroVideo;
+  // MetaMint and Dolby show their real frame at VIDEO_START, never the poster, once loaded
+  const startAt = playsOnce(spread.slug);
 
   return (
     <div
@@ -49,6 +52,11 @@ export default function VideoHalf({
             playsInline
             preload={near ? "auto" : "none"}
             tabIndex={-1}
+            onLoadedData={startAt ? (e) => {
+              // jump past the opening frame: this also swaps the poster for the real frame
+              const v = e.currentTarget;
+              if (v.currentTime < VIDEO_START) v.currentTime = VIDEO_START;
+            } : undefined}
           />
         </div>
       ) : (

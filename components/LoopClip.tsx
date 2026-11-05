@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import MarginNotes, { type MarginNote } from "@/components/MarginNotes";
+import { VIDEO_START } from "@/lib/video";
 
 // A short clip that plays automatically, muted and on a loop, only while it is on
 // screen. With reduced motion it does not autoplay and shows the player controls.
@@ -17,6 +18,7 @@ export default function LoopClip({
   crop,
   notes,
   restartOnEnter,
+  playOnce,
 }: {
   src: string;
   poster?: string;
@@ -24,6 +26,8 @@ export default function LoopClip({
   crop?: { width: number; height: number; top: number; bottom?: number }; // blank rows to trim from the top and bottom
   notes?: MarginNote[];
   restartOnEnter?: boolean; // start again from the beginning each time it scrolls back into view
+  // no loop and no poster: plays from VIDEO_START each time it comes into view and holds its last frame
+  playOnce?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -39,7 +43,8 @@ export default function LoopClip({
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
-          if (restartOnEnter) v.currentTime = 0;
+          if (playOnce) v.currentTime = VIDEO_START;
+          else if (restartOnEnter) v.currentTime = 0;
           v.play().catch(() => {});
         }
         else v.pause();
@@ -48,7 +53,7 @@ export default function LoopClip({
     );
     io.observe(v);
     return () => io.disconnect();
-  }, [restartOnEnter]);
+  }, [restartOnEnter, playOnce]);
 
   useEffect(() => {
     const el = wrap.current;
@@ -76,14 +81,14 @@ export default function LoopClip({
         <video
           ref={ref}
           src={src}
-          poster={poster || undefined}
+          poster={(playOnce && !reduced ? undefined : poster) || undefined}
           aria-label={label}
           muted
-          loop
+          loop={!playOnce}
           playsInline
-          autoPlay={!reduced}
+          autoPlay={!reduced && !playOnce}
           controls={reduced}
-          preload="metadata"
+          preload={playOnce ? "auto" : "metadata"}
           style={
             cropTop
               ? { width: "100%", height: "auto", display: "block", marginTop: `${-(cropTop.top / cropTop.width) * 100}%` }

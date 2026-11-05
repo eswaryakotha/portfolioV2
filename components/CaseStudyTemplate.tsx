@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { playsOnce } from "@/lib/video";
 import type { CaseStudy } from "@/data/content";
 import SummaryGrid from "@/components/SummaryGrid";
 import EquationAnnotation from "@/components/EquationAnnotation";
@@ -57,6 +58,7 @@ export default function CaseStudyTemplate({ study, slug }: { study: CaseStudy; s
             poster={study.heroVideo.poster}
             label={study.heroVideo.label}
             restartOnEnter
+            playOnce={playsOnce(slug)}
           />
         </HeroMedia>
       ) : (
