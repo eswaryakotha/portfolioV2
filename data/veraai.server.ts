@@ -56,7 +56,7 @@ export const veraai: CaseStudy = {
   storyStrip: {
     layout: "steps",
     flowchart: {
-      note: "(average time: 42 days)",
+      note: "(average time: 32 days)",
       steps: [
         ["Potential Contact (Lead Generation - Advertising Sources)"],
         ["What does the homeowner need for their new Kitchen?", "Project Info & Logistical Info"],
@@ -484,20 +484,4 @@ export const veraai: CaseStudy = {
       body: "Prioritizing the core layout workflow helped narrow the scope to the capabilities most central to the product’s value.",
     },
   ],
-  whatsNext: {
-    heading: "What’s next",
-    cards: [
-      {
-        icon: "Cog",
-        label: "Build",
-        text: "Continue developing the NKBA‑compliant layout engine and the workflow connecting generated layouts to 2D visuals, material selection, and quotations.",
-      },
-      {
-        icon: "Users",
-        label: "Validate",
-        text: "Validate the product with remodelers, measuring design time, manual corrections, iteration frequency, user adoption, and eventually the time required to close a client.",
-        tags: ["Design time", "Manual corrections", "Iteration frequency", "User adoption", "Time to close a client"],
-      },
-    ],
-  },
 };

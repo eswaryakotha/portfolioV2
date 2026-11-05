@@ -4,7 +4,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import RotatePrompt from "@/components/RotatePrompt";
 import TransitionLayer from "@/components/transition/TransitionLayer";
 import { siteContent } from "@/data/content";
 
@@ -38,7 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <TransitionLayer>{children}</TransitionLayer>
         </main>
         <Footer />
-        <RotatePrompt />
       </body>
     </html>
   );

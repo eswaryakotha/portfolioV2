@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Book, BookOpen } from "lucide-react";
+import { ArrowLeft, Book, BookOpen } from "lucide-react";
 import { book, bookHashForSlug } from "@/data/content";
 import { useBookTransition } from "./TransitionLayer";
 
@@ -9,7 +9,9 @@ const S = book.settings;
 
 /** "Back to Book" at the top of a case study: a real link to this project's spread in the
     homepage book. On desktop a plain click plays the zoom back into the book; with a modifier
-    key, a middle click, or where the book is not shown (a phone held upright) it is an ordinary link. */
+    key or a middle click it is an ordinary link. In phone mode (where the book is not shown) it
+    reads "All projects" instead, with the label swapped by the same media query as the
+    homepage (transition.css), and is an ordinary link to the project's card on the phone page. */
 export default function BackToBook({ slug }: { slug: string }) {
   const router = useRouter();
   const tx = useBookTransition();
@@ -40,22 +42,31 @@ export default function BackToBook({ slug }: { slug: string }) {
       onMouseEnter={prefetch}
       onFocus={prefetch}
       onTouchStart={prefetch}
-      aria-label={book.ui.backToBookLabel.replace("{project}", name)}
       className="group inline-flex items-center gap-2 rounded-sm font-mono text-xs uppercase tracking-widest text-gray-500 hover:text-gray-900 focus-visible:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900"
     >
-      <Book
-        aria-hidden="true"
-        size={16}
-        strokeWidth={1.5}
-        className="group-hover:hidden group-focus-visible:hidden"
-      />
-      <BookOpen
-        aria-hidden="true"
-        size={16}
-        strokeWidth={1.5}
-        className="hidden group-hover:block group-focus-visible:block"
-      />
-      {book.ui.backToBook}
+      {/* laptops, desktops, tablets: back into the book */}
+      <span className="btb-book inline-flex items-center gap-2">
+        <Book
+          aria-hidden="true"
+          size={16}
+          strokeWidth={1.5}
+          className="group-hover:hidden group-focus-visible:hidden"
+        />
+        <BookOpen
+          aria-hidden="true"
+          size={16}
+          strokeWidth={1.5}
+          className="hidden group-hover:block group-focus-visible:block"
+        />
+        <span aria-hidden="true">{book.ui.backToBook}</span>
+        <span className="sr-only">{book.ui.backToBookLabel.replace("{project}", name)}</span>
+      </span>
+      {/* phones: back to the project's card */}
+      <span className="btb-phone items-center gap-2">
+        <ArrowLeft aria-hidden="true" size={16} strokeWidth={1.5} />
+        <span aria-hidden="true">{book.phone.backLink}</span>
+        <span className="sr-only">{book.phone.backLinkLabel.replace("{project}", name)}</span>
+      </span>
     </a>
   );
 }

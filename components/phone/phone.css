@@ -1,0 +1,400 @@
+/* ---------- which homepage shows ----------
+   Phone mode is everywhere book.settings.desktopOnlyQuery, (min-width: 641px) and
+   (min-height: 520px), fails: max-width 640px, or max-height 519px (phones either way up).
+   The phone page is always in the server HTML and only shown here, so there is no flash of the
+   wrong mode; the book is only mounted (and downloaded) outside phone mode (HomeBook). */
+.ph-home {
+  display: none;
+}
+@media (max-width: 640px), (max-height: 519px) {
+  .ph-home {
+    display: block;
+  }
+  /* while a resize settles (HomeBook waits 150ms), never show both */
+  .bk-home .bk-root {
+    display: none;
+  }
+}
+
+/* ---------- the page ---------- */
+.ph-home {
+  --ph-border: #e5e5e1;
+  --ph-muted: #5f5f5a;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 8px max(20px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1c1c1a;
+  transition: opacity 0.2s ease;
+}
+.ph-home.is-leaving {
+  opacity: 0;
+}
+.ph-home *,
+.ph-home *::before,
+.ph-home *::after {
+  box-sizing: border-box;
+}
+
+/* small monospace labels */
+.ph-label {
+  margin: 0;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ph-label-ink {
+  color: var(--ph-ink);
+}
+.ph-section-label {
+  margin: 32px 0 12px;
+  color: var(--ph-muted);
+}
+
+/* intro */
+.ph-intro {
+  padding-top: 16px;
+}
+.ph-role {
+  margin: 0;
+  font-family: var(--font-advercase), Georgia, serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--ph-green);
+}
+.ph-intro-text {
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: #3d3d39;
+}
+
+/* cards */
+.ph-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ph-card {
+  position: relative; /* the button's link covers the whole card */
+  padding: 20px;
+  border: 1px solid var(--ph-border);
+  border-top: 3px solid var(--ph-accent);
+  border-radius: 16px;
+  background: #fff;
+  scroll-margin-top: 16px;
+}
+.ph-card.is-flash {
+  animation: ph-flash 1.2s ease-out;
+}
+@keyframes ph-flash {
+  from {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ph-accent) 35%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ph-accent) 0%, transparent);
+  }
+}
+.ph-card > .ph-intro-text {
+  margin-top: 8px;
+}
+.ph-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ph-accent) 12%, #fff);
+}
+.ph-media img {
+  object-fit: cover;
+}
+.ph-media-tile {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-family: var(--font-advercase), Georgia, serif;
+  font-size: 32px;
+  color: var(--ph-ink);
+}
+.ph-title {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.ph-hook {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: var(--ph-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.ph-results {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ph-results li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.ph-results li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ph-accent);
+}
+.ph-locked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 0;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ph-muted);
+}
+.ph-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--ph-ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ph-locked + .ph-button {
+  margin-top: 8px;
+}
+.ph-button:focus-visible {
+  outline: 2px solid var(--ph-ink);
+  outline-offset: 3px;
+}
+/* the whole card is the link's tap area */
+.ph-stretch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+}
+.ph-soon {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: var(--ph-muted);
+  text-align: center;
+}
+
+/* contact */
+.ph-contact {
+  margin-top: 40px;
+  scroll-margin-top: 16px;
+}
+.ph-contact-heading {
+  margin: 0 0 20px;
+  padding-top: 0.6em; /* room for the pinned aside on the first line */
+  font-family: var(--font-advercase), Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: pre-line; /* a \n in the heading starts a new line */
+}
+.ph-aside {
+  font-family: var(--font-caveat), cursive;
+  font-size: 0.6em;
+  color: var(--ph-green);
+  white-space: nowrap;
+}
+.ph-pin {
+  white-space: nowrap;
+}
+.ph-aside.is-pinned {
+  position: relative;
+  display: inline-block;
+  width: 0;
+}
+.ph-aside.is-pinned > span {
+  position: absolute;
+  left: 0.1em;
+  bottom: 0.9em;
+  line-height: 1;
+  rotate: -6deg;
+  transform-origin: left bottom;
+}
+.ph-contact-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ph-contact-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1px solid var(--ph-border);
+  border-radius: 12px;
+  background: #fff;
+  color: #1c1c1a;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ph-contact-link:focus-visible {
+  outline: 2px solid var(--ph-green);
+  outline-offset: 2px;
+}
+.ph-contact-icon,
+.ph-contact-arrow {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--ph-muted);
+}
+.ph-contact-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+.ph-contact-value {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--ph-muted);
+}
+
+/* fade up on first view (PhoneEffects sets data-reveal; nothing is hidden without it) */
+@media (prefers-reduced-motion: no-preference) {
+  .ph-reveal[data-reveal="wait"] {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .ph-reveal[data-reveal="in"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.45s ease-out,
+      transform 0.45s ease-out;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ph-home {
+    transition: none;
+  }
+  .ph-card.is-flash {
+    animation: none;
+  }
+}
+
+/* My Playground card: the book's photos and clips */
+.ph-pg-photos,
+.ph-pg-videos {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ph-pg-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+}
+.ph-pg-photos figure,
+.ph-pg-videos figure {
+  margin: 0;
+}
+.ph-pg-photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #efede6;
+}
+.ph-pg-photo img {
+  object-fit: cover;
+}
+.ph-pg-photos figcaption {
+  margin-top: 6px;
+  font-family: var(--font-caveat), cursive;
+  font-size: 18px;
+  line-height: 1.15;
+  color: #3d3d39;
+}
+.ph-pg-videos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ph-pg-videos video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  background: #000;
+}
+.ph-pg-videos figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+.ph-pg-caption {
+  font-size: 15px;
+  line-height: 1.45;
+  color: #3d3d39;
+}
+.ph-pg-made {
+  font-family: var(--font-caveat), cursive;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--ph-green);
+}
+
+/* the note below the intro: the full experience (the book) is on desktop */
+.ph-screen-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border: 1px dashed #d6d3c8;
+  border-radius: 12px;
+  line-height: 1.5;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ph-muted);
+}
+.ph-screen-note svg {
+  flex: none;
+  margin-top: 2px; /* level with the first line when the note wraps */
+}

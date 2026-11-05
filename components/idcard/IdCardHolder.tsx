@@ -39,7 +39,7 @@ function Gloss({ on }: { on: boolean }) {
   return on ? <span className="idc-sheen" /> : null;
 }
 
-/** The card's face: company, photo, name, role and the id band with a barcode. */
+/** The card's face: company, photo, name, and the role along the bottom. */
 function CardFace({ data, sheen }: { data: IdCardData; sheen: boolean }) {
   return (
     <div className="idc-face">
@@ -66,7 +66,6 @@ function CardFace({ data, sheen }: { data: IdCardData; sheen: boolean }) {
       <p className="idc-name">{data.name}</p>
       <ArrowUpRight className="idc-arrow" strokeWidth={3} />
       <p className="idc-role">{data.role}</p>
-      <p className="idc-id">{data.idNumber}</p>
       <Gloss on={sheen} />
     </div>
   );

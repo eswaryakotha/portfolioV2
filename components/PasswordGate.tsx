@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useId } from "react";
 import { Lock } from "lucide-react";
+import { passwordNotes } from "@/data/content";
 import { unlockCaseStudy, type UnlockState } from "@/app/work/[slug]/actions";
 import BackToBook from "@/components/transition/BackToBook";
 import { useBookTransition } from "@/components/transition/TransitionLayer";
@@ -26,6 +27,9 @@ export default function PasswordGate({ slug, name }: { slug: string; name: strin
         </span>
         <p className="font-mono text-xs uppercase tracking-widest text-gray-500">{name}</p>
         <h1 className="mt-2 text-xl font-semibold text-gray-900">This case study is password protected</h1>
+        {passwordNotes[slug] && (
+          <p className="mt-3 text-sm leading-relaxed text-gray-700">{passwordNotes[slug]}</p>
+        )}
         <p className="mt-2 text-sm text-gray-500">Enter the password to view it.</p>
         <form action={action} className="mt-6 flex flex-col gap-3 text-left">
           <input type="hidden" name="slug" value={slug} />

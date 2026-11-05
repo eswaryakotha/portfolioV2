@@ -42,7 +42,7 @@
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  color: #6e6651;
+  color: #1f5c45;
   font-size: 14px;
 }
 
@@ -59,4 +59,19 @@ html.tx-hero-hidden [data-hero-media] {
 /* while the page fades out for "Back to Book", nothing on it takes input */
 html.tx-lock body {
   pointer-events: none;
+}
+
+/* ---------- the back link on case studies (BackToBook) ----------
+   "Back to Book" where the homepage shows the book; "All projects" in phone mode, the same
+   media query as components/phone/phone.css, so the right one shows from the first paint. */
+.btb-phone {
+  display: none;
+}
+@media (max-width: 640px), (max-height: 519px) {
+  .btb-book {
+    display: none;
+  }
+  .btb-phone {
+    display: inline-flex;
+  }
 }

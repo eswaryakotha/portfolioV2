@@ -55,7 +55,12 @@ export default function KeyImpact({
                 {richText(text)}
                 {/* the footnote goes in the note whose text carries the * mark */}
                 {ki.footnote && text.includes("*", text.lastIndexOf("**") + 2) ? (
-                  <small className="bk-ki-footnote">{ki.footnote}</small>
+                  <small
+                    className="bk-ki-footnote"
+                    style={ki.footnoteInk ? { color: ki.footnoteInk } : undefined}
+                  >
+                    {ki.footnote}
+                  </small>
                 ) : null}
               </span>
             </li>

@@ -5,12 +5,12 @@ import Link from "next/link";
 import { ArrowUpRight, FileText, Mail } from "lucide-react";
 import {
   book,
-  siteContent,
   type BookBlock,
   type BookComingSoonSpread,
   type BookSpread,
   type BookTextBlock,
 } from "@/data/content";
+import LinkedinIcon from "@/components/icons/LinkedinIcon";
 import { interceptLink, useBookPage } from "./bookCtx";
 import VideoHalf from "./SpreadVideo";
 import KeyImpact from "./KeyImpact";
@@ -177,25 +177,6 @@ function FoldCrossingTitle({ spread }: { spread: BookSpread }) {
   );
 }
 
-/** LinkedIn mark in the same outline style as the other icons (the icon set has no brand logos). */
-function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-      <rect width="4" height="12" x="2" y="9" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-}
-
 /** Left-hand page content of a spread (the back of a leaf). */
 export function LeftPage({ spread, stop }: { spread: BookSpread; stop: number }) {
   switch (spread.type) {
@@ -334,136 +315,6 @@ export function RightPage({ spread, stop }: { spread: BookSpread; stop: number }
     case "coming-soon":
       return null;
   }
-}
-
-/** Plain stacked list: shown below 900px and with JavaScript off. One markup for both. */
-export function BookFallback() {
-  const spreads: BookSpread[] = book.spreads;
-  return (
-    <div className="bk-fallback">
-      <header>
-        <h1>{siteContent.name}</h1>
-      </header>
-      {spreads.map((s) => (
-        <section key={s.id} id={s.id} aria-label={s.name}>
-          <p className="bk-fb-label">{s.label}</p>
-          {s.type === "about" && (
-            <>
-              <p>
-                {book.aboutSpread.card.name}, {book.aboutSpread.card.role},{" "}
-                {book.aboutSpread.card.company}
-              </p>
-              <h2>{s.headline}</h2>
-              <p>
-                {s.circled.word}: {s.circled.definition}
-              </p>
-              <p>{s.intro}</p>
-              <ol>
-                {s.journey.map((j) => (
-                  <li key={j.title}>
-                    {j.title}
-                    {j.note ? ` (${j.note})` : ""}
-                  </li>
-                ))}
-              </ol>
-              <p>
-                {s.outro.text} <Link href="/work">{s.outro.link}</Link>
-              </p>
-            </>
-          )}
-          {s.type === "case-study" && (
-            <>
-              {s.leftPage ? (
-                s.leftPage
-                  .flatMap((b) => (b.kind === "box" ? b.children : [b]))
-                  .map((b, i) => {
-                    if (b.kind === "list") {
-                      return (
-                        <ul key={i}>
-                          {b.items.map((t) => (
-                            <li key={t}>{richText(t)}</li>
-                          ))}
-                        </ul>
-                      );
-                    }
-                    const Tag = b.tag ?? "p";
-                    return <Tag key={i}>{b.text}</Tag>;
-                  })
-              ) : (
-                <>
-                  <h2>{s.title}</h2>
-                  <p>{s.hook}</p>
-                  <ul aria-label={book.ui.resultsLabel}>
-                    {s.results.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              {s.stickyNote && (
-                <>
-                  <h3>{s.stickyNote.label}</h3>
-                  <p>{s.stickyNote.text}</p>
-                </>
-              )}
-              {s.keyImpact && (
-                <>
-                  <h3>{s.keyImpact.label}</h3>
-                  <ul>
-                    {s.keyImpact.items.map((t) => (
-                      <li key={t}>{richText(t)}</li>
-                    ))}
-                  </ul>
-                  {s.keyImpact.footnote ? <p>{s.keyImpact.footnote}</p> : null}
-                </>
-              )}
-              <Link href={s.href}>{s.cta}</Link>
-            </>
-          )}
-          {s.type === "experiments" && (
-            <>
-              <h2>{s.heading}</h2>
-              <p>{s.intro}</p>
-              <ul>
-                {s.photos.map((p) => (
-                  <li key={p.src}>{p.caption}</li>
-                ))}
-                {s.videos.map((v) => (
-                  <li key={v.src}>
-                    {v.caption} ({v.madeWith})
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {s.type === "coming-soon" && (
-            <>
-              <h2>
-                {s.heading}
-                {s.headingAside ? ` ${s.headingAside}` : null}
-              </h2>
-              <ul>
-                {s.links.map((l) => (
-                  <li key={l.kind}>
-                    {l.href ? (
-                      <a
-                        href={l.href}
-                        {...(l.kind !== "email" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                      >
-                        {l.label}: {l.value}
-                      </a>
-                    ) : (
-                      l.value ? `${l.label}: ${l.value}` : l.label
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-      ))}
-    </div>
-  );
 }
 
 const CONTACT_ICONS = { email: Mail, linkedin: LinkedinIcon, resume: FileText };

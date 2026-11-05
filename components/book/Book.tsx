@@ -1,5 +1,6 @@
 "use client";
 
+import { CLOSE_BOOK_EVENT } from "@/components/NameLink";
 import {
   useCallback,
   useEffect,
@@ -760,7 +761,13 @@ export default function Book() {
     window.addEventListener("hashchange", onHash);
     window.addEventListener("popstate", onHash);
     window.addEventListener("pageshow", onShow);
+    // the name in the header: close the book to its cover
+    const onClose = () => {
+      if (bookEnabled()) goTo(0);
+    };
+    window.addEventListener(CLOSE_BOOK_EVENT, onClose);
     return () => {
+      window.removeEventListener(CLOSE_BOOK_EVENT, onClose);
       window.removeEventListener("hashchange", onHash);
       window.removeEventListener("popstate", onHash);
       window.removeEventListener("pageshow", onShow);

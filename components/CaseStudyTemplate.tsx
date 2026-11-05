@@ -32,6 +32,7 @@ import EvaluationSection from "@/components/EvaluationSection";
 import LoopClip from "@/components/LoopClip";
 import HeroMedia from "@/components/transition/HeroMedia";
 import BackToBook from "@/components/transition/BackToBook";
+import SectionNav from "@/components/SectionNav";
 
 const SHOW_FEATURE_PRIORITY = false; // Feature Prioritization hidden for now
 
@@ -47,7 +48,9 @@ export default function CaseStudyTemplate({ study, slug }: { study: CaseStudy; s
         "--accent": study.accent,
         "--accent-bright": study.accentBright ?? study.accent,
       } as React.CSSProperties}
+      data-cs-root=""
     >
+      <SectionNav />
       <BackToBook slug={slug} />
 
       {/* hero: silent video that plays on a loop while on screen; placeholder box until a video is set */}
@@ -429,6 +432,11 @@ export default function CaseStudyTemplate({ study, slug }: { study: CaseStudy; s
 
           {study.whatsNext && <WhatsNextSection data={study.whatsNext} />}
         </article>
+      </div>
+
+      {/* the same back link again at the end of the case study */}
+      <div className="mt-16 border-t border-gray-200 pt-8">
+        <BackToBook slug={slug} />
       </div>
     </div>
   );

@@ -1,31 +1,13 @@
-/* Homepage 3D book: desktops, tablets, and phones turned sideways.
+/* Homepage 3D book: laptops, desktops and tablets.
    Sizes come from custom properties set on .bk-root from book.settings in data/content.ts.
-   On phones held upright (where the site asks them to rotate), or with JavaScript off, the
-   stacked list (.bk-list) shows instead. The book's media query mirrors
-   book.settings.desktopOnlyQuery: (min-width: 600px), (orientation: landscape) and (min-width: 480px). */
-
-/* ---------- which of the two shows ---------- */
-.bk-list {
-  display: block;
-}
-@media (min-width: 600px), (orientation: landscape) and (min-width: 480px) {
-  .bk-home .bk-list {
-    display: none;
-  }
-}
-@media (max-width: 599.98px) and (orientation: portrait), (max-width: 479.98px) {
-  .bk-home:not(.bk-mobile-book) .bk-root {
-    display: none;
-  }
-}
-.bk-mobile-book .bk-list {
-  display: none;
-}
+   On phones (either way up), or with JavaScript off, the phone page (components/phone) shows
+   instead. The book's media query mirrors book.settings.desktopOnlyQuery:
+   (min-width: 641px) and (min-height: 520px). Which of the two shows is in phone.css. */
 
 /* ---------- page frame on /: header on top, the book fills the rest, no scrolling ----------
    With cacheComponents the homepage stays in the DOM after you navigate away, hidden with an
    inline display: none on .bk-home. The :not() keeps these rules off every other page. */
-@media (min-width: 600px), (orientation: landscape) and (min-width: 480px) {
+@media (min-width: 641px) and (min-height: 520px) {
   body:has(.bk-home:not([style*="display: none"])) {
     height: 100dvh;
     overflow: hidden;
@@ -610,13 +592,14 @@
   transition: transform 200ms;
 }
 .bk-side-prev {
-  left: max(8px, calc((100% - var(--bw)) / 4 - var(--arrow-w) / 2));
+  /* a set gap from the book's edge (--arrow-gap), not halfway out to the screen's edge */
+  left: max(8px, calc((100% - var(--bw)) / 2 - var(--arrow-w) - var(--arrow-gap, 40px)));
 }
 .bk-side-prev svg {
   transform: scaleX(-1);
 }
 .bk-side-next {
-  right: max(8px, calc((100% - var(--bw)) / 4 - var(--arrow-w) / 2));
+  right: max(8px, calc((100% - var(--bw)) / 2 - var(--arrow-w) - var(--arrow-gap, 40px)));
 }
 .bk-side-next:hover:not(:disabled) svg {
   transform: translateX(4px);
@@ -732,53 +715,6 @@
 }
 .bk-skip a {
   font-size: 14px;
-  text-decoration: underline;
-}
-
-/* ---------- stacked list (phones held upright, or JavaScript off) ---------- */
-.bk-fallback {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
-  color: #2b2b2b;
-}
-.bk-fallback header h1 {
-  font-family: var(--font-caveat), cursive;
-  font-size: 2.25rem;
-  line-height: 1.1;
-}
-.bk-fallback header p {
-  color: #6e6651;
-  margin-top: 0.25rem;
-}
-.bk-fallback section {
-  border-top: 1px solid #ddd6c3;
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-}
-.bk-fb-label {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  color: #6e6651;
-  margin-bottom: 0.5rem;
-}
-.bk-fallback h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-.bk-fallback p,
-.bk-fallback li {
-  margin: 0.25rem 0;
-}
-.bk-fallback ul {
-  padding-left: 1.25rem;
-  list-style: disc;
-}
-.bk-fallback a {
-  display: inline-block;
-  margin-top: 0.5rem;
   text-decoration: underline;
 }
 
@@ -1822,12 +1758,12 @@
   font-size: min(10px, 1.95cqw);
   letter-spacing: 0.04em;
   white-space: nowrap;
-  color: rgb(246 241 228 / 0.45);
+  color: rgb(255 255 255 / 0.85);
   text-decoration: none;
   border-radius: 3px;
 }
 .bk-bc-credit:hover {
-  color: rgb(246 241 228 / 0.7);
+  color: #fff;
   text-decoration: underline;
 }
 /* the handwritten line in the top margin; shown only with live data, fading in with the scene */
@@ -2073,13 +2009,13 @@
   color: #2b2b2b;
 }
 .bk-gh-source {
-  color: #6b6457;
+  color: #1f5c45;
 }
 .bk-gh-total {
   font-family: var(--font-geist-mono), monospace;
   font-size: min(9px, 1.9cqw);
   letter-spacing: 0.02em;
-  color: #6b6457;
+  color: #1f5c45;
 }
 .bk-gh-months,
 .bk-gh-grid {

@@ -2,11 +2,6 @@ export const siteContent = {
   name: "Eswarya Kotha",
   title: "Eswarya Kotha's Portfolio", // the browser tab title
   status: "Open to opportunities", // the capsule next to the name in the header
-  // shown on phones held upright: the site is made for landscape
-  rotatePrompt: {
-    title: "Turn your phone sideways",
-    sub: "This portfolio is best viewed in landscape.",
-  },
   role: "[Your one-line role, e.g. Product Manager · Building at the intersection of X and Y]",
   bio: [
     "[Your bio paragraph one. e.g. I'm a product manager with 5+ years of experience shipping 0→1 and growth-stage products.]",
@@ -2090,6 +2085,27 @@ export const caseStudies: Record<string, CaseStudy> = {
     (data/veraai.server.ts), so it never reaches the browser before the password is entered. */
 export const protectedCaseStudies = ["veraai"];
 
+/** A line on a protected case study's password page, under its heading. */
+export const passwordNotes: Record<string, string> = {
+  veraai:
+    "This project is protected under an NDA. To access the case study, please refer to the password provided in my resume.",
+};
+
+/** The section list in the left margin of every case study. Each section's name is read from
+    its heading (the part before any ":" or "("); `short` swaps a long heading for a shorter
+    name in the list (matched on how the heading starts, any capitalisation). */
+export const caseStudyNav = {
+  label: "Sections",
+  short: {
+    "product strategy and insights": "Product strategy",
+    "three pivots to find the right product": "Pivots",
+    "building and validating the pilot": "Pilot",
+    "bringing veraai to market": "Go to market",
+    "evaluations and results": "Evaluations",
+    "evaluation and results": "Evaluations",
+  } as Record<string, string>,
+};
+
 /** What the homepage book shows of each case study: its hero video and colours. These are
     public even for a protected study (the book shows them on its spread). */
 export const caseStudyLooks: Record<string, Pick<CaseStudy, "heroVideo" | "accent" | "accentBright">> = {
@@ -2224,7 +2240,7 @@ export type BookCaseStudySpread = BookSpreadBase & {
   pageTint: string; // the pages get a light pastel of this (the project's brighter accent)
   pageColor?: string; // set to use this exact page colour instead of the mixed pastel
   leftPage?: BookBlock[]; // when set, the left page shows these instead of the title, hook and results
-  keyImpact?: { label: string; items: string[]; ink?: string; footnote?: string }; // paper notes under the video, across the spread; **text** is bold
+  keyImpact?: { label: string; items: string[]; ink?: string; footnote?: string; footnoteInk?: string }; // paper notes under the video, across the spread; **text** is bold
   stickyNote?: { label: string; text: string; color: string; ink?: string; textSizePx?: number }; // beside the video on the right page
   polaroid?: BookPolaroid; // taped photo near the right page's top-right corner
 };
@@ -2319,7 +2335,6 @@ export type IdCardData = {
   company: string;
   name: string;
   role: string;
-  idNumber: string;
   photo: string; // path under /public; empty shows the accent panel with a placeholder
   photoAlt: string;
   photoPlaceholder: string;
@@ -2358,9 +2373,11 @@ export type IdCardSettings = {
   };
 };
 
-type BookCaseStudyExtras = Pick<
-  BookCaseStudySpread,
-  "pageColor" | "leftPage" | "keyImpact" | "stickyNote" | "polaroid"
+type BookCaseStudyExtras = Partial<
+  Pick<
+    BookCaseStudySpread,
+    "pageColor" | "leftPage" | "keyImpact" | "stickyNote" | "polaroid" | "hook" | "results"
+  >
 >;
 
 const bookCaseStudy = (
@@ -2402,6 +2419,7 @@ const caseStudyPages = (o: {
   timeline: string;
   ink: string;
   smallInk?: string;
+  noteInk?: string; // the role note and the key-impact footnote; default the site green
   stickyColor: string;
   photo?: string;
   photoAlt?: string;
@@ -2426,6 +2444,9 @@ const caseStudyPages = (o: {
   // role and timeline: the same size as the skills list
   const value = (text: string): BookTextBlock => ({ text, font: "sans", sizePx: 14, offsetYPx: 4 });
   return {
+    // the phone page's card: company and role, and the first two Key impact lines
+    hook: `${o.company} · ${o.role}`,
+    ...(o.keyImpacts?.length ? { results: o.keyImpacts.slice(0, 2) } : {}),
     leftPage: [
       {
         text: o.company,
@@ -2448,7 +2469,7 @@ const caseStudyPages = (o: {
           label("Role"),
           value(o.role),
           ...(o.roleNote
-            ? [{ text: o.roleNote, font: "sans" as const, sizePx: 11, color: "#6E6651", offsetYPx: 3 }]
+            ? [{ text: o.roleNote, font: "sans" as const, sizePx: 11, color: o.noteInk ?? "#1F5C45", offsetYPx: 3 }]
             : []),
           label("Timeline", 16),
           value(o.timeline),
@@ -2464,6 +2485,7 @@ const caseStudyPages = (o: {
       items: o.keyImpacts ?? ["[Key impact 1]", "[Key impact 2]", "[Key impact 3]"],
       ink: small,
       footnote: o.keyImpactFootnote,
+      footnoteInk: o.noteInk,
     },
     stickyNote: {
       label: "What I learnt",
@@ -2486,10 +2508,11 @@ const caseStudyPages = (o: {
 export const book = {
   settings: {
     // scope
-    mobileBook: false, // false: where the query below fails, show the stacked list instead
-    // where the book shows: desktops and tablets, and phones turned sideways (phones held
-    // upright are asked to rotate, see components/RotatePrompt.tsx). Mirrored in book.css.
-    desktopOnlyQuery: "(min-width: 600px), (orientation: landscape) and (min-width: 480px)",
+    mobileBook: false, // false: where the query below fails, show the phone page instead
+    // where the book shows: laptops, desktops and tablets. Everywhere else (max-width 640px,
+    // or max-height 519px, so phones either way up) the phone page shows (components/phone).
+    // Mirrored in components/phone/phone.css and components/book/book.css.
+    desktopOnlyQuery: "(min-width: 641px) and (min-height: 520px)",
     // Mobile book only (unused while mobileBook is false). Mirrors CSS in components/book/book.css
     desktopQuery: "(min-width: 900px), (orientation: landscape) and (max-height: 500px)",
     mobileClosedCoverVw: 70, // closed cover width on mobile, % of viewport
@@ -2642,7 +2665,7 @@ export const book = {
     hinge: "#353532", // cloth hinge band on the closed cover's spine edge
     note: "#FAF6EC", // the "Key impact" paper notes: a light eggshell white
     ink: "#2B2B2B",
-    muted: "#6E6651",
+    muted: "#1F5C45", // the green of the name in the header
     dash: "#B5AA8D",
   },
   ui: {
@@ -2668,6 +2691,19 @@ export const book = {
     liveBack: "Book closed. Back cover.",
     noscriptHeading: "Portfolio contents",
     resultsLabel: "Key results",
+  },
+  /** The phone page (components/phone): shown instead of the book on phones, either way up.
+      Everything else on it comes from the spreads below (case studies, playground, contact). */
+  phone: {
+    /** a small note at the top of the phone page */
+    screenNote: "Best experienced on desktop. More to explore, more to experience.",
+    role: "Product Manager & AI Builder",
+    caseStudiesLabel: "CASE STUDIES",
+    protectedLabel: "Password protected",
+    comingSoon: "More case studies on the way.",
+    /** on a case study, in place of "Back to Book" */
+    backLink: "All projects",
+    backLinkLabel: "All projects, back to the {project} card",
   },
   cover: {
     noteColor: "#D8D1BE", // the handwritten note on the back cover
@@ -2701,7 +2737,7 @@ export const book = {
       /** stickers on the cover, cut out of their sheet; position and size in % of the cover's
           width, tilt in degrees */
       stickers: [
-        { src: "/cover/coffee-sticker.png", width: 480, height: 597, alt: "Filter coffee sticker", leftPct: 77, topPct: 26, widthPct: 13, tiltDeg: 8 },
+        { src: "/cover/laptop-flowers-sticker.png", width: 636, height: 541, alt: "Sticker of flowers growing out of a laptop", leftPct: 69, topPct: 26, widthPct: 16.5, tiltDeg: 8 },
         { src: "/cover/purdue-sticker.png", width: 551, height: 615, alt: "Purdue bell tower sticker", leftPct: 15, topPct: 66, widthPct: 14, tiltDeg: -7 },
       ],
       /** a round stamp on the pink note's top right corner */
@@ -2732,10 +2768,10 @@ export const book = {
     refreshMinutes: 10,
     rainCount: 30,
     starCount: 14,
-    credit: { text: "Weather data by Open-Meteo.com", href: "https://open-meteo.com/" },
+    credit: { text: "Real-time weather data by Open-Meteo.com", href: "https://open-meteo.com/" },
     // sunny: clear or partly cloudy by day; clear: the same at night
     caption: {
-      template: "Looks like Bangalore is {word}",
+      template: "Bangalore is looking rather {word}",
       words: { sunny: "sunny", rainy: "rainy", cloudy: "cloudy", clear: "clear" },
     },
     label: {
@@ -2755,7 +2791,6 @@ export const book = {
       company: "One Good Offer Away Inc.",
       name: "Eswarya Kotha",
       role: "Product Manager & AI Builder",
-      idNumber: "ID 001-HIRE-ME",
       photo: "/about/me.png", // a cut-out on a transparent background
       photoAlt: "Portrait of Eswarya Kotha",
       photoPlaceholder: "[Your photo]",
@@ -2764,7 +2799,7 @@ export const book = {
         putBack: "Put the ID card back",
         srLine: "ID card: {name}, {role}, {company}",
         hint: "pick me up",
-        caption: "Meet your potential hire",
+        caption: "Nice to meet you, finally!",
       },
     } satisfies IdCardData as IdCardData,
     settings: {
@@ -2817,7 +2852,7 @@ export const book = {
         { title: "Engineering", note: "Born tinkerer" },
         { title: "Change Management", note: "How to adapt to people?" },
         { title: "UX & HCI", note: "How to build for people?" },
-        { title: "Product Management", note: "How to build it successfully?" },
+        { title: "Product Management", note: "How to make ideas work for people and business?" },
         { title: "And next?" },
       ],
       outro: { text: "Need proof?", link: "Check out my projects.", href: "#veraai" },
@@ -2842,9 +2877,9 @@ export const book = {
         ],
         keyImpacts: [
           // **like this** makes a phrase bold
-          "**Generated 10–15** NKBA-compliant L-shaped kitchen layouts during the pilot.",
-          "Built the **product frontend end-to-end**, translating product workflows into a functional user experience.",
-          "Created **VeraAI's website and go-to-market materials**, translating the product vision into customer-facing experiences.",
+          "**Cut design-to-quote from 30 days to 1 day** in early testing, with AI-generated layouts and auto-built quotation",
+          "**10-15 kitchen layouts passed every NKBA design-code rule** (safety, spacing, accessibility) on the first build, validating that AI can design to code",
+          "**Led a 12-person hybrid team** through 3 pivots to a focused 4-job MVP",
         ],
         photo: "/veraai/polaroid.png",
         photoAlt: "A 3D render of an L-shaped kitchen with white cabinets, a sink, stove and fridge",
@@ -2865,17 +2900,16 @@ export const book = {
           "AI Evaluation & Testing",
         ],
         keyImpacts: [
-          "Built a working **AI-powered expense-tracking** prototype.",
-          "Achieved **92%** image classification and **96.6%** intent classification accuracy.*",
-          "Designed **end-to-end expense workflows** for bill splitting, budgeting, and planned expenses.",
+          "**Built a working group-expense prototype:** split equally or by item, recognize UPI payments, track budgets and planned expenses, all inside the chat",
+          "**92% image relevance (23/25), 96.6% intent (28/29)** on labeled tests. Every miss has a documented cause and handling decision",
+          "**Evals shaped the product:** when the AI is unsure, it stays quiet and lets the user opt in. Money math stays in code",
         ],
-        keyImpactFootnote: "*Accuracy figures reflect prototype evaluation results.",
         learned:
           "AI is smart, but maybe don't let it do your accounting. Let AI interpret; let code calculate.",
-        photo: "/metamint/polaroid.png",
-        photoAlt: "Me explaining my product idea on a video call, beside the Meta personal finance prompt",
-        photoCaption: "explaining my idea",
-        photoPosition: "left center", // keeps me and the prompt in the square crop
+        photo: "/metamint/yosemite.webp",
+        photoAlt: "Yosemite Valley from Tunnel View: El Capitan, Half Dome and Bridalveil Fall",
+        photoCaption: "source of my idea, Yosemite",
+        photoPosition: "center", // El Capitan, Half Dome and the waterfall in the square crop
       }),
     }),
     bookCaseStudy("dolby-labs", "Dolby Labs", "DOLBY LABS", "Dolby", {
@@ -2888,6 +2922,7 @@ export const book = {
         timeline: "2023 Research\u00a0| 2026 AI Build", // keeps the | with the first part when it wraps
         ink: ACCENTS.dolby,
         smallInk: "#A34E1A", // deeper orange: the tab orange is too light for small text here
+        noteInk: "#A34E1A", // the role note and footnote in the same orange, not the site green
         stickyColor: "#D2E2F4", // soft sky blue: the cool opposite of the peach page
         skills: [
           "Product Discovery & User Research",
@@ -2896,12 +2931,10 @@ export const book = {
           "AI Evaluation & Testing",
         ],
         keyImpacts: [
-          "Built an AI-assisted audiobook narration prototype with **author-controlled guidance and audio enhancement**.",
-          "Improved evaluation pass rates from **20% to 53%** across the same 15 test cases.*",
-          "Achieved **100% first-attempt structured-output** validity across 18 runs on six real manuscript excerpts.",
+          "**Reframed the brief** from AI voice generation to an author-led workflow. Users said it could save **10+ hours per project**",
+          "**Cases passing every run: 3/15 to 8/15 (20% to 53%)** over 4 eval runs. Main open failure: AI drifting from the author's chosen emotion",
+          "**First-try usable AI output on 6 real excerpts: 50% to 100%** after a prompt fix, by treating AI output as untrusted (validate, retry, fall back)",
         ],
-        keyImpactFootnote:
-          "*Results from prototype evaluation; the 53% result is 8 of 15 cases passing all three runs.",
         learned:
           "A great AI demo can fool you. Evals are where reality shows up. Build, test, break, repeat.",
         photo: "/dolby/polaroid.png",
