@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: siteContent.title,
     title: siteContent.title,
     description: siteContent.description,
-    images: [{ url: siteContent.shareImage, width: 1920, height: 1080, alt: siteContent.title }],
+    images: [{ url: siteContent.shareImage, ...siteContent.shareImageSize, alt: "The cover of Eswarya Kotha's portfolio book" }],
   },
   // the "EK" monogram from the earlier portfolio
   icons: { icon: "/favicon/favicon.svg" },

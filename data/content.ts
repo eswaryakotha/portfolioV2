@@ -4,8 +4,9 @@ export const siteContent = {
   /** the homepage's description for search results and link previews */
   description:
     "Eswarya Kotha, Product Manager and AI Builder. Case studies on AI evals, human-AI experiences and 0-to-1 products.",
-  /** the image link previews show for the homepage (a case study's hero poster, 1920 x 1080) */
-  shareImage: "/veraai/hero-poster.jpg",
+  /** the image link previews show for the homepage: the book's closed cover, 1200 x 630 */
+  shareImage: "/cover/og-cover.jpg",
+  shareImageSize: { width: 1200, height: 630 },
   status: "Open to opportunities", // the capsule next to the name in the header
   role: "[Your one-line role, e.g. Product Manager · Building at the intersection of X and Y]",
   bio: [

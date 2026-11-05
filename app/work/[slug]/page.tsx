@@ -23,7 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = study.metaTitle ?? study.pageTitle;
   const description = study.metaDescription ?? study.summary;
   // the case study's hero poster, the same picture the book shows on its spread
-  const image = study.heroVideo?.poster || siteContent.shareImage;
+  const image = study.heroVideo?.poster
+    ? { url: study.heroVideo.poster, width: 1920, height: 1080 }
+    : { url: siteContent.shareImage, ...siteContent.shareImageSize };
   return {
     title,
     description,
@@ -33,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: `/work/${slug}`,
-      images: [{ url: image, width: 1920, height: 1080, alt: title }],
+      images: [{ ...image, alt: title }],
     },
   };
 }
