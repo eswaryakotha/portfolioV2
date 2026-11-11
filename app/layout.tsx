@@ -44,11 +44,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${sacramento.variable} ${advercase.variable} font-sans bg-[#f9f9f7] text-gray-900 antialiased`}
       >
-        <Header />
-        <main className="min-h-screen">
-          <TransitionLayer>{children}</TransitionLayer>
-        </main>
-        <Footer />
+        {/* the layer wraps the header too: its Work menu opens case studies with a fade */}
+        <TransitionLayer>
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+        </TransitionLayer>
       </body>
     </html>
   );

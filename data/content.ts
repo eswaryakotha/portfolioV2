@@ -2647,6 +2647,14 @@ export const book = {
       heroWaitMs: 1500,
       hardTimeoutMs: 4000,
       reducedFadeMs: 200,
+      // a case study opened from the header's Work menu: the page fades out, then the case
+      // study's sections fade up into place one after another
+      nav: {
+        fadeOut: 180,
+        fadeIn: 450,
+        stagger: 60,
+        slidePx: 12,
+      },
       // back from a case study ("Back to Book"): the hero flies back into its slot in the book.
       // The book recedes to bookScale / bookOpacity above, the same as on the way out.
       reverse: {

@@ -240,6 +240,8 @@ export default function Book() {
   const slabR = useRef<HTMLDivElement>(null);
   const slabL = useRef<HTMLDivElement>(null);
   const parRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const prevArrowRef = useRef<HTMLButtonElement>(null);
   const thickPx = useRef(0);
   const slabKey = useRef("");
   const prog = useRef<number[]>(Array.from({ length: LEAVES }, () => 0));
@@ -822,6 +824,30 @@ export default function Book() {
     };
   }, [applyLeaf, applySlabs]);
 
+  /* ---------- header alignment: the header's side padding follows the side arrows ----------
+     Publishes the arrows' distance from the screen edge as --bk-arrow-inset on <html>; the
+     header (components/Header.tsx) uses it while the book shows. The arrow's computed `left`
+     is read (not its box), so the book's transforms never move it. Hidden (another page is
+     showing, the homepage kept alive) or no arrows: the variable is removed. */
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const html = document.documentElement;
+    const update = () => {
+      const prev = prevArrowRef.current;
+      const left = prev && prev.getClientRects().length ? parseFloat(getComputedStyle(prev).left) : NaN;
+      if (Number.isFinite(left) && left > 0) html.style.setProperty("--bk-arrow-inset", `${left.toFixed(1)}px`);
+      else html.style.removeProperty("--bk-arrow-inset");
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(stage);
+    return () => {
+      ro.disconnect();
+      html.style.removeProperty("--bk-arrow-inset");
+    };
+  }, []);
+
   /* ---------- mouse tilt: a small, smoothed extra tilt that follows a fine pointer ---------- */
   useEffect(() => {
     const el = parRef.current;
@@ -1154,9 +1180,10 @@ export default function Book() {
         </ul>
       </nav>
 
-      <div className="bk-stage">
+      <div ref={stageRef} className="bk-stage">
         {S.sideArrows && (
           <button
+            ref={prevArrowRef}
             type="button"
             className="bk-side bk-side-prev"
             aria-label={book.ui.prevLabel}

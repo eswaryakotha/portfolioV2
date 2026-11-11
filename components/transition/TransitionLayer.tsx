@@ -64,6 +64,8 @@ export type TxSource = {
 
 type TxApi = {
   run: (src: TxSource) => boolean;
+  /** a plain page change with a short fade (the header's Work menu); false if busy */
+  runPage: (href: string) => boolean;
   /** "Back to Book" from a case study; false if a transition is already running */
   runReverse: (opts: { href: string; slug: string; placeholder: string }) => boolean;
   isBusy: () => boolean;
@@ -429,6 +431,108 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
     [router, waitForHero],
   );
 
+  const runPage = useCallback(
+    (href: string) => {
+      if (busy.current) return false;
+      busy.current = true;
+      const N = T.nav;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const main = document.querySelector("main");
+      const footer = document.querySelector<HTMLElement>("body > footer");
+      const anims: Animation[] = [];
+      let pushed = false;
+      let done = false;
+
+      const push = () => {
+        if (pushed) return;
+        pushed = true;
+        target.current = pathOf(href);
+        hero.current = null;
+        router.push(href);
+      };
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(hard);
+        anims.forEach((a) => a.cancel());
+        heroWaiters.current = [];
+        noHeroWaiters.current = [];
+        target.current = null;
+        busy.current = false;
+        finishRef.current = () => {};
+      };
+      const hard = setTimeout(() => {
+        push();
+        finish();
+      }, T.hardTimeoutMs);
+      finishRef.current = finish;
+
+      (async () => {
+        try {
+          // a) the current page (and footer) fades out, drifting up a little
+          const leaving = [main, footer].filter(Boolean) as HTMLElement[];
+          const outs = leaving.map((el) =>
+            el.animate(
+              [
+                { opacity: 1, transform: "none" },
+                { opacity: 0, transform: reduced ? "none" : `translateY(-${N.slidePx / 2}px)` },
+              ],
+              { duration: reduced ? T.reducedFadeMs : N.fadeOut, easing: "ease-in", fill: "forwards" },
+            ),
+          );
+          anims.push(...outs);
+          await Promise.all(outs.map((a) => a.finished));
+
+          // b) navigate and wait for the case study to show (its hero, or a password page)
+          push();
+          const heroEl = await waitForHero(T.heroWaitMs);
+          window.scrollTo(0, 0);
+          await nextFrame();
+
+          // c) show the new page: its sections fade up one after another (main's children
+          // when there is no hero), the footer last
+          const sections = heroEl?.parentElement
+            ? ([...heroEl.parentElement.children] as HTMLElement[])
+            : main
+              ? ([...main.querySelectorAll<HTMLElement>(":scope > * > *")].filter(
+                  (el) => el.getClientRects().length > 0,
+                ) as HTMLElement[])
+              : [];
+          // only what is on screen staggers; anything below the fold just appears with it
+          // (and nothing hidden or pinned, like the case study's section nav)
+          const onScreen = sections.filter((el) => {
+            const cs = getComputedStyle(el);
+            if (cs.opacity === "0" || cs.visibility === "hidden" || cs.position === "fixed") return false;
+            return el.getBoundingClientRect().top < window.innerHeight;
+          });
+          const ins = onScreen.map((el, i) =>
+            el.animate(
+              [
+                { opacity: 0, transform: reduced ? "none" : `translateY(${N.slidePx}px)` },
+                { opacity: 1, transform: "none" },
+              ],
+              {
+                duration: reduced ? T.reducedFadeMs : N.fadeIn,
+                delay: reduced ? 0 : i * N.stagger,
+                easing: T.flyEase,
+                fill: "backwards",
+              },
+            ),
+          );
+          outs.forEach((a) => a.cancel()); // same frame as the fade-ins start: no flash
+          anims.length = 0;
+          await Promise.all(ins.map((a) => a.finished));
+          finish();
+        } catch {
+          push();
+          finish();
+        }
+      })();
+      return true;
+    },
+    [router, waitForHero],
+  );
+
   const endArrival = useCallback(() => {
     arrival.current = null;
     try {
@@ -707,6 +811,7 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
   const api = useMemo<TxApi>(
     () => ({
       run,
+      runPage,
       runReverse,
       isBusy: () => busy.current,
       registerHero,
@@ -719,7 +824,7 @@ export default function TransitionLayer({ children }: { children: React.ReactNod
       bookReady,
       endArrival,
     }),
-    [run, runReverse, registerHero, unregisterHero, noHero, readArrival, bookReady, endArrival, pathname],
+    [run, runPage, runReverse, registerHero, unregisterHero, noHero, readArrival, bookReady, endArrival, pathname],
   );
   return <TxContext.Provider value={api}>{children}</TxContext.Provider>;
 }
